@@ -6,10 +6,13 @@
 <meta name="theme-color" content="#FAF6EF">
 <title>Estudiantes · Registro Estudiantil</title>
 
+<!-- Bootstrap + iconos: primero desde libs/ (tu repo); si falta, CDN -->
+<link rel="stylesheet" href="../libs/bootstrap.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+<link rel="stylesheet" href="../libs/bootstrap-icons.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
+<!-- Tipografías -->
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- QR + PDF para los carnets -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <style>
   :root{
@@ -23,6 +26,10 @@
     --rojo:#B42318;
   }
 
+  /* Respaldo: aunque Bootstrap CSS no cargue, los modales
+     nunca deben verse abiertos sobre la página */
+  .modal:not(.show){ display:none; }
+
   body{
     font-family:'DM Sans',sans-serif; color:var(--ink);
     background-color:var(--bg);
@@ -30,6 +37,7 @@
     background-size:26px 26px; min-height:100vh;
   }
 
+  /* ============ Encabezado ============ */
   .site-header{ padding:22px 0 12px; }
   .brand-mark{
     width:46px; height:46px; border-radius:14px; flex:none;
@@ -65,6 +73,7 @@
   .btn-secundario:hover{ border-color:var(--morado); color:var(--morado-deep); }
   .btn-secundario:disabled{ opacity:.7; }
 
+  /* ============ Barra de estado ============ */
   .status-bar{
     background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:13px 18px; display:flex; align-items:center; gap:13px; flex-wrap:wrap;
@@ -85,6 +94,7 @@
   .chip-pend{ background:#FDECEA; color:var(--rojo); animation:latido 1.6s ease-in-out infinite; }
   @keyframes latido{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
 
+  /* ============ Barra de herramientas ============ */
   .toolbar{
     background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:12px 16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;
@@ -116,6 +126,7 @@
   .switch-arch .form-check-input{ width:2.4em; height:1.25em; cursor:pointer; }
   .switch-arch .form-check-input:checked{ background-color:var(--naranja-deep); border-color:var(--naranja-deep); }
 
+  /* ============ Tarjetas por grado ============ */
   .grade-card{
     background:var(--paper); border:1px solid var(--line); border-radius:20px;
     overflow:hidden; margin-bottom:20px;
@@ -177,6 +188,7 @@
     border-radius:999px; padding:3px 9px; margin-left:8px; vertical-align:middle;
   }
 
+  /* ============ Estado vacío ============ */
   .empty-card{
     background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
     border-radius:22px; padding:56px 24px; text-align:center;
@@ -189,6 +201,7 @@
   .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
   .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
 
+  /* ============ Modales ============ */
   .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
     box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
   .app-modal .m-close{
@@ -245,6 +258,7 @@
   }
   .btn-cancelar:hover{ background:rgba(34,30,51,.05); }
 
+  /* ============ Toasts ============ */
   .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
     display:flex; flex-direction:column; gap:10px; }
   .app-toast{
@@ -295,6 +309,7 @@
 
 <main class="container pb-5">
 
+  <!-- Estado de datos y conexión -->
   <section class="status-bar" aria-live="polite">
     <span class="status-dot warn" id="statusDot"></span>
     <div>
@@ -304,6 +319,7 @@
     <div class="ms-auto d-flex gap-2 flex-wrap" id="statusChips"></div>
   </section>
 
+  <!-- Búsqueda y filtros -->
   <section class="toolbar">
     <div class="buscador">
       <i class="bi bi-search"></i>
@@ -318,6 +334,7 @@
     </label>
   </section>
 
+  <!-- Listado por grado -->
   <section id="listado"></section>
 </main>
 
@@ -415,7 +432,10 @@
 
 <div class="toast-container" id="toastWrap" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
+<script src="../libs/bootstrap.bundle.min.js"
+        onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
+
 <script>
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -425,9 +445,13 @@ const CONFIG = {
   HOJA:      'Estudiantes'
 };
 
+/* Columnas exactas de la hoja (el .gs crea la hoja con estos encabezados) */
 const CAMPOS = ['id','nie','nombre1','nombre2','apellido1','apellido2',
                 'grado','archivado','creadoEn','actualizadoEn'];
 
+/* ============================================================
+   ESTADO
+   ============================================================ */
 const S = {
   est: [], cola: [], token: null,
   q: '', grado: 'todos', verArch: false,
@@ -439,7 +463,9 @@ const mdEst   = () => bootstrap.Modal.getOrCreateInstance($('#mdEstudiante'));
 const mdDel   = () => bootstrap.Modal.getOrCreateInstance($('#mdEliminar'));
 const mdPass  = () => bootstrap.Modal.getOrCreateInstance($('#mdPass'));
 
-/* ============ UTILIDADES ============ */
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
 function uid(){
   return (crypto.randomUUID)
     ? crypto.randomUUID()
@@ -452,11 +478,13 @@ function ahoraLocal(){
        + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
 }
 
+/* Quita tildes y minúsculas para comparar */
 function sinTildes(s){
   return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
 
-/* Orden: apellido1 → apellido2 → nombre1 → nombre2, sin "de"/"del" */
+/* Clave de orden: apellido1 → apellido2 → nombre1 → nombre2,
+   ignorando las palabras "de" y "del" */
 function claveOrden(e){
   return [e.apellido1, e.apellido2, e.nombre1, e.nombre2]
     .map(sinTildes)
@@ -489,7 +517,48 @@ function toast(msg, kind = 'success'){
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
 }
 
-/* ============ PERSISTENCIA LOCAL ============ */
+/* ============================================================
+   CARGA DE LIBRERÍAS CON RESPALDO (para los carnets QR)
+   Orden: libs/ del repo -> jsDelivr -> unpkg
+   ============================================================ */
+function cargarScript(urls){
+  return new Promise((resolve, reject) => {
+    const intentar = (i) => {
+      if(i >= urls.length){ reject(new Error('ninguna fuente respondió')); return; }
+      const s = document.createElement('script');
+      s.src = urls[i];
+      s.onload  = () => resolve(urls[i]);
+      s.onerror = () => { s.remove(); intentar(i + 1); };
+      document.head.appendChild(s);
+    };
+    intentar(0);
+  });
+}
+
+async function asegurarLibreriasCarnet(){
+  const pendientes = [];
+  if(!window.QRCode){
+    pendientes.push(cargarScript([
+      '../libs/qrcode.min.js',
+      'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+      'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
+    ]));
+  }
+  if(!window.jspdf){
+    pendientes.push(cargarScript([
+      '../libs/jspdf.umd.min.js',
+      'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+      'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+    ]));
+  }
+  await Promise.all(pendientes);
+  if(!window.QRCode) throw new Error('QRCode');
+  if(!window.jspdf)  throw new Error('jsPDF');
+}
+
+/* ============================================================
+   PERSISTENCIA LOCAL
+   ============================================================ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
 function guardarData(data){ localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(data)); }
 
@@ -526,7 +595,11 @@ function cargarDeLocal(){
 
 function persistirCola(){ localStorage.setItem(CONFIG.QUEUE_KEY, JSON.stringify(S.cola)); }
 
-/* ============ OPERACIONES (optimistas + cola) ============ */
+/* ============================================================
+   OPERACIONES (optimistas + cola para el servidor)
+   Toda mutación construye una "op"; la misma op se aplica en
+   local, se encola y el servidor la reproduce en orden.
+   ============================================================ */
 function aplicarOpLocal(op){
   if(op.action === 'write'){ S.est.push(filaObjeto(op.row)); }
   else if(op.action === 'update'){
@@ -545,6 +618,8 @@ function ejecutar(op){
   flushCola();
 }
 
+/* Envía la cola al servidor en orden; si no hay red, queda
+   pendiente y se reintenta en la próxima ocasión */
 async function flushCola(){
   if(!hayUrl() || S.flushing || !S.cola.length) return;
   S.flushing = true; renderStatus();
@@ -565,12 +640,15 @@ async function flushCola(){
   renderStatus();
 }
 
+/* Re-aplica la cola pendiente sobre los datos recién descargados */
 function reaplicarCola(){
   S.cola.forEach(aplicarOpLocal);
   guardarHojaLocal();
 }
 
-/* ============ LOGIN ============ */
+/* ============================================================
+   LOGIN (primera vez en el dispositivo)
+   ============================================================ */
 function abrirPass(){
   $('#passError').classList.remove('visible');
   $('#inpPass').value = '';
@@ -610,7 +688,9 @@ async function onSubmitPass(e){
   $('#btnPassSubmit .spinner-border').classList.add('d-none');
 }
 
-/* ============ SINCRONIZACIÓN MANUAL ============ */
+/* ============================================================
+   SINCRONIZACIÓN MANUAL (flush -> descarga del libro)
+   ============================================================ */
 async function actualizar(){
   if(!hayUrl()){ toast('Primero pega la URL del Web App en CONFIG.API_URL.', 'warning'); return; }
   if(!S.token){ abrirPass(); return; }
@@ -641,7 +721,9 @@ async function actualizar(){
   btn.disabled = false;
 }
 
-/* ============ RENDER ============ */
+/* ============================================================
+   RENDER
+   ============================================================ */
 const COLORES_GRADE = ['gc-celeste','gc-naranja','gc-turquesa','gc-lila','gc-morado'];
 const ICONOS_GRADE  = ['bi-mortarboard','bi-backpack','bi-book','bi-pencil-square','bi-easel'];
 
@@ -667,6 +749,7 @@ function renderListado(){
   const cont = $('#listado');
   const data = leerData();
 
+  /* Nunca se conectó en este dispositivo */
   if(!data){
     cont.innerHTML = `
       <div class="empty-card">
@@ -696,6 +779,7 @@ function renderListado(){
     return;
   }
 
+  /* Agrupar por grado y ordenar */
   const porGrado = {};
   visibles.forEach(e => {
     const g = e.grado || 'Sin grado';
@@ -805,7 +889,9 @@ function renderStatus(){
     (S.cola.length ? `<span class="chip chip-pend"><strong>${S.cola.length}</strong> pendiente(s) de enviar</span>` : '');
 }
 
-/* ============ FORMULARIO CREAR / EDITAR ============ */
+/* ============================================================
+   FORMULARIO CREAR / EDITAR
+   ============================================================ */
 function abrirFormulario(est){
   $('#frmEstudiante').reset();
   document.querySelectorAll('.frm-input').forEach(i => i.classList.remove('invalido'));
@@ -846,6 +932,7 @@ function onSubmitEstudiante(ev){
   if(!nie){ marcarError('fNie','eNie','Escribe el NIE.'); valido = false; }
   if(!grado){ marcarError('fGrado','eGrado'); valido = false; }
 
+  /* NIE único entre todos los estudiantes */
   if(nie){
     const dup = S.est.find(e => e.nie === nie && e.id !== id);
     if(dup){
@@ -880,7 +967,9 @@ function onSubmitEstudiante(ev){
   btn.querySelector('.spinner-border').classList.add('d-none');
 }
 
-/* ============ ACCIONES DE FILA ============ */
+/* ============================================================
+   ACCIONES DE FILA (delegación de eventos)
+   ============================================================ */
 function accionFila(ev){
   const btn = ev.target.closest('[data-acc]');
   if(!btn) return;
@@ -892,6 +981,8 @@ function accionFila(ev){
     abrirFormulario(est);
 
   }else if(btn.dataset.acc === 'archivar'){
+    /* Solo cambia 'archivado': el .gs v4 hace MERGE y conserva
+       el resto de columnas (fix del borrado de nombre/grado) */
     const archivando = est.archivado !== 'SI';
     ejecutar({ action:'update', sheet:CONFIG.HOJA, id: est.id,
       row:{ id: est.id, archivado: archivando ? 'SI' : '',
@@ -916,60 +1007,19 @@ function confirmarEliminar(){
 }
 
 /* ============================================================
-   CARGADOR CON RESPALDO MULTI-CDN
-   Los carnets cargan las librerías al momento de usarlas:
-   jsDelivr -> unpkg -> cdnjs -> carpeta local pages/libs/
-   ============================================================ */
-function cargarScript(urls){
-  return new Promise((ok, fallo)=>{
-    let i = 0;
-    const siguiente = ()=>{
-      if(i >= urls.length){ fallo(new Error('sin CDN disponible')); return; }
-      const s = document.createElement('script');
-      s.src = urls[i++];
-      s.onload = ()=> ok();
-      s.onerror = ()=>{ s.remove(); siguiente(); };
-      document.head.appendChild(s);
-    };
-    siguiente();
-  });
-}
-
-async function asegurarLibrerias(){
-  const pendientes = [];
-  if(!window.QRCode){
-    pendientes.push(cargarScript([
-      'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-      'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
-      'libs/qrcode.min.js'
-    ]).catch(()=>{ throw new Error('QRCode'); }));
-  }
-  if(!window.jspdf){
-    pendientes.push(cargarScript([
-      'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-      'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-      'libs/jspdf.umd.min.js'
-    ]).catch(()=>{ throw new Error('jsPDF'); }));
-  }
-  await Promise.all(pendientes);
-}
-
-/* ============================================================
    CARNETS QR EN PDF
-   Genera un carné por estudiante activo (respeta el filtro de
-   grado seleccionado) con nombre, NIE, grado y código QR.
-   El QR contiene {"id","nie"} y lo lee pasar_asistencia.html.
-   10 carnets por página tamaño carta.
+   10 carnets por página A4. El QR contiene {"id","nie"} y lo lee
+   pasar_asistencia.html. Respeta el filtro de grado activo.
    ============================================================ */
 async function generarCarnetsPDF(){
-   try{
-    await asegurarLibrerias();
-    }catch(lib){
-        toast('No pude cargar la librería ' + lib.message
-        + ' (CDN bloqueado o sin conexión). Descárgala a pages/libs/ como respaldo.', 'danger');
-        return;
-    }
+  try{
+    await asegurarLibreriasCarnet();
+  }catch(falta){
+    toast('No pude cargar ' + falta.message + ' (ni local ni CDN). '
+        + 'Sube qrcode.min.js y jspdf.umd.min.js a la carpeta libs/ del repo.', 'danger');
+    return;
+  }
+
   const lista = S.est
     .filter(e => e.archivado !== 'SI')
     .filter(e => S.grado === 'todos' ? true : (e.grado || 'Sin grado') === S.grado)
@@ -1040,8 +1090,13 @@ async function dibujarCarnet(doc, e, x, y, w, h){
   doc.rect(x + 6, y + h - 5, w - 12, 1.6, 'F');
 }
 
-/* ============ INICIO ============ */
+/* ============================================================
+   INICIO
+   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+  if(!window.bootstrap){
+    toast('Bootstrap no cargó: verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'warning');
+  }
   cargarDeLocal();
   render();
 
@@ -1057,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
   $('#chkArch').addEventListener('change', e => { S.verArch = e.target.checked; renderListado(); });
 
-  flushCola();
+  flushCola();   // reintenta operaciones pendientes de sesiones anteriores
 });
 </script>
 </body>
