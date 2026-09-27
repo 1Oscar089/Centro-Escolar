@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF6EF">
+<title>Asistencia · Registro Estudiantil</title>
+
+<!-- Bootstrap + iconos: primero desde libs/ (tu repo); si falta, CDN -->
+<link rel="stylesheet" href="../libs/bootstrap.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+<link rel="stylesheet" href="../libs/bootstrap-icons.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
+<!-- Tipografías -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FAF6EF; --ink:#221E33; --ink-soft:rgba(34,30,51,.6);
+    --line:rgba(34,30,51,.10); --paper:#FFFFFF;
+    --celeste:#C9E5F6;  --celeste-ink:#123C59;
+    --naranja:#FFB459;  --naranja-ink:#59300A;
+    --lila:#DED6FF;     --lila-ink:#3B2A80;
+    --turquesa:#A8E8D6; --turquesa-ink:#0B4B3D;
+    --morado:#5A3EA6;   --morado-ink:#F4EFFF; --morado-deep:#443077;
+    --rojo:#B42318;     --verde:#178F72;
+  }
+
+  .modal:not(.show){ display:none; }
+
+  body{
+    font-family:'DM Sans',sans-serif; color:var(--ink);
+    background-color:var(--bg);
+    background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
+    background-size:26px 26px; min-height:100vh;
+  }
+  .site-header{ padding:22px 0 12px; }
+  .brand-mark{ width:46px; height:46px; border-radius:14px; flex:none;
+    background:var(--turquesa); color:var(--turquesa-ink); display:grid; place-items:center; font-size:1.3rem; }
+  .brand-title{ font-family:'Space Grotesk'; font-weight:700; font-size:1.35rem; margin:0; }
+  .brand-sub{ margin:0; font-size:.78rem; color:var(--ink-soft); }
+  .btn-back{ width:42px; height:42px; border-radius:13px; flex:none;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    display:grid; place-items:center; transition:background .2s, transform .2s; }
+  .btn-back:hover{ background:var(--lila); color:var(--lila-ink); transform:translateX(-2px); }
+
+  .btn-secundario{ display:inline-flex; align-items:center; gap:8px;
+    background:var(--paper); color:var(--ink); border:1.5px solid var(--line);
+    padding:10px 18px; border-radius:999px; font-weight:600; font-size:.9rem;
+    transition:border-color .2s; }
+  .btn-secundario:hover{ border-color:var(--morado); color:var(--morado-deep); }
+  .btn-secundario:disabled{ opacity:.7; }
+  .btn-primario{ display:inline-flex; align-items:center; gap:8px;
+    background:var(--morado); color:#fff; border:none; padding:11px 20px;
+    border-radius:999px; font-weight:600; font-size:.92rem;
+    box-shadow:0 8px 18px -8px rgba(90,62,166,.55); transition:background .2s; }
+  .btn-primario:hover{ background:var(--morado-deep); color:#fff; }
+
+  .status-bar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:13px 18px; display:flex; align-items:center; gap:13px; flex-wrap:wrap; margin-bottom:16px; }
+  .status-dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+  .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
+  .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
+  .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.15); }
+  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; }
+  .status-meta{ font-size:.78rem; color:var(--ink-soft); }
+  .chip{ background:rgba(34,30,51,.05); border-radius:999px; padding:6px 13px;
+    font-size:.82rem; font-weight:500; white-space:nowrap; }
+  .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
+
+  .toolbar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:12px 16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .buscador{ position:relative; flex:1 1 230px; min-width:200px; }
+  .buscador i{ position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); pointer-events:none; }
+  .buscador input{ width:100%; border:1.5px solid var(--line); border-radius:999px;
+    padding:10px 16px 10px 40px; font-size:.92rem; background:var(--bg);
+    transition:border-color .2s, background .2s; }
+  .buscador input:focus{ outline:none; border-color:var(--morado); background:#fff;
+    box-shadow:0 0 0 4px rgba(107,75,214,.12); }
+  .select-grado{ border:1.5px solid var(--line); border-radius:999px; background:var(--bg);
+    padding:10px 38px 10px 16px; font-size:.9rem; font-weight:500; color:var(--ink);
+    appearance:none; -webkit-appearance:none; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23221E33' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L2 5h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 15px center; }
+  .select-grado:focus{ outline:none; border-color:var(--morado); }
+
+  .leyenda{ display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    font-size:.8rem; color:var(--ink-soft); margin-bottom:14px; }
+  .leyenda .mini-mark{ display:inline-grid; place-items:center; width:24px; height:24px;
+    border-radius:8px; font-size:.8rem; }
+  .lm-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
+  .lm-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .lm-vacia{ background:rgba(34,30,51,.05); color:rgba(34,30,51,.35); }
+
+  /* ============ Tarjetas por grado ============ */
+  .grade-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px;
+    overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px -10px rgba(34,30,51,.18); }
+  .grade-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:14px 20px; border-bottom:1px solid var(--line); }
+  .grade-head .g-ico{ width:36px; height:36px; border-radius:11px; flex:none;
+    display:grid; place-items:center; font-size:1rem; background:rgba(255,255,255,.7); }
+  .grade-head h2{ font-family:'Space Grotesk'; font-weight:700; font-size:1.12rem; margin:0; }
+  .grade-count{ margin-left:auto; background:rgba(255,255,255,.75); border-radius:999px;
+    padding:5px 13px; font-size:.82rem; font-weight:600; font-family:'Space Grotesk'; }
+  .gc-celeste{ background:var(--celeste); color:var(--celeste-ink); }
+  .gc-naranja{ background:var(--naranja); color:var(--naranja-ink); }
+  .gc-turquesa{ background:var(--turquesa); color:var(--turquesa-ink); }
+  .gc-lila{ background:var(--lila); color:var(--lila-ink); }
+  .gc-morado{ background:var(--morado); color:var(--morado-ink); }
+  .gc-morado .g-ico, .gc-morado .grade-count{ background:rgba(255,255,255,.18); color:#fff; }
+
+  /* ============ Tabla de asistencia ============ */
+  .scroll-x{ overflow-x:auto; }
+  .asis-table{ border-collapse:separate; border-spacing:0; margin:0; font-size:.86rem; }
+  .asis-table thead th{ border-bottom:none; }
+  .mes{ text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:.76rem;
+    text-transform:uppercase; letter-spacing:.06em; padding:8px 12px;
+    border-left:1px solid rgba(255,255,255,.35); }
+  .mes:first-of-type{ border-left:none; }
+  .mc-celeste{ background:var(--celeste); color:var(--celeste-ink); }
+  .mc-naranja{ background:var(--naranja); color:var(--naranja-ink); }
+  .mc-turquesa{ background:var(--turquesa); color:var(--turquesa-ink); }
+  .mc-lila{ background:var(--lila); color:var(--lila-ink); }
+  .mc-morado{ background:var(--morado); color:var(--morado-ink); }
+  .dia{ text-align:center; font-family:'Space Grotesk'; font-weight:600; font-size:.7rem;
+    color:var(--ink-soft); background:rgba(34,30,51,.035);
+    padding:6px 4px; width:58px; min-width:58px;
+    border-bottom:1px solid var(--line); border-left:1px solid var(--line); }
+  .col-nombre{ position:sticky; left:0; z-index:2; min-width:200px; max-width:240px;
+    text-align:left; padding:9px 16px; background:var(--paper); font-weight:600;
+    border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+  thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+    background:var(--paper); }
+  .celda{ text-align:center; padding:6px 4px; width:58px; min-width:58px;
+    border-bottom:1px solid var(--line); border-left:1px solid var(--line);
+    font-family:'Space Grotesk'; font-weight:700; font-size:.85rem; }
+  .celda small{ display:block; font-size:.6rem; font-weight:600; opacity:.75;
+    font-variant-numeric:tabular-nums; }
+  .celda i{ font-size:.95rem; }
+  .m-ok{ background:rgba(23,143,114,.09); color:var(--verde); }
+  .m-tarde{ background:rgba(217,119,14,.11); color:var(--naranja-deep); }
+  .vacia{ color:rgba(34,30,51,.22); }
+  tbody tr:hover .celda{ filter:brightness(.96); }
+  tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
+
+  /* ============ Estado vacío / modales / toasts ============ */
+  .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
+    border-radius:22px; padding:56px 24px; text-align:center; }
+  .empty-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
+    display:grid; place-items:center; font-size:1.7rem;
+    background:var(--turquesa); color:var(--turquesa-ink); }
+  .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
+  .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
+
+  .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
+    box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
+  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .m-icon{ width:44px; height:44px; border-radius:14px; flex:none;
+    display:grid; place-items:center; font-size:1.2rem; }
+  .frm-label{ font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:block; }
+  .frm-input{ width:100%; border:1.5px solid var(--line); border-radius:12px;
+    padding:10px 13px; font-size:.95rem; background:var(--bg); }
+  .frm-input:focus{ outline:none; border-color:var(--lila-deep); background:#fff;
+    box-shadow:0 0 0 4px rgba(107,75,214,.12); }
+  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
+  .frm-error.visible{ display:block; }
+  .btn-aceptar{ width:100%; margin-top:18px; border:none; border-radius:13px;
+    background:var(--morado); color:#fff; font-weight:600; padding:12px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px; }
+  .btn-aceptar:hover{ background:var(--morado-deep); color:#fff; }
+  .btn-aceptar:disabled{ opacity:.75; }
+
+  .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
+    display:flex; flex-direction:column; gap:10px; }
+  .app-toast{ display:flex; align-items:center; gap:10px; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:12px 18px 12px 14px;
+    font-size:.9rem; font-weight:500; box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
+    opacity:0; transform:translateY(12px); transition:opacity .3s, transform .3s; max-width:340px; }
+  .app-toast.show{ opacity:1; transform:none; }
+  .toast-success i{ color:#178F72; }
+  .toast-warning i{ color:#D9770E; }
+  .toast-danger i{ color:#B42318; }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a class="btn-back" href="../index.html" aria-label="Volver al panel"><i class="bi bi-arrow-left"></i></a>
+      <div class="brand-mark"><i class="bi bi-table"></i></div>
+      <div>
+        <h1 class="brand-title">Asistencia</h1>
+        <p class="brand-sub">Consulta de la hoja «Asistencia» · un día por columna, agrupados por mes</p>
+      </div>
+      <div class="ms-auto">
+        <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container pb-5">
+
+  <section class="status-bar" aria-live="polite">
+    <span class="status-dot warn" id="statusDot"></span>
+    <div>
+      <div class="status-title" id="statusTitle">Verificando…</div>
+      <div class="status-meta" id="statusMeta"></div>
+    </div>
+    <div class="ms-auto d-flex gap-2 flex-wrap" id="statusChips"></div>
+  </section>
+
+  <section class="toolbar">
+    <div class="buscador">
+      <i class="bi bi-search"></i>
+      <input type="search" id="inpBuscar" placeholder="Buscar estudiante…" autocomplete="off">
+    </div>
+    <select class="select-grado" id="selGrado" aria-label="Filtrar por grado">
+      <option value="todos">Todos los grados</option>
+    </select>
+  </section>
+
+  <div class="leyenda">
+    <span>Marca:</span>
+    <span class="mini-mark lm-ok"><i class="bi bi-check-lg"></i></span> presente
+    <span class="mini-mark lm-tarde"><i class="bi bi-alarm"></i></span> tarde
+    <span class="mini-mark lm-vacia"><i class="bi bi-dot"></i></span> sin registro
+    <span class="ms-auto" style="font-size:.74rem;">Pasa el cursor sobre una marca para ver la hora completa.</span>
+  </div>
+
+  <section id="listado"></section>
+</main>
+
+<!-- Modal: contraseña (primera carga en este dispositivo) -->
+<div class="modal fade" id="mdPass" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <div class="m-head" style="justify-content:center;">
+        <div class="m-icon" style="background:#EFE9FF; color:var(--lila-deep);"><i class="bi bi-shield-lock-fill"></i></div>
+      </div>
+      <h5 class="text-center" style="font-family:'Space Grotesk'; font-weight:700;">Conectar con la hoja de cálculo</h5>
+      <p class="text-center mb-1" style="font-size:.87rem; color:var(--ink-soft);">
+        Ingresa la contraseña de administrador. Se pedirá una sola vez en este dispositivo.
+      </p>
+      <form id="frmPass" novalidate>
+        <label class="frm-label" for="inpPass" style="margin-top:10px;">Contraseña</label>
+        <input class="frm-input" type="password" id="inpPass" autocomplete="current-password">
+        <div class="frm-error text-center" id="passError"></div>
+        <button type="submit" class="btn-aceptar" id="btnPassSubmit">
+          <span>Conectar y descargar</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastWrap" aria-live="polite"></div>
+
+<!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
+<script src="../libs/bootstrap.bundle.min.js"
+        onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
+
+<script>
+const CONFIG = {
+  API_URL:   'PEGA_AQUI_LA_URL_DEL_WEB_APP',
+  DATA_KEY:  'RE_DATA_V1',
+  TOKEN_KEY: 'RE_TOKEN_V1'
+};
+
+const S = { q: '', grado: 'todos', token: '', busy: false };
+
+const $ = s => document.querySelector(s);
+const mdPass = () => bootstrap.Modal.getOrCreateInstance($('#mdPass'));
+
+/* ============ UTILIDADES ============ */
+const pad = n => String(n).padStart(2,'0');
+const NOMBRES_MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
+                     'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MC = ['mc-celeste','mc-naranja','mc-turquesa','mc-lila','mc-morado'];
+const GC = ['gc-celeste','gc-naranja','gc-turquesa','gc-lila','gc-morado'];
+const GI = ['bi-mortarboard','bi-backpack','bi-book','bi-pencil-square','bi-easel'];
+
+function sinTildes(s){
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function hayUrl(){ return CONFIG.API_URL && !CONFIG.API_URL.includes('PEGA_AQUI'); }
+async function api(payload){
+  const res = await fetch(CONFIG.API_URL, { method:'POST', body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+function toast(msg, kind = 'success'){
+  const icons = { success:'check-circle-fill', warning:'exclamation-triangle-fill', danger:'x-circle-fill' };
+  const el = document.createElement('div');
+  el.className = 'app-toast toast-' + kind;
+  el.innerHTML = '<i class="bi bi-' + (icons[kind] || icons.success) + '"></i><span></span>';
+  el.querySelector('span').textContent = msg;
+  $('#toastWrap').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
+}
+
+/* Clave de orden igual que en Estudiantes: sin "de"/"del" */
+function claveDeCampos(campos){
+  return campos.map(sinTildes)
+    .map(t => t.split(/\s+/).filter(w => w && w !== 'de' && w !== 'del').join(' '))
+    .join(' ');
+}
+
+/* ============ DATOS ============ */
+function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
+
+/* Índice de Estudiantes por id y por nie, para ordenar por apellidos */
+function indexEstudiantes(){
+  const d = leerData();
+  const filas = (d && d.sheets && d.sheets.Estudiantes) || [];
+  const porId = {}, porNie = {};
+  filas.forEach(e => {
+    if(e.id) porId[String(e.id)] = e;
+    if(e.nie !== undefined && e.nie !== '') porNie[String(e.nie)] = e;
+  });
+  return { porId, porNie };
+}
+
+/* Matriz desde la hoja Asistencia del caché:
+   fechas = encabezados dd/MM en orden de columna (cronológico) */
+function construirMatriz(){
+  const d = leerData();
+  const idx = indexEstudiantes();
+  const filasRaw = (d && d.sheets && d.sheets['Asistencia']) || [];
+  if(!filasRaw.length) return null;
+
+  const headers = Object.keys(filasRaw[0]);
+  const fechas = headers.filter(h => /^\d{1,2}\/\d{1,2}$/.test(String(h)));
+
+  const filas = filasRaw
+    .filter(r => String(r.nombre || '') || String(r.id || '') || String(r.nie || ''))
+    .map(r => {
+      const id = String(r.id || ''), nie = String(r.nie ?? '');
+      const est = idx.porId[id] || idx.porNie[nie] || null;
+      return {
+        id, nie,
+        nombre: String(r.nombre || '') ||
+                (est ? [est.nombre1, est.nombre2, est.apellido1, est.apellido2]
+                       .filter(Boolean).join(' ') : ''),
+        grado:  String(r.grado || '') || (est ? (est.grado || '') : ''),
+        est,
+        marcas: fechas.map(f => String(r[f] || ''))
+      };
+    });
+  return { fechas, filas };
+}
+
+function camposOrden(f){
+  /* Con ficha en Estudiantes: apellido1, apellido2, nombre1, nombre2.
+     Sin ficha: el nombre completo tal cual (mejor esfuerzo). */
+  if(f.est){
+    return [f.est.apellido1, f.est.apellido2, f.est.nombre1, f.est.nombre2];
+  }
+  return [f.nombre, '', '', ''];
+}
+
+/* Agrupa fechas contiguas por mes (las columnas ya están en orden) */
+function gruposDeMes(fechas){
+  const gs = [];
+  fechas.forEach((f, i) => {
+    const mm = String(f).split('/')[1];
+    const u = gs[gs.length - 1];
+    if(!u || u.mm !== mm) gs.push({ mm, desde: i, n: 0 });
+    gs[gs.length - 1].n++;
+  });
+  return gs;
+}
+
+/* ============ RENDER ============ */
+function render(){
+  renderListado();
+  renderGradosSelect();
+  renderStatus();
+}
+
+function renderListado(){
+  const cont = $('#listado');
+  const data = leerData();
+
+  if(!data){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-cloud-arrow-down"></i></div>
+        <h3>Sin datos en este dispositivo</h3>
+        <p>Ingresa la contraseña de administrador una sola vez para descargar
+           el libro y consultar la asistencia al instante.</p>
+        <button class="btn-primario" id="btnConectar"><i class="bi bi-shield-lock"></i> Conectar</button>
+      </div>`;
+    $('#btnConectar').addEventListener('click', abrirPass);
+    return;
+  }
+
+  const m = construirMatriz();
+  if(!m || !m.filaas_len && !m.filas.length){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-calendar2-week"></i></div>
+        <h3>Aún no hay asistencia registrada</h3>
+        <p>Cuando pases lista en «Pasar asistencia», cada estudiante escaneado
+           aparecerá aquí como una fila y cada día como una columna.</p>
+        <button class="btn-primario" id="btnIrActualizar"><i class="bi bi-arrow-repeat"></i> Actualizar datos</button>
+      </div>`;
+    $('#btnIrActualizar').addEventListener('click', () => refrescar(false));
+    return;
+  }
+  if(!m.fechas.length){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-calendar-x"></i></div>
+        <h3>Todavía no hay días registrados</h3>
+        <p>Las columnas de fecha se crean automáticamente la primera vez que
+           escaneas un carné en «Pasar asistencia».</p>
+      </div>`;
+    return;
+  }
+
+  const q = sinTildes(S.q.trim());
+  const visibles = m.filas.filter(f => {
+    if(S.grado !== 'todos' && (f.grado || 'Sin grado') !== S.grado) return false;
+    if(q && !sinTildes(f.nombre + ' ' + f.nie).includes(q)) return false;
+    return true;
+  });
+
+  if(!visibles.length){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-search"></i></div>
+        <h3>Sin resultados</h3>
+        <p>Ningún estudiante coincide con la búsqueda o el filtro de grado actual.</p>
+      </div>`;
+    return;
+  }
+
+  /* Agrupar por grado y ordenar dentro de cada uno */
+  const porGrado = {};
+  visibles.forEach(f => {
+    const g = f.grado || 'Sin grado';
+    (porGrado[g] = porGrado[g] || []).push(f);
+  });
+  const grados = Object.keys(porGrado).sort((a,b) => a.localeCompare(b,'es'));
+
+  let html = '', k = 0;
+  grados.forEach(g => {
+    const lista = porGrado[g]
+      .sort((a,b) => claveDeCampos(camposOrden(a)).localeCompare(claveDeCampos(camposOrden(b)), 'es'));
+    html += tablaGrado(g, lista, m.fechas, k);
+    k++;
+  });
+  cont.innerHTML = html;
+}
+
+function tablaGrado(grado, filas, fechas, k){
+  const gs = gruposDeMes(fechas);
+
+  let mesesHtml = '';
+  gs.forEach((g, i) => {
+    mesesHtml += `<th class="mes ${MC[(k + i) % MC.length]}" colspan="${g.n}">`
+      + (NOMBRES_MES[parseInt(g.mm,10) - 1] || g.mm) + '</th>';
+  });
+
+  let diasHtml = '';
+  fechas.forEach(f => {
+    diasHtml += `<th class="dia" title="${esc(f)}">${esc(String(f).split('/')[0])}</th>`;
+  });
+
+  let body = '';
+  filas.forEach(f => {
+    let tds = '';
+    f.marcas.forEach(m => {
+      if(!m){ tds += '<td class="celda vacia"><i class="bi bi-dot"></i></td>'; return; }
+      const tarde = /^TARDE/i.test(m);
+      const hora = (m.match(/(\d{1,2}:\d{2})/) || [,''])[1];
+      tds += `<td class="celda ${tarde ? 'm-tarde' : 'm-ok'}" title="${esc(m)}">`
+           + `<i class="bi ${tarde ? 'bi-alarm' : 'bi-check-lg'}"></i>`
+           + (hora ? `<small>${esc(hora)}</small>` : '')
+           + '</td>';
+    });
+    body += `<tr><td class="col-nombre">${esc(f.nombre || ('NIE ' + f.nie))}</td>${tds}</tr>`;
+  });
+
+  return `
+    <article class="grade-card">
+      <div class="grade-head ${GC[k % GC.length]}">
+        <span class="g-ico"><i class="bi ${GI[k % GI.length]}"></i></span>
+        <h2>${esc(grado)}</h2>
+        <span class="grade-count">${filas.length} est · ${fechas.length} días</span>
+      </div>
+      <div class="scroll-x">
+        <table class="table asis-table">
+          <thead>
+            <tr>
+              <th class="col-nombre" rowspan="2">Nombre</th>
+              ${mesesHtml}
+            </tr>
+            <tr>${diasHtml}</tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </article>`;
+}
+
+function renderGradosSelect(){
+  const m = construirMatriz();
+  const grados = m ? [...new Set(m.filas.map(f => f.grado || 'Sin grado'))]
+                     .sort((a,b) => a.localeCompare(b,'es')) : [];
+  const sel = $('#selGrado');
+  sel.innerHTML = '<option value="todos">Todos los grados</option>'
+    + grados.map(g => `<option value="${esc(g)}" ${g === S.grado ? 'selected' : ''}>${esc(g)}</option>`).join('');
+}
+
+function renderStatus(){
+  const dot = $('#statusDot'), tit = $('#statusTitle'), met = $('#statusMeta'), chips = $('#statusChips');
+  const data = leerData();
+
+  if(!data){
+    dot.className = 'status-dot off';
+    tit.textContent = 'Sin conexión con el libro';
+    met.textContent = 'Ingresa la contraseña para descargar los datos.';
+    chips.innerHTML = '';
+    return;
+  }
+
+  const m = construirMatriz();
+  const nEst = m ? m.filas.length : 0;
+  const nDias = m ? m.fechas.length : 0;
+  const nMes = m ? gruposDeMes(m.fechas).length : 0;
+
+  dot.className = 'status-dot ' + (S.busy ? 'warn' : 'ok');
+  tit.textContent = S.busy ? 'Actualizando desde la hoja…'
+    : (nEst ? 'Datos cargados — lectura local instantánea' : 'Sin registros de asistencia aún');
+  const f = new Date(data.syncedAt);
+  met.textContent = 'Última descarga del libro: '
+    + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
+    + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' });
+
+  chips.innerHTML =
+    (nEst ? `<span class="chip"><strong>${nEst}</strong> estudiantes</span>` : '') +
+    (nDias ? `<span class="chip"><strong>${nDias}</strong> días</span>` : '') +
+    (nMes  ? `<span class="chip"><strong>${nMes}</strong> meses</span>` : '');
+}
+
+/* ============ SINCRONIZACIÓN ============ */
+async function refrescar(silencioso){
+  if(!hayUrl()){
+    if(!silencioso) toast('Primero pega la URL del Web App en CONFIG.API_URL.', 'warning');
+    return;
+  }
+  if(!S.token){
+    if(!silencioso) abrirPass();
+    return;
+  }
+  S.busy = true; renderStatus();
+  try{
+    const r = await api({ action:'sync', token: S.token });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
+      render();
+      if(!silencioso) toast('Datos actualizados desde la hoja de cálculo.', 'success');
+    }else{
+      localStorage.removeItem(CONFIG.TOKEN_KEY); S.token = '';
+      if(!silencioso) abrirPass();
+    }
+  }catch(e){
+    if(!silencioso) toast('No pude conectar con el servidor; muestro la última copia local.', 'warning');
+  }
+  S.busy = false; renderStatus();
+}
+
+/* ============ LOGIN ============ */
+function abrirPass(){
+  $('#passError').classList.remove('visible');
+  $('#inpPass').value = '';
+  mdPass().show();
+  setTimeout(() => $('#inpPass').focus(), 400);
+}
+
+async function onSubmitPass(e){
+  e.preventDefault();
+  const pw = $('#inpPass').value;
+  if(!pw){ $('#passError').textContent = 'Escribe la contraseña.'; $('#passError').classList.add('visible'); return; }
+
+  $('#btnPassSubmit').disabled = true;
+  $('#btnPassSubmit .spinner-border').classList.remove('d-none');
+  try{
+    const r = await api({ action:'login', password: pw });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
+      localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
+      S.token = r.token;
+      mdPass().hide();
+      render();
+      toast('Conectado: datos descargados en este dispositivo.', 'success');
+    }else{
+      $('#passError').textContent = (r && r.error === 'CONTRASENA_INCORRECTA')
+        ? 'Contraseña incorrecta.' : ((r && r.error) || 'Respuesta inesperada.');
+      $('#passError').classList.add('visible');
+    }
+  }catch(e2){
+    $('#passError').textContent = 'No pude conectar con el servidor.';
+    $('#passError').classList.add('visible');
+  }
+  $('#btnPassSubmit').disabled = false;
+  $('#btnPassSubmit .spinner-border').classList.add('d-none');
+}
+
+/* ============ INICIO ============ */
+document.addEventListener('DOMContentLoaded', () => {
+  S.token = localStorage.getItem(CONFIG.TOKEN_KEY) || '';
+  render();
+
+  $('#btnSync').addEventListener('click', () => refrescar(false));
+  $('#frmPass').addEventListener('submit', onSubmitPass);
+  $('#inpBuscar').addEventListener('input', e => { S.q = e.target.value; renderListado(); });
+  $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
+
+  refrescar(true);   // sincroniza en silencio si ya hay sesión en el dispositivo
+});
+</script>
+</body>
+</html>
