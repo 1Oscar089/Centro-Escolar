@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF6EF">
+<title>Estudiantes · Registro Estudiantil</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FAF6EF; --ink:#221E33; --ink-soft:rgba(34,30,51,.6);
+    --line:rgba(34,30,51,.10); --paper:#FFFFFF;
+    --celeste:#C9E5F6;  --celeste-ink:#123C59;  --celeste-deep:#2B7FB8;
+    --naranja:#FFB459;  --naranja-ink:#59300A;  --naranja-deep:#D9770E;
+    --lila:#DED6FF;     --lila-ink:#3B2A80;     --lila-deep:#6B4BD6;
+    --turquesa:#A8E8D6; --turquesa-ink:#0B4B3D; --turquesa-deep:#178F72;
+    --morado:#5A3EA6;   --morado-ink:#F4EFFF;   --morado-deep:#443077;
+    --rojo:#B42318;
+  }
+
+  body{
+    font-family:'DM Sans',sans-serif; color:var(--ink);
+    background-color:var(--bg);
+    background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
+    background-size:26px 26px; min-height:100vh;
+  }
+
+  /* ============ Encabezado ============ */
+  .site-header{ padding:22px 0 12px; }
+  .brand-mark{
+    width:46px; height:46px; border-radius:14px; flex:none;
+    background:var(--celeste); color:var(--celeste-ink);
+    display:grid; place-items:center; font-size:1.3rem;
+  }
+  .brand-title{ font-family:'Space Grotesk'; font-weight:700; font-size:1.35rem; margin:0; letter-spacing:-.3px; }
+  .brand-sub{ margin:0; font-size:.78rem; color:var(--ink-soft); }
+
+  .btn-back{
+    width:42px; height:42px; border-radius:13px; flex:none;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    display:grid; place-items:center; transition:background .2s, transform .2s;
+  }
+  .btn-back:hover{ background:var(--lila); color:var(--lila-ink); transform:translateX(-2px); }
+
+  .btn-primario{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--morado); color:#fff; border:none;
+    padding:11px 20px; border-radius:999px; font-weight:600; font-size:.92rem;
+    box-shadow:0 8px 18px -8px rgba(90,62,166,.55);
+    transition:background .2s, transform .2s;
+  }
+  .btn-primario:hover{ background:var(--morado-deep); color:#fff; transform:translateY(-2px); }
+  .btn-primario:disabled{ opacity:.7; }
+
+  .btn-secundario{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--paper); color:var(--ink); border:1.5px solid var(--line);
+    padding:10px 18px; border-radius:999px; font-weight:600; font-size:.9rem;
+    transition:border-color .2s, background .2s;
+  }
+  .btn-secundario:hover{ border-color:var(--morado); color:var(--morado-deep); }
+  .btn-secundario:disabled{ opacity:.7; }
+
+  /* ============ Barra de estado ============ */
+  .status-bar{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:13px 18px; display:flex; align-items:center; gap:13px; flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .status-dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+  .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
+  .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
+  .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.15); }
+  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; }
+  .status-meta{ font-size:.78rem; color:var(--ink-soft); }
+
+  .chip{
+    background:rgba(34,30,51,.05); border-radius:999px;
+    padding:6px 13px; font-size:.82rem; font-weight:500; white-space:nowrap;
+  }
+  .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
+  .chip-pend{
+    background:#FDECEA; color:var(--rojo);
+    animation:latido 1.6s ease-in-out infinite;
+  }
+  @keyframes latido{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
+
+  /* ============ Barra de herramientas ============ */
+  .toolbar{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:12px 16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+    margin-bottom:22px;
+  }
+  .buscador{ position:relative; flex:1 1 230px; min-width:200px; }
+  .buscador i{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); pointer-events:none;
+  }
+  .buscador input{
+    width:100%; border:1.5px solid var(--line); border-radius:999px;
+    padding:10px 16px 10px 40px; font-size:.92rem; background:var(--bg);
+    transition:border-color .2s, background .2s;
+  }
+  .buscador input:focus{
+    outline:none; border-color:var(--morado); background:#fff;
+    box-shadow:0 0 0 4px rgba(107,75,214,.12);
+  }
+  .select-grado{
+    border:1.5px solid var(--line); border-radius:999px; background:var(--bg);
+    padding:10px 38px 10px 16px; font-size:.9rem; font-weight:500; color:var(--ink);
+    appearance:none; -webkit-appearance:none; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23221E33' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L2 5h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 15px center;
+  }
+  .select-grado:focus{ outline:none; border-color:var(--morado); }
+  .switch-arch{ display:flex; align-items:center; gap:8px; font-size:.88rem; font-weight:500; cursor:pointer; }
+  .switch-arch .form-check-input{ width:2.4em; height:1.25em; cursor:pointer; }
+  .switch-arch .form-check-input:checked{ background-color:var(--naranja-deep); border-color:var(--naranja-deep); }
+
+  /* ============ Tarjetas por grado ============ */
+  .grade-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:20px;
+    overflow:hidden; margin-bottom:20px;
+    box-shadow:0 4px 14px -10px rgba(34,30,51,.18);
+  }
+  .grade-head{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:14px 20px; border-bottom:1px solid var(--line);
+  }
+  .grade-head .g-ico{
+    width:36px; height:36px; border-radius:11px; flex:none;
+    display:grid; place-items:center; font-size:1rem;
+    background:rgba(255,255,255,.7);
+  }
+  .grade-head h2{
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.12rem;
+    margin:0; letter-spacing:-.2px;
+  }
+  .grade-count{
+    margin-left:auto; background:rgba(255,255,255,.75);
+    border-radius:999px; padding:5px 13px;
+    font-size:.82rem; font-weight:600; font-family:'Space Grotesk';
+  }
+  .gc-celeste{ background:var(--celeste); color:var(--celeste-ink); }
+  .gc-naranja{ background:var(--naranja); color:var(--naranja-ink); }
+  .gc-turquesa{ background:var(--turquesa); color:var(--turquesa-ink); }
+  .gc-lila{ background:var(--lila); color:var(--lila-ink); }
+  .gc-morado{ background:var(--morado); color:var(--morado-ink); }
+  .gc-morado .g-ico, .gc-morado .grade-count{ background:rgba(255,255,255,.18); color:#fff; }
+
+  .table-est{ margin:0; font-size:.92rem; }
+  .table-est thead th{
+    font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+    background:rgba(34,30,51,.03); border-bottom:1px solid var(--line);
+    padding:10px 16px; white-space:nowrap;
+  }
+  .table-est td{ padding:10px 16px; border-color:var(--line); vertical-align:middle; }
+  .table-est tbody tr:hover td{ background:rgba(107,75,214,.045); }
+  .td-n{
+    font-family:'Space Grotesk'; font-weight:700; font-size:.85rem;
+    color:var(--ink-soft); width:52px;
+  }
+  .td-nie{ font-family:'Space Grotesk'; font-weight:600; white-space:nowrap; width:150px; }
+  .td-nombre{ font-weight:600; }
+  .td-acc{ width:120px; text-align:right; white-space:nowrap; }
+
+  .btn-ico{
+    width:33px; height:33px; border-radius:10px; border:none;
+    display:inline-grid; place-items:center; font-size:.9rem;
+    transition:transform .15s, background .15s, color .15s;
+  }
+  .btn-ico:hover{ transform:translateY(-2px); }
+  .bi-editar{ background:rgba(107,75,214,.12); color:var(--lila-deep); }
+  .bi-editar:hover{ background:var(--lila); color:var(--lila-ink); }
+  .bi-arch{ background:rgba(217,119,14,.12); color:var(--naranja-deep); }
+  .bi-arch:hover{ background:var(--naranja); color:var(--naranja-ink); }
+  .bi-del{ background:rgba(180,35,24,.10); color:var(--rojo); }
+  .bi-del:hover{ background:#FDECEA; color:var(--rojo); }
+
+  tr.fila-archivada td{ opacity:.5; }
+  .badge-arch{
+    font-size:.68rem; font-weight:700; letter-spacing:.04em;
+    background:rgba(34,30,51,.08); color:var(--ink-soft);
+    border-radius:999px; padding:3px 9px; margin-left:8px; vertical-align:middle;
+  }
+
+  .seccion-arch-title{
+    display:flex; align-items:center; gap:9px;
+    font-family:'Space Grotesk'; font-weight:700; font-size:.95rem;
+    color:var(--ink-soft); margin:26px 2px 12px;
+  }
+  .seccion-arch-title::after{ content:''; flex:1; height:1px; background:var(--line); }
+
+  /* ============ Estado vacío ============ */
+  .empty-card{
+    background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
+    border-radius:22px; padding:56px 24px; text-align:center;
+  }
+  .empty-ico{
+    width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
+    display:grid; place-items:center; font-size:1.7rem;
+    background:var(--celeste); color:var(--celeste-ink);
+  }
+  .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
+  .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
+
+  /* ============ Modales ============ */
+  .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
+    box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
+  .app-modal .m-close{
+    position:absolute; top:13px; right:13px; width:34px; height:34px;
+    border:none; border-radius:11px; background:transparent; color:var(--ink-soft);
+    display:grid; place-items:center;
+  }
+  .app-modal .m-close:hover{ background:rgba(34,30,51,.06); color:var(--ink); }
+  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .m-icon{
+    width:44px; height:44px; border-radius:14px; flex:none;
+    display:grid; place-items:center; font-size:1.2rem;
+  }
+  .m-head h5{ font-family:'Space Grotesk'; font-weight:700; margin:0; font-size:1.15rem; }
+  .m-head p{ margin:2px 0 0; font-size:.8rem; color:var(--ink-soft); }
+
+  .frm-label{
+    font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:block;
+  }
+  .frm-input{
+    width:100%; border:1.5px solid var(--line); border-radius:12px;
+    padding:10px 13px; font-size:.95rem; background:var(--bg);
+    transition:border-color .2s, box-shadow .2s, background .2s;
+  }
+  .frm-input:focus{
+    outline:none; border-color:var(--lila-deep); background:#fff;
+    box-shadow:0 0 0 4px rgba(107,75,214,.12);
+  }
+  .frm-input.invalido{ border-color:var(--rojo); background:#FDF6F5; }
+  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
+  .frm-error.visible{ display:block; }
+
+  .btn-aceptar{
+    width:100%; margin-top:18px; border:none; border-radius:13px;
+    background:var(--morado); color:#fff; font-weight:600; padding:12px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+    transition:background .2s;
+  }
+  .btn-aceptar:hover{ background:var(--morado-deep); color:#fff; }
+  .btn-aceptar:disabled{ opacity:.75; }
+
+  .btn-peligro{
+    width:100%; margin-top:18px; border:none; border-radius:13px;
+    background:var(--rojo); color:#fff; font-weight:600; padding:12px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  }
+  .btn-peligro:hover{ background:#8F1C13; color:#fff; }
+
+  .btn-cancelar{
+    width:100%; margin-top:10px; border:1.5px solid var(--line);
+    border-radius:13px; background:transparent; color:var(--ink);
+    font-weight:600; padding:11px;
+  }
+  .btn-cancelar:hover{ background:rgba(34,30,51,.05); }
+
+  /* ============ Toasts ============ */
+  .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
+    display:flex; flex-direction:column; gap:10px; }
+  .app-toast{
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:12px 18px 12px 14px; font-size:.9rem; font-weight:500;
+    box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
+    opacity:0; transform:translateY(12px);
+    transition:opacity .3s ease, transform .3s ease; max-width:340px;
+  }
+  .app-toast.show{ opacity:1; transform:none; }
+  .toast-success i{ color:#178F72; }
+  .toast-warning i{ color:#D9770E; }
+  .toast-danger i{ color:#B42318; }
+
+  @media (max-width:575.98px){
+    .brand-title{ font-size:1.15rem; }
+    .td-nie{ width:auto; }
+    .table-est thead th:nth-child(1), .table-est td.td-n{ display:none; } /* sin N en móvil */
+    .td-acc{ width:auto; }
+    .btn-ico{ width:30px; height:30px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a class="btn-back" href="../index.html" aria-label="Volver al panel"><i class="bi bi-arrow-left"></i></a>
+      <div class="brand-mark"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <h1 class="brand-title">Estudiantes</h1>
+        <p class="brand-sub">Hoja «Estudiantes» · crear, editar, archivar y eliminar</p>
+      </div>
+      <div class="ms-auto d-flex gap-2 flex-wrap">
+        <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
+        <button class="btn-primario" id="btnNuevo"><i class="bi bi-plus-lg"></i> Nuevo estudiante</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container pb-5">
+
+  <!-- Estado de datos y conexión -->
+  <section class="status-bar" aria-live="polite">
+    <span class="status-dot warn" id="statusDot"></span>
+    <div>
+      <div class="status-title" id="statusTitle">Verificando…</div>
+      <div class="status-meta" id="statusMeta"></div>
+    </div>
+    <div class="ms-auto d-flex gap-2 flex-wrap" id="statusChips"></div>
+  </section>
+
+  <!-- Búsqueda y filtros -->
+  <section class="toolbar">
+    <div class="buscador">
+      <i class="bi bi-search"></i>
+      <input type="search" id="inpBuscar" placeholder="Buscar por nombre, apellido o NIE…" autocomplete="off">
+    </div>
+    <select class="select-grado" id="selGrado" aria-label="Filtrar por grado">
+      <option value="todos">Todos los grados</option>
+    </select>
+    <label class="switch-arch form-check form-switch mb-0 ms-auto">
+      <input class="form-check-input" type="checkbox" id="chkArch">
+      <span>Ver archivados</span>
+    </label>
+  </section>
+
+  <!-- Listado por grado -->
+  <section id="listado"></section>
+</main>
+
+<!-- Modal: crear / editar estudiante -->
+<div class="modal fade" id="mdEstudiante" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <button type="button" class="m-close" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <div class="m-head">
+        <div class="m-icon" style="background:var(--celeste); color:var(--celeste-ink);"><i class="bi bi-person-vcard"></i></div>
+        <div>
+          <h5 id="mdEstTitulo">Nuevo estudiante</h5>
+          <p>Los campos con * son obligatorios</p>
+        </div>
+      </div>
+      <form id="frmEstudiante" novalidate>
+        <input type="hidden" id="fId">
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="frm-label" for="fNombre1">Primer nombre *</label>
+            <input class="frm-input" id="fNombre1" maxlength="40" autocomplete="off">
+            <div class="frm-error" id="eNombre1">Escribe el primer nombre.</div>
+          </div>
+          <div class="col-6">
+            <label class="frm-label" for="fNombre2">Segundo nombre</label>
+            <input class="frm-input" id="fNombre2" maxlength="40" autocomplete="off">
+          </div>
+          <div class="col-6">
+            <label class="frm-label" for="fApellido1">Primer apellido *</label>
+            <input class="frm-input" id="fApellido1" maxlength="40" autocomplete="off">
+            <div class="frm-error" id="eApellido1">Escribe el primer apellido.</div>
+          </div>
+          <div class="col-6">
+            <label class="frm-label" for="fApellido2">Segundo apellido</label>
+            <input class="frm-input" id="fApellido2" maxlength="40" autocomplete="off">
+          </div>
+          <div class="col-6">
+            <label class="frm-label" for="fNie">NIE *</label>
+            <input class="frm-input" id="fNie" inputmode="numeric" maxlength="20" autocomplete="off">
+            <div class="frm-error" id="eNie"></div>
+          </div>
+          <div class="col-6">
+            <label class="frm-label" for="fGrado">Grado *</label>
+            <input class="frm-input" id="fGrado" maxlength="40" list="gradosSugeridos" autocomplete="off">
+            <datalist id="gradosSugeridos"></datalist>
+            <div class="frm-error" id="eGrado">Indica el grado.</div>
+          </div>
+        </div>
+        <button type="submit" class="btn-aceptar" id="btnGuardar">
+          <i class="bi bi-check2"></i><span>Guardar estudiante</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar eliminación -->
+<div class="modal fade" id="mdEliminar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content app-modal">
+      <div class="m-head">
+        <div class="m-icon" style="background:#FDECEA; color:var(--rojo);"><i class="bi bi-trash3-fill"></i></div>
+        <div><h5>Eliminar estudiante</h5><p>Esta acción no se puede deshacer</p></div>
+      </div>
+      <p class="mb-0" style="font-size:.92rem;" id="delTexto"></p>
+      <button class="btn-peligro" id="btnConfirmarDel"><i class="bi bi-trash3"></i> Sí, eliminar</button>
+      <button class="btn-cancelar" data-bs-dismiss="modal">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: contraseña (primera carga en este dispositivo) -->
+<div class="modal fade" id="mdPass" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <div class="m-head" style="justify-content:center; text-align:center;">
+        <div class="m-icon" style="background:#EFE9FF; color:var(--lila-deep);"><i class="bi bi-shield-lock-fill"></i></div>
+      </div>
+      <h5 class="text-center" style="font-family:'Space Grotesk'; font-weight:700;">Conectar con la hoja de cálculo</h5>
+      <p class="text-center mb-1" style="font-size:.87rem; color:var(--ink-soft);">
+        Ingresa la contraseña de administrador. Se pedirá una sola vez en este dispositivo.
+      </p>
+      <form id="frmPass" novalidate>
+        <input class="frm-input" type="password" id="inpPass" placeholder="Contraseña" style="margin-top:10px;" autocomplete="current-password">
+        <div class="frm-error text-center" id="passError" style="margin-top:8px;"></div>
+        <button type="submit" class="btn-aceptar" id="btnPassSubmit">
+          <span>Conectar y descargar</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastWrap" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ============================================================
+   CONFIGURACIÓN — pega aquí la misma URL del Web App del index
+   ============================================================ */
+const CONFIG = {
+  API_URL:   'PEGA_AQUI_LA_URL_DEL_WEB_APP',
+  DATA_KEY:  'RE_DATA_V1',
+  TOKEN_KEY: 'RE_TOKEN_V1',
+  QUEUE_KEY: 'RE_QUEUE_V1',
+  HOJA:      'Estudiantes'
+};
+
+/* Columnas exactas de la hoja (el .gs crea la hoja con estos encabezados) */
+const CAMPOS = ['id','nie','nombre1','nombre2','apellido1','apellido2',
+                'grado','archivado','creadoEn','actualizadoEn'];
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+const S = {
+  est: [], cola: [], token: null,
+  q: '', grado: 'todos', verArch: false,
+  flushing: false, eliminando: null
+};
+
+const $  = s => document.querySelector(s);
+const mdEst   = () => bootstrap.Modal.getOrCreateInstance($('#mdEstudiante'));
+const mdDel   = () => bootstrap.Modal.getOrCreateInstance($('#mdEliminar'));
+const mdPass  = () => bootstrap.Modal.getOrCreateInstance($('#mdPass'));
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+function uid(){
+  return (crypto.randomUUID)
+    ? crypto.randomUUID()
+    : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+
+function ahoraLocal(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate())
+       + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+
+/* Quita tildes y minúsculas para comparar */
+function sinTildes(s){
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+/* Clave de orden: apellido1 → apellido2 → nombre1 → nombre2,
+   ignorando las palabras "de" y "del" */
+function claveOrden(e){
+  return [e.apellido1, e.apellido2, e.nombre1, e.nombre2]
+    .map(sinTildes)
+    .map(t => t.split(/\s+/).filter(w => w && w !== 'de' && w !== 'del').join(' '))
+    .join(' ');
+}
+
+function nombreCompleto(e){
+  return [e.nombre1, e.nombre2, e.apellido1, e.apellido2].filter(Boolean).join(' ');
+}
+
+function hayUrl(){
+  return CONFIG.API_URL && !CONFIG.API_URL.includes('PEGA_AQUI');
+}
+
+async function api(payload){
+  const res = await fetch(CONFIG.API_URL, { method:'POST', body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function toast(msg, kind = 'success'){
+  const icons = { success:'check-circle-fill', warning:'exclamation-triangle-fill', danger:'x-circle-fill' };
+  const el = document.createElement('div');
+  el.className = 'app-toast toast-' + kind;
+  el.innerHTML = '<i class="bi bi-' + (icons[kind] || icons.success) + '"></i><span></span>';
+  el.querySelector('span').textContent = msg;
+  $('#toastWrap').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
+}
+
+/* ============================================================
+   PERSISTENCIA LOCAL
+   ============================================================ */
+function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
+
+function guardarData(data){ localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(data)); }
+
+function guardarHojaLocal(){
+  const data = leerData();
+  if(!data) return;
+  data.sheets = data.sheets || {};
+  data.sheets[CONFIG.HOJA] = S.est.map(filaObjeto);
+  guardarData(data);
+}
+
+function filaObjeto(e){
+  const f = {};
+  CAMPOS.forEach(c => f[c] = (e[c] === undefined || e[c] === null) ? '' : e[c]);
+  return f;
+}
+
+function cargarDeLocal(){
+  const data = leerData();
+  S.token = localStorage.getItem(CONFIG.TOKEN_KEY) || '';
+  S.cola  = (()=>{ try{ return JSON.parse(localStorage.getItem(CONFIG.QUEUE_KEY)) || []; } catch(e){ return []; } })();
+  const filas = (data && data.sheets && data.sheets[CONFIG.HOJA]) || [];
+  S.est = filas
+    .map(r => filaObjeto({
+      id: String(r.id || ''), nie: String(r.nie ?? ''), 
+      nombre1: r.nombre1 || '', nombre2: r.nombre2 || '',
+      apellido1: r.apellido1 || '', apellido2: r.apellido2 || '',
+      grado: r.grado || '', archivado: String(r.archivado || '') === 'SI' ? 'SI' : '',
+      creadoEn: r.creadoEn || '', actualizadoEn: r.actualizadoEn || ''
+    }))
+    .filter(e => e.id);
+  return data;
+}
+
+function persistirCola(){ localStorage.setItem(CONFIG.QUEUE_KEY, JSON.stringify(S.cola)); }
+
+/* ============================================================
+   OPERACIONES (optimistas + cola para el servidor)
+   Toda mutación construye una "op"; la misma op se aplica en
+   local, se encola y el servidor la reproduce en orden.
+   ============================================================ */
+function aplicarOpLocal(op){
+  if(op.action === 'write'){ S.est.push(filaObjeto(op.row)); }
+  else if(op.action === 'update'){
+    const i = S.est.findIndex(e => e.id === op.id);
+    if(i >= 0) S.est[i] = filaObjeto({ ...S.est[i], ...op.row });
+  }
+  else if(op.action === 'delete'){ S.est = S.est.filter(e => e.id !== op.id); }
+}
+
+function ejecutar(op){
+  aplicarOpLocal(op);
+  guardarHojaLocal();
+  S.cola.push(op);
+  persistirCola();
+  render();
+  flushCola();
+}
+
+/* Envía la cola al servidor en orden; si no hay red, se detiene
+   y reintenta en la próxima ocasión */
+async function flushCola(){
+  if(!hayUrl() || S.flushing || !S.cola.length) return;
+  S.flushing = true; renderStatus();
+
+  while(S.cola.length){
+    const op = S.cola[0];
+    let r;
+    try{ r = await api({ ...op, token: S.token }); }
+    catch(e){ break; }                                  // sin red: dejar pendiente
+    if(r && r.ok){ S.cola.shift(); persistirCola(); }
+    else if(r && r.error === 'TOKEN_INVALIDO'){ abrirPass(); break; }
+    else { S.cola.shift(); persistirCola();             // op irrecuperable
+           toast('No pude aplicar un cambio en la hoja: ' + ((r && r.error) || 'error'), 'danger'); }
+  }
+
+  S.flushing = false;
+  if(!S.cola.length) toast('Cambios guardados en la hoja de cálculo.', 'success');
+  renderStatus();
+}
+
+/* Re-aplica la cola pendiente sobre los datos recién descargados
+   (tras un login, para no perder cambios optimistas) */
+function reaplicarCola(){
+  S.cola.forEach(aplicarOpLocal);
+  guardarHojaLocal();
+}
+
+/* ============================================================
+   LOGIN (primera vez en el dispositivo)
+   ============================================================ */
+function abrirPass(){
+  $('#passError').classList.remove('visible');
+  $('#inpPass').value = '';
+  mdPass().show();
+  setTimeout(() => $('#inpPass').focus(), 400);
+}
+
+async function onSubmitPass(e){
+  e.preventDefault();
+  const pw = $('#inpPass').value;
+  if(!pw){ $('#passError').textContent = 'Escribe la contraseña.'; $('#passError').classList.add('visible'); return; }
+
+  $('#btnPassSubmit').disabled = true;
+  $('#btnPassSubmit .spinner-border').classList.remove('d-none');
+  try{
+    const r = await api({ action:'login', password: pw });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
+      guardarData(r.data);
+      S.token = r.token;
+      cargarDeLocal();      // recarga la data del servidor...
+      reaplicarCola();      // ...y restaura los cambios pendientes
+      mdPass().hide();
+      render();
+      toast('Conectado: datos descargados en este dispositivo.', 'success');
+      flushCola();
+    }else{
+      $('#passError').textContent = (r && r.error === 'CONTRASENA_INCORRECTA')
+        ? 'Contraseña incorrecta.' : ((r && r.error) || 'Respuesta inesperada.');
+      $('#passError').classList.add('visible');
+    }
+  }catch(e2){
+    $('#passError').textContent = 'No pude conectar con el servidor.';
+    $('#passError').classList.add('visible');
+  }
+  $('#btnPassSubmit').disabled = false;
+  $('#btnPassSubmit .spinner-border').classList.add('d-none');
+}
+
+/* ============================================================
+   SINCRONIZACIÓN MANUAL (flush -> descarga del libro)
+   ============================================================ */
+async function actualizar(){
+  if(!hayUrl()){ toast('Primero pega la URL del Web App en CONFIG.API_URL.', 'warning'); return; }
+  if(!S.token){ abrirPass(); return; }
+
+  const btn = $('#btnSync'); btn.disabled = true;
+  if(S.cola.length){
+    await flushCola();
+    if(S.cola.length){
+      btn.disabled = false;
+      toast('Hay cambios sin enviar; conecta a internet e inténtalo de nuevo.', 'warning');
+      return;
+    }
+  }
+  try{
+    const r = await api({ action:'sync', token: S.token });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
+      cargarDeLocal();
+      render();
+      toast('Datos actualizados desde la hoja de cálculo.', 'success');
+    }else{
+      localStorage.removeItem(CONFIG.TOKEN_KEY); S.token = '';
+      abrirPass();
+    }
+  }catch(e){
+    toast('No pude conectar con el servidor.', 'danger');
+  }
+  btn.disabled = false;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const COLORES_GRADE = ['gc-celeste','gc-naranja','gc-turquesa','gc-lila','gc-morado'];
+const ICONOS_GRADE  = ['bi-mortarboard','bi-backpack','bi-book','bi-pencil-square','bi-easel'];
+
+function estudiantesVisibles(){
+  const q = sinTildes(S.q.trim());
+  return S.est.filter(e => {
+    if(S.grado !== 'todos' && (e.grado || 'Sin grado') !== S.grado) return false;
+    if(q){
+      const blob = sinTildes(nombreCompleto(e) + ' ' + e.nie + ' ' + e.grado);
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function render(){
+  renderListado();
+  renderGradosSelect();
+  renderStatus();
+}
+
+function renderListado(){
+  const cont = $('#listado');
+  const data = leerData();
+
+  /* Nunca se conectó en este dispositivo */
+  if(!data){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-cloud-arrow-down"></i></div>
+        <h3>Sin datos en este dispositivo</h3>
+        <p>Ingresa la contraseña de administrador una sola vez para descargar
+           el libro y trabajar aquí con acceso inmediato.</p>
+        <button class="btn-primario" id="btnConectar"><i class="bi bi-shield-lock"></i> Conectar</button>
+      </div>`;
+    $('#btnConectar').addEventListener('click', abrirPass);
+    return;
+  }
+
+  const visibles = estudiantesVisibles();
+  if(!visibles.length){
+    const hayBusqueda = S.q || S.grado !== 'todos';
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-person-plus"></i></div>
+        <h3>${hayBusqueda ? 'Sin resultados' : 'Aún no hay estudiantes'}</h3>
+        <p>${hayBusqueda
+          ? 'Ningún estudiante coincide con la búsqueda o el filtro de grado actual.'
+          : 'Crea el primer estudiante: la hoja «Estudiantes» del libro se creará automáticamente con sus columnas al guardar.'}</p>
+        ${hayBusqueda ? '' : '<button class="btn-primario" id="btnPrimero"><i class="bi bi-plus-lg"></i> Crear el primer estudiante</button>'}
+      </div>`;
+    const b = $('#btnPrimero'); if(b) b.addEventListener('click', () => abrirFormulario(null));
+    return;
+  }
+
+  /* Agrupar por grado y ordenar */
+  const porGrado = {};
+  visibles.forEach(e => {
+    const g = e.grado || 'Sin grado';
+    (porGrado[g] = porGrado[g] || []).push(e);
+  });
+  const grados = Object.keys(porGrado).sort((a,b) => a.localeCompare(b,'es'));
+
+  let html = '', nColor = 0, archivadosHtml = '';
+
+  grados.forEach(g => {
+    const color = COLORES_GRADE[nColor % COLORES_GRADE.length];
+    const icono = ICONOS_GRADE[nColor % ICONOS_GRADE.length];
+    nColor++;
+
+    const lista = porGrado[g].sort((a,b) => claveOrden(a).localeCompare(claveOrden(b), 'es'));
+    const activos   = lista.filter(e => e.archivado !== 'SI');
+    const archivados= lista.filter(e => e.archivado === 'SI');
+
+    let filas = '', n = 0;
+    activos.forEach(e => { n++; filas += filaHtml(e, n, false); });
+
+    if(S.verArch && archivados.length){
+      archivados.forEach(e => { n++; filas += filaHtml(e, n, true); });
+    }
+
+    const bloque = `
+      <article class="grade-card">
+        <div class="grade-head ${color}">
+          <span class="g-ico"><i class="bi ${icono}"></i></span>
+          <h2>${g}</h2>
+          <span class="grade-count">${activos.length}${archivados.length && S.verArch ? ' + ' + archivados.length + ' arch.' : ''}</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-est align-middle">
+            <thead><tr>
+              <th style="width:52px">N</th><th>NIE</th>
+              <th>Nombre</th><th style="width:120px" class="text-end">Acciones</th>
+            </tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      </article>`;
+
+    /* Cuando el filtro de grado está activo, mostrar directo;
+       si no, separar la sección de archivados visualmente no aplica
+       porque los archivados ya van dentro de su grado, atenuados. */
+    if(S.grado !== 'todos' || !archivadosHtml){ html += bloque; } else { html += bloque; }
+  });
+
+  cont.innerHTML = html;
+}
+
+function filaHtml(e, n, arch){
+  return `
+    <tr class="${arch ? 'fila-archivada' : ''}" data-id="${e.id}">
+      <td class="td-n">${n}</td>
+      <td class="td-nie">${e.nie}</td>
+      <td class="td-nombre">${nombreCompleto(e)}${arch ? '<span class="badge-arch">ARCHIVADO</span>' : ''}</td>
+      <td class="td-acc">
+        <button class="btn-ico bi-editar" data-acc="editar" title="Editar"><i class="bi bi-pencil"></i></button>
+        <button class="btn-ico bi-arch" data-acc="archivar" title="${arch ? 'Restaurar' : 'Archivar'}">
+          <i class="bi ${arch ? 'bi-arrow-counterclockwise' : 'bi-archive'}"></i></button>
+        <button class="btn-ico bi-del" data-acc="eliminar" title="Eliminar"><i class="bi bi-trash3"></i></button>
+      </td>
+    </tr>`;
+}
+
+function renderGradosSelect(){
+  const grados = [...new Set(S.est.map(e => e.grado || 'Sin grado'))].sort((a,b)=>a.localeCompare(b,'es'));
+  const sel = $('#selGrado');
+  const actual = S.grado;
+  sel.innerHTML = '<option value="todos">Todos los grados</option>'
+    + grados.map(g => `<option value="${g}" ${g===actual?'selected':''}>${g}</option>`).join('');
+
+  /* Sugerencias para el datalist del formulario:
+     grados existentes, o ejemplos si todavía no hay ninguno */
+  const sugerencias = grados.filter(g => g !== 'Sin grado').length
+    ? grados.filter(g => g !== 'Sin grado')
+    : ['Preprimaria','Preparatoria','Primero','Segundo','Tercero','Cuarto','Quinto','Sexto','Básico'];
+  $('#gradosSugeridos').innerHTML = sugerencias.map(g => `<option value="${g}">`).join('');
+}
+
+function renderStatus(){
+  const dot = $('#statusDot'), tit = $('#statusTitle'), met = $('#statusMeta'), chips = $('#statusChips');
+  const data = leerData();
+
+  if(!data){
+    dot.className = 'status-dot off';
+    tit.textContent = 'Sin conexión con el libro';
+    met.textContent = 'Ingresa la contraseña para descargar los datos.';
+    chips.innerHTML = '';
+    return;
+  }
+
+  const activos = S.est.filter(e => e.archivado !== 'SI').length;
+  const archs   = S.est.length - activos;
+  const grados  = new Set(S.est.map(e => e.grado || 'Sin grado')).size;
+
+  dot.className = 'status-dot ' + (S.cola.length ? 'warn' : 'ok');
+  tit.textContent = S.cola.length
+    ? 'Sincronizando cambios con la hoja…'
+    : 'Datos cargados — lectura local instantánea';
+
+  const f = new Date(data.syncedAt);
+  met.textContent = 'Última descarga del libro: '
+    + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
+    + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' })
+    + (S.flushing ? ' · enviando…' : '');
+
+  chips.innerHTML =
+    `<span class="chip"><strong>${activos}</strong> activos</span>` +
+    `<span class="chip"><strong>${grados}</strong> grados</span>` +
+    (archs ? `<span class="chip"><strong>${archs}</strong> archivados</span>` : '') +
+    (S.cola.length ? `<span class="chip chip-pend"><strong>${S.cola.length}</strong> pendiente(s) de enviar</span>` : '');
+}
+
+/* ============================================================
+   FORMULARIO CREAR / EDITAR
+   ============================================================ */
+function abrirFormulario(est){
+  $('#frmEstudiante').reset();
+  document.querySelectorAll('.frm-input').forEach(i => i.classList.remove('invalido'));
+  document.querySelectorAll('.frm-error').forEach(e => e.classList.remove('visible'));
+  $('#fId').value = est ? est.id : '';
+  $('#mdEstTitulo').textContent = est ? 'Editar estudiante' : 'Nuevo estudiante';
+  $('#btnGuardar span').textContent = est ? 'Guardar cambios' : 'Guardar estudiante';
+  if(est){
+    $('#fNombre1').value = est.nombre1;   $('#fNombre2').value = est.nombre2;
+    $('#fApellido1').value = est.apellido1; $('#fApellido2').value = est.apellido2;
+    $('#fNie').value = est.nie;           $('#fGrado').value = est.grado;
+  }
+  mdEst().show();
+  setTimeout(() => $('#fNombre1').focus(), 400);
+}
+
+function marcarError(inputId, errorId, msg){
+  $('#'+inputId).classList.add('invalido');
+  const e = $('#'+errorId);
+  if(msg) e.textContent = msg;
+  e.classList.add('visible');
+}
+
+function onSubmitEstudiante(ev){
+  ev.preventDefault();
+  document.querySelectorAll('.frm-input').forEach(i => i.classList.remove('invalido'));
+  document.querySelectorAll('.frm-error').forEach(e => e.classList.remove('visible'));
+
+  const id        = $('#fId').value;
+  const nombre1   = $('#fNombre1').value.trim();
+  const apellido1 = $('#fApellido1').value.trim();
+  const nie       = $('#fNie').value.trim();
+  const grado     = $('#fGrado').value.trim();
+  let valido = true;
+
+  if(!nombre1){ marcarError('fNombre1','eNombre1'); valido = false; }
+  if(!apellido1){ marcarError('fApellido1','eApellido1'); valido = false; }
+  if(!nie){ marcarError('fNie','eNie','Escribe el NIE.'); valido = false; }
+  if(!grado){ marcarError('fGrado','eGrado'); valido = false; }
+
+  /* NIE único entre todos los estudiantes */
+  if(nie){
+    const dup = S.est.find(e => e.nie === nie && e.id !== id);
+    if(dup){
+      marcarError('fNie','eNie','Ese NIE ya existe: ' + nombreCompleto(dup) + '.');
+      valido = false;
+    }
+  }
+  if(!valido) return;
+
+  const previo = id ? S.est.find(e => e.id === id) : null;
+  const row = {
+    id: id || uid(),
+    nie, nombre1,
+    nombre2:   $('#fNombre2').value.trim(),
+    apellido1,
+    apellido2: $('#fApellido2').value.trim(),
+    grado,
+    archivado: previo ? previo.archivado : '',
+    creadoEn:  previo ? previo.creadoEn : ahoraLocal(),
+    actualizadoEn: ahoraLocal()
+  };
+
+  const btn = $('#btnGuardar');
+  btn.disabled = true;
+  btn.querySelector('.spinner-border').classList.remove('d-none');
+
+  ejecutar({ action: id ? 'update' : 'write', sheet: CONFIG.HOJA, id: row.id, row });
+  mdEst().hide();
+  toast(id ? 'Estudiante actualizado.' : 'Estudiante agregado.', 'success');
+
+  btn.disabled = false;
+  btn.querySelector('.spinner-border').classList.add('d-none');
+}
+
+/* ============================================================
+   ACCIONES DE FILA (delegación de eventos)
+   ============================================================ */
+function accionFila(ev){
+  const btn = ev.target.closest('[data-acc]');
+  if(!btn) return;
+  const tr = btn.closest('tr');
+  const est = S.est.find(e => e.id === tr.dataset.id);
+  if(!est) return;
+
+  if(btn.dataset.acc === 'editar'){
+    abrirFormulario(est);
+
+  }else if(btn.dataset.acc === 'archivar'){
+    const archivando = est.archivado !== 'SI';
+    ejecutar({ action:'update', sheet:CONFIG.HOJA, id: est.id,
+      row:{ id: est.id, archivado: archivando ? 'SI' : '',
+            actualizadoEn: ahoraLocal() } });
+    toast(archivando ? nombreCompleto(est) + ' archivado.' : nombreCompleto(est) + ' restaurado.', 'success');
+
+  }else if(btn.dataset.acc === 'eliminar'){
+    S.eliminando = est;
+    $('#delTexto').innerHTML = 'Se eliminará <strong>' + nombreCompleto(est)
+      + '</strong> de la lista y de la hoja del libro al sincronizar.';
+    mdDel().show();
+  }
+}
+
+function confirmarEliminar(){
+  if(!S.eliminando) return;
+  const est = S.eliminando;
+  S.eliminando = null;
+  ejecutar({ action:'delete', sheet:CONFIG.HOJA, id: est.id });
+  mdDel().hide();
+  toast(nombreCompleto(est) + ' eliminado.', 'success');
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  cargarDeLocal();
+  render();
+
+  $('#btnNuevo').addEventListener('click', () => abrirFormulario(null));
+  $('#btnSync').addEventListener('click', actualizar);
+  $('#frmEstudiante').addEventListener('submit', onSubmitEstudiante);
+  $('#frmPass').addEventListener('submit', onSubmitPass);
+  $('#listado').addEventListener('click', accionFila);
+  $('#btnConfirmarDel').addEventListener('click', confirmarEliminar);
+
+  $('#inpBuscar').addEventListener('input', e => { S.q = e.target.value; renderListado(); });
+  $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
+  $('#chkArch').addEventListener('change', e => { S.verArch = e.target.checked; renderListado(); });
+
+  flushCola();   // reintenta operaciones pendientes de sesiones anteriores
+});
+</script>
+</body>
+</html>
