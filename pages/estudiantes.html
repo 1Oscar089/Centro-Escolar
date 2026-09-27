@@ -438,7 +438,7 @@
 
 <script>
 const CONFIG = {
-  API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
+  API_URL:   'PEGA_AQUI_LA_URL_DEL_WEB_APP',
   DATA_KEY:  'RE_DATA_V1',
   TOKEN_KEY: 'RE_TOKEN_V1',
   QUEUE_KEY: 'RE_QUEUE_V1',
@@ -518,7 +518,245 @@ function toast(msg, kind = 'success'){
 }
 
 /* ============================================================
-   CARGA DE LIBRERÍAS CON RESPALDO (para los carnets QR)
+   GENERADOR QR PROPIO (incrustado, SIN librerías externas)
+   Estándar ISO/IEC 18004: modo byte, corrección nivel L,
+   versiones 1-5 (una sola línea de bloques; hasta 106 bytes,
+   más que suficiente para {"id","nie"}).
+   ============================================================ */
+const QR_L = [
+  { v:1, total: 26, ec:  7, align: null, remBits: 0 },
+  { v:2, total: 44, ec: 10, align: 18,   remBits: 7 },
+  { v:3, total: 70, ec: 15, align: 22,   remBits: 7 },
+  { v:4, total:100, ec: 20, align: 26,   remBits: 7 },
+  { v:5, total:134, ec: 26, align: 30,   remBits: 7 }
+];
+
+/* Aritmética de Reed-Solomon sobre GF(256), polinomio 0x11D */
+function qrRsMul(x, y){
+  let z = 0;
+  for (let i = 7; i >= 0; i--){
+    z = ((z << 1) ^ ((z >>> 7) * 0x11D)) & 0x1FF;
+    z ^= ((y >>> i) & 1) * x;
+  }
+  return z & 0xFF;
+}
+function qrRsDivisor(n){
+  const res = [];
+  for (let i = 0; i < n - 1; i++) res.push(0);
+  res.push(1);
+  let root = 1;
+  for (let i = 0; i < n; i++){
+    for (let j = 0; j < res.length; j++){
+      res[j] = qrRsMul(res[j], root);
+      if (j + 1 < res.length) res[j] ^= res[j + 1];
+    }
+    root = qrRsMul(root, 2);
+  }
+  return res;
+}
+function qrRsRemainder(data, divisor){
+  const res = divisor.map(() => 0);
+  for (const b of data){
+    const factor = b ^ res.shift();
+    res.push(0);
+    divisor.forEach((c, i) => res[i] ^= qrRsMul(c, factor));
+  }
+  return res;
+}
+
+/* Genera la matriz del QR: devuelve {size, mod:[[bool]]} */
+function qrGenerar(texto){
+  const bytes = new TextEncoder().encode(String(texto));
+  const info  = QR_L.find(q => bytes.length <= (q.total - q.ec - 2));
+  if (!info) throw new Error('El contenido excede la capacidad del QR');
+
+  /* --- flujo de bits: modo byte + contador + datos + relleno --- */
+  const bits = [];
+  const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  const capBits = (info.total - info.ec) * 8;
+
+  push(4, 4);                              /* modo: byte */
+  push(bytes.length, 8);                   /* contador (v1-9) */
+  bytes.forEach(b => push(b, 8));
+  push(0, Math.min(4, capBits - bits.length));   /* terminador */
+  while (bits.length % 8 !== 0) bits.push(0);    /* a byte completo */
+
+  const dataCW = [];
+  for (let i = 0; i < bits.length; i += 8){
+    let b = 0;
+    for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j];
+    dataCW.push(b);
+  }
+  for (let pad = 0xEC; dataCW.length < info.total - info.ec; pad ^= 0xEC ^ 0x11)
+    dataCW.push(pad);
+
+  const todos = dataCW.concat(qrRsRemainder(dataCW, qrRsDivisor(info.ec)));
+
+  /* --- matriz y módulos de función --- */
+  const size = info.v * 4 + 17;
+  const mod = [], fn = [];
+  for (let i = 0; i < size; i++){
+    mod.push(new Array(size).fill(false));
+    fn .push(new Array(size).fill(false));
+  }
+  const setFn = (x, y, dark) => { mod[y][x] = dark; fn[y][x] = true; };
+
+  /* finders + separadores */
+  function finder(cx, cy){
+    for (let dy = -4; dy <= 4; dy++)
+      for (let dx = -4; dx <= 4; dx++){
+        const x = cx + dx, y = cy + dy;
+        if (x < 0 || x >= size || y < 0 || y >= size) continue;
+        const d = Math.max(Math.abs(dx), Math.abs(dy));
+        setFn(x, y, d !== 2 && d !== 4);
+      }
+  }
+  finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+
+  /* patrón de alineamiento (uno en v2-v5) */
+  if (info.align){
+    const c = info.align;
+    for (let dy = -2; dy <= 2; dy++)
+      for (let dx = -2; dx <= 2; dx++)
+        setFn(c + dx, c + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+  }
+
+  /* patrones de temporización */
+  for (let i = 0; i < size; i++){
+    if (!fn[6][i]) setFn(i, 6, i % 2 === 0);
+    if (!fn[i][6]) setFn(6, i, i % 2 === 0);
+  }
+
+  /* módulo oscuro + reserva de áreas de formato */
+  setFn(8, size - 8, true);
+  for (let i = 0; i <= 8; i++){
+    if (!fn[i][8]) setFn(8, i, false);
+    if (!fn[8][i]) setFn(i, 8, false);
+  }
+  for (let i = size - 8; i < size; i++){
+    setFn(i, 8, false);
+    setFn(8, i, false);
+  }
+
+  /* --- colocar los datos en zigzag --- */
+  let idx = 0;
+  for (let right = size - 1; right >= 1; right -= 2){
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++){
+      for (let j = 0; j < 2; j++){
+        const x = right - j;
+        const upward = ((right + 1) & 2) === 0;
+        const y = upward ? size - 1 - vert : vert;
+        if (!fn[y][x] && idx < todos.length * 8){
+          mod[y][x] = ((todos[idx >>> 3] >>> (7 - (idx & 7))) & 1) !== 0;
+          idx++;
+        }
+      }
+    }
+  }
+
+  /* --- máscaras y penalidad (se elige la de menor penalidad) --- */
+  const MASCARAS = [
+    (x, y) => (x + y) % 2 === 0,
+    (x, y) => y % 2 === 0,
+    (x, y) => x % 3 === 0,
+    (x, y) => (x + y) % 3 === 0,
+    (x, y) => (Math.floor(y / 2) + Math.floor(x / 3)) % 2 === 0,
+    (x, y) => (x * y) % 2 + (x * y) % 3 === 0,
+    (x, y) => ((x * y) % 2 + (x * y) % 3) % 2 === 0,
+    (x, y) => ((x + y) % 2 + (x * y) % 3) % 2 === 0
+  ];
+
+  function penalidad(){
+    let res = 0, dark = 0;
+    const pat = /10111010000|00001011101/g;
+    for (let y = 0; y < size; y++){
+      let run = 1, linea = '';
+      for (let x = 0; x < size; x++){
+        linea += mod[y][x] ? '1' : '0';
+        if (mod[y][x]) dark++;
+        if (x + 1 < size){
+          if (mod[y][x] === mod[y][x + 1]) run++;
+          else { if (run >= 5) res += 3 + (run - 5); run = 1; }
+        }
+      }
+      if (run >= 5) res += 3 + (run - 5);
+      res += (linea.match(pat) || []).length * 40;
+    }
+    for (let x = 0; x < size; x++){
+      let run = 1, linea = '';
+      for (let y = 0; y < size; y++){
+        linea += mod[y][x] ? '1' : '0';
+        if (y + 1 < size){
+          if (mod[y][x] === mod[y + 1][x]) run++;
+          else { if (run >= 5) res += 3 + (run - 5); run = 1; }
+        }
+      }
+      if (run >= 5) res += 3 + (run - 5);
+      res += (linea.match(pat) || []).length * 40;
+    }
+    for (let y = 0; y < size - 1; y++)
+      for (let x = 0; x < size - 1; x++)
+        if (mod[y][x] === mod[y][x + 1] && mod[y][x] === mod[y + 1][x]
+            && mod[y][x] === mod[y + 1][x + 1]) res += 3;
+    const total = size * size;
+    res += (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+    return res;
+  }
+
+  let mejor = 0, mejorPen = Infinity;
+  for (let m = 0; m < 8; m++){
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++)
+        if (!fn[y][x] && MASCARAS[m](x, y)) mod[y][x] = !mod[y][x];
+    const p = penalidad();
+    if (p < mejorPen){ mejorPen = p; mejor = m; }
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++)
+        if (!fn[y][x] && MASCARAS[m](x, y)) mod[y][x] = !mod[y][x];
+  }
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++)
+      if (!fn[y][x] && MASCARAS[mejor](x, y)) mod[y][x] = !mod[y][x];
+
+  /* --- información de formato (nivel L = 01, con la máscara elegida) --- */
+  const fdata = (1 << 3) | mejor;
+  let rem = fdata;
+  for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+  const fbits = ((fdata << 10) | rem) ^ 0x5412;
+  const fbit = i => ((fbits >>> i) & 1) !== 0;
+
+  for (let i = 0; i <= 5; i++) setFn(8, i, fbit(i));
+  setFn(8, 7, fbit(6));
+  setFn(8, 8, fbit(7));
+  setFn(7, 8, fbit(8));
+  for (let i = 9; i < 15; i++) setFn(14 - i, 8, fbit(i));
+  for (let i = 0; i < 8; i++) setFn(size - 1 - i, 8, fbit(i));
+  for (let i = 8; i < 15; i++) setFn(8, size - 15 + i, fbit(i));
+
+  return { size, mod };
+}
+
+/* Dibuja la matriz en un canvas y devuelve dataURL PNG */
+function qrDataURL(texto, px){
+  const qr = qrGenerar(texto);
+  const escala = Math.max(4, Math.floor(px / (qr.size + 8)));
+  const margen = 4;                       /* zona silenciosa */
+  const dim = (qr.size + margen * 2) * escala;
+  const c = document.createElement('canvas');
+  c.width = dim; c.height = dim;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, dim, dim);
+  ctx.fillStyle = '#221E33';
+  for (let y = 0; y < qr.size; y++)
+    for (let x = 0; x < qr.size; x++)
+      if (qr.mod[y][x]) ctx.fillRect((x + margen) * escala, (y + margen) * escala, escala, escala);
+  return c.toDataURL('image/png');
+}
+
+/* ============================================================
+   CARGA DE jsPDF CON RESPALDO (única librería externa restante)
    Orden: libs/ del repo -> jsDelivr -> unpkg
    ============================================================ */
 function cargarScript(urls){
@@ -535,25 +773,14 @@ function cargarScript(urls){
   });
 }
 
-async function asegurarLibreriasCarnet(){
-  const pendientes = [];
-  if(!window.QRCode){
-    pendientes.push(cargarScript([
-      '../libs/qrcode.min.js',
-      'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-      'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
-    ]));
-  }
-  if(!window.jspdf){
-    pendientes.push(cargarScript([
-      '../libs/jspdf.umd.min.js',
-      'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-      'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
-    ]));
-  }
-  await Promise.all(pendientes);
-  if(!window.QRCode) throw new Error('QRCode');
-  if(!window.jspdf)  throw new Error('jsPDF');
+async function asegurarJsPDF(){
+  if(window.jspdf) return;
+  await cargarScript([
+    '../libs/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ]);
+  if(!window.jspdf) throw new Error('jsPDF');
 }
 
 /* ============================================================
@@ -597,8 +824,6 @@ function persistirCola(){ localStorage.setItem(CONFIG.QUEUE_KEY, JSON.stringify(
 
 /* ============================================================
    OPERACIONES (optimistas + cola para el servidor)
-   Toda mutación construye una "op"; la misma op se aplica en
-   local, se encola y el servidor la reproduce en orden.
    ============================================================ */
 function aplicarOpLocal(op){
   if(op.action === 'write'){ S.est.push(filaObjeto(op.row)); }
@@ -618,8 +843,6 @@ function ejecutar(op){
   flushCola();
 }
 
-/* Envía la cola al servidor en orden; si no hay red, queda
-   pendiente y se reintenta en la próxima ocasión */
 async function flushCola(){
   if(!hayUrl() || S.flushing || !S.cola.length) return;
   S.flushing = true; renderStatus();
@@ -640,7 +863,6 @@ async function flushCola(){
   renderStatus();
 }
 
-/* Re-aplica la cola pendiente sobre los datos recién descargados */
 function reaplicarCola(){
   S.cola.forEach(aplicarOpLocal);
   guardarHojaLocal();
@@ -749,7 +971,6 @@ function renderListado(){
   const cont = $('#listado');
   const data = leerData();
 
-  /* Nunca se conectó en este dispositivo */
   if(!data){
     cont.innerHTML = `
       <div class="empty-card">
@@ -779,7 +1000,6 @@ function renderListado(){
     return;
   }
 
-  /* Agrupar por grado y ordenar */
   const porGrado = {};
   visibles.forEach(e => {
     const g = e.grado || 'Sin grado';
@@ -932,7 +1152,6 @@ function onSubmitEstudiante(ev){
   if(!nie){ marcarError('fNie','eNie','Escribe el NIE.'); valido = false; }
   if(!grado){ marcarError('fGrado','eGrado'); valido = false; }
 
-  /* NIE único entre todos los estudiantes */
   if(nie){
     const dup = S.est.find(e => e.nie === nie && e.id !== id);
     if(dup){
@@ -981,8 +1200,6 @@ function accionFila(ev){
     abrirFormulario(est);
 
   }else if(btn.dataset.acc === 'archivar'){
-    /* Solo cambia 'archivado': el .gs v4 hace MERGE y conserva
-       el resto de columnas (fix del borrado de nombre/grado) */
     const archivando = est.archivado !== 'SI';
     ejecutar({ action:'update', sheet:CONFIG.HOJA, id: est.id,
       row:{ id: est.id, archivado: archivando ? 'SI' : '',
@@ -1008,15 +1225,15 @@ function confirmarEliminar(){
 
 /* ============================================================
    CARNETS QR EN PDF
-   10 carnets por página A4. El QR contiene {"id","nie"} y lo lee
-   pasar_asistencia.html. Respeta el filtro de grado activo.
+   10 carnets por página A4. El QR se genera con el algoritmo
+   incrustado (sin librerías); solo jsPDF se carga con respaldo.
    ============================================================ */
 async function generarCarnetsPDF(){
   try{
-    await asegurarLibreriasCarnet();
+    await asegurarJsPDF();
   }catch(falta){
     toast('No pude cargar ' + falta.message + ' (ni local ni CDN). '
-        + 'Sube qrcode.min.js y jspdf.umd.min.js a la carpeta libs/ del repo.', 'danger');
+        + 'Sube jspdf.umd.min.js a la carpeta libs/ del repo.', 'danger');
     return;
   }
 
@@ -1051,14 +1268,12 @@ async function generarCarnetsPDF(){
 
 async function dibujarCarnet(doc, e, x, y, w, h){
   const MORADO = [90,62,166], TINTA = [34,30,51], GRIS = [110,105,130];
-  const qr = await QRCode.toDataURL(JSON.stringify({ id:e.id, nie:e.nie }), { width:320, margin:1 });
+  const qr = qrDataURL(JSON.stringify({ id:e.id, nie:e.nie }), 320);
 
-  // Marco del carné
   doc.setFillColor(250,246,239);
   doc.setDrawColor(...MORADO);
   doc.roundedRect(x, y, w, h, 2.5, 2.5, 'FD');
 
-  // Banda superior
   doc.setFillColor(...MORADO);
   doc.roundedRect(x, y, w, 10, 2.5, 2.5, 'F');
   doc.rect(x, y + 5, w, 5, 'F');
@@ -1066,13 +1281,11 @@ async function dibujarCarnet(doc, e, x, y, w, h){
   doc.setFont('helvetica','bold'); doc.setFontSize(9);
   doc.text('REGISTRO ESTUDIANTIL', x + w/2, y + 6.5, { align:'center' });
 
-  // QR a la derecha
   const qs = 32, qx = x + w - qs - 6, qy = y + 10 + (h - 10 - qs)/2;
   doc.addImage(qr, 'PNG', qx, qy, qs, qs);
   doc.setDrawColor(230,225,240);
   doc.roundedRect(qx - 1, qy - 1, qs + 2, qs + 2, 1.5, 1.5, 'S');
 
-  // Nombre, NIE y grado
   const tx = x + 6, tw = w - qs - 16;
   doc.setTextColor(...TINTA);
   doc.setFont('helvetica','bold'); doc.setFontSize(12);
@@ -1085,7 +1298,6 @@ async function dibujarCarnet(doc, e, x, y, w, h){
   doc.text('NIE: ' + e.nie, tx, yy);
   doc.text('Grado: ' + (e.grado || '—'), tx, yy + 5.5);
 
-  // Franja decorativa inferior
   doc.setFillColor(255,180,89);
   doc.rect(x + 6, y + h - 5, w - 12, 1.6, 'F');
 }
@@ -1112,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
   $('#chkArch').addEventListener('change', e => { S.verArch = e.target.checked; renderListado(); });
 
-  flushCola();   // reintenta operaciones pendientes de sesiones anteriores
+  flushCola();
 });
 </script>
 </body>
