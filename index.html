@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF6EF">
+<title>Registro Estudiantil · Panel</title>
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Iconos -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<!-- Tipografías -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FAF6EF;
+    --ink:#221E33;
+    --ink-soft:rgba(34,30,51,.6);
+    --line:rgba(34,30,51,.10);
+    --paper:#FFFFFF;
+
+    --celeste:#C9E5F6;   --celeste-ink:#123C59;   --celeste-deep:#2B7FB8;
+    --naranja:#FFB459;   --naranja-ink:#59300A;   --naranja-deep:#D9770E;
+    --lila:#DED6FF;      --lila-ink:#3B2A80;      --lila-deep:#6B4BD6;
+    --turquesa:#A8E8D6;  --turquesa-ink:#0B4B3D;  --turquesa-deep:#178F72;
+    --morado:#5A3EA6;    --morado-ink:#F4EFFF;    --morado-deep:#443077;
+  }
+
+  *{ -webkit-tap-highlight-color:transparent; }
+
+  body{
+    font-family:'DM Sans',sans-serif;
+    color:var(--ink);
+    background-color:var(--bg);
+    background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
+    background-size:26px 26px;
+    min-height:100vh;
+  }
+
+  /* ============ Encabezado ============ */
+  .site-header{ padding:26px 0 14px; }
+
+  .brand-mark{
+    width:52px; height:52px; border-radius:16px; flex:none;
+    background:var(--morado); color:#fff;
+    display:grid; place-items:center; font-size:1.45rem;
+    box-shadow:0 10px 20px -10px rgba(90,62,166,.7);
+  }
+  .brand-title{
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.45rem;
+    margin:0; letter-spacing:-.4px;
+  }
+  .brand-sub{ margin:0; font-size:.8rem; color:var(--ink-soft); }
+
+  .clock-time{
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem;
+    line-height:1.1; font-variant-numeric:tabular-nums;
+  }
+  .clock-date{ font-size:.78rem; color:var(--ink-soft); text-transform:capitalize; }
+
+  .btn-sync{
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--morado); color:#fff; border:none;
+    padding:12px 22px; border-radius:999px;
+    font-weight:600; font-size:.95rem;
+    box-shadow:0 8px 18px -8px rgba(90,62,166,.55);
+    transition:transform .2s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .btn-sync:hover{ background:var(--morado-deep); color:#fff; transform:translateY(-2px); }
+  .btn-sync i{ transition:transform .5s ease; }
+  .btn-sync:hover i{ transform:rotate(180deg); }
+  .btn-sync:disabled{ opacity:.7; }
+
+  /* ============ Barra de estado de datos ============ */
+  .status-bar{
+    background:var(--paper); border:1px solid var(--line); border-radius:18px;
+    padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin:6px 0 26px;
+  }
+  .status-dot{ width:10px; height:10px; border-radius:50%; position:relative; flex:none; }
+  .status-dot.ok{ background:#22A06B; }
+  .status-dot.warn{ background:#E8A13A; }
+  .status-dot::after{
+    content:''; position:absolute; inset:0; border-radius:50%;
+  }
+  .status-dot.ok::after{ animation:pulseOk 2s infinite; }
+  .status-dot.warn::after{ animation:pulseWarn 2s infinite; }
+  @keyframes pulseOk{ 0%{box-shadow:0 0 0 0 rgba(34,160,107,.45);} 70%{box-shadow:0 0 0 9px rgba(34,160,107,0);} 100%{box-shadow:0 0 0 0 rgba(34,160,107,0);} }
+  @keyframes pulseWarn{ 0%{box-shadow:0 0 0 0 rgba(232,161,58,.45);} 70%{box-shadow:0 0 0 9px rgba(232,161,58,0);} 100%{box-shadow:0 0 0 0 rgba(232,161,58,0);} }
+
+  .status-title{ font-weight:700; font-size:.98rem; }
+  .status-meta{ font-size:.8rem; color:var(--ink-soft); }
+
+  .status-chip{
+    background:rgba(34,30,51,.05); border-radius:999px;
+    padding:6px 14px; font-size:.85rem; font-weight:500;
+  }
+  .status-chip strong{ font-family:'Space Grotesk'; font-weight:700; }
+
+  .btn-mini{
+    border:1.5px solid var(--morado); background:transparent; color:var(--morado);
+    border-radius:999px; padding:7px 16px; font-weight:600; font-size:.85rem;
+    transition:background .2s, color .2s;
+  }
+  .btn-mini:hover{ background:var(--morado); color:#fff; }
+
+  @media (max-width:767.98px){
+    .status-stats{ margin-left:0 !important; width:100%; }
+  }
+
+  /* ============ Tarjetas de módulos (bento) ============ */
+  .mod-card{
+    --card-line:rgba(0,0,0,.12);
+    --card-arrow:rgba(255,255,255,.65);
+    position:relative; height:100%; min-height:230px;
+    display:flex; flex-direction:column; overflow:hidden;
+    border-radius:22px; padding:24px 24px 20px;
+    text-decoration:none;
+    transition:transform .25s cubic-bezier(.2,.7,.3,1.2), box-shadow .25s ease;
+  }
+  .mod-card:hover{ transform:translateY(-5px); }
+  .mod-card:active{ transform:scale(.985); }
+  .mod-card:focus-visible{ outline:3px solid var(--ink); outline-offset:3px; }
+
+  .mod-morado{ --card-line:rgba(255,255,255,.28); --card-arrow:rgba(255,255,255,.16);
+    background:var(--morado); color:var(--morado-ink); }
+  .mod-morado:hover{ box-shadow:0 18px 34px -16px rgba(90,62,166,.65); }
+  .mod-celeste{ --card-deep:var(--celeste-deep); background:var(--celeste); color:var(--celeste-ink); }
+  .mod-celeste:hover{ box-shadow:0 18px 34px -18px rgba(43,127,184,.55); }
+  .mod-naranja{ --card-deep:var(--naranja-deep); background:var(--naranja); color:var(--naranja-ink); }
+  .mod-naranja:hover{ box-shadow:0 18px 34px -18px rgba(217,119,14,.5); }
+  .mod-turquesa{ --card-deep:var(--turquesa-deep); background:var(--turquesa); color:var(--turquesa-ink); }
+  .mod-turquesa:hover{ box-shadow:0 18px 34px -18px rgba(23,143,114,.5); }
+  .mod-lila{ --card-deep:var(--lila-deep); background:var(--lila); color:var(--lila-ink); }
+  .mod-lila:hover{ box-shadow:0 18px 34px -18px rgba(107,75,214,.55); }
+
+  .mod-pattern{ position:absolute; inset:0; pointer-events:none; }
+  .mod-morado .mod-pattern{
+    background:repeating-radial-gradient(circle at 88% -30%, transparent 0 30px, rgba(255,255,255,.08) 30px 32px);
+  }
+  .mod-celeste .mod-pattern{
+    background-image:radial-gradient(rgba(18,60,89,.15) 1.6px, transparent 1.6px);
+    background-size:20px 20px;
+  }
+  .mod-naranja .mod-pattern{
+    background:repeating-linear-gradient(-38deg, transparent 0 16px, rgba(89,48,10,.09) 16px 18px);
+  }
+  .mod-turquesa .mod-pattern{
+    background:repeating-radial-gradient(circle at -12% 115%, transparent 0 24px, rgba(11,75,61,.10) 24px 26px);
+  }
+  .mod-lila .mod-pattern{
+    background:
+      repeating-linear-gradient(45deg, rgba(59,42,128,.07) 0 1.5px, transparent 1.5px 14px),
+      repeating-linear-gradient(-45deg, rgba(59,42,128,.07) 0 1.5px, transparent 1.5px 14px);
+  }
+
+  .mod-num{
+    position:absolute; top:4px; right:18px;
+    font-family:'Space Grotesk'; font-weight:700; font-size:4.4rem; line-height:1;
+    opacity:.10; pointer-events:none; user-select:none;
+  }
+  .mod-hero .mod-num{ font-size:6.5rem; top:0; right:24px; }
+
+  .mod-icon{
+    width:46px; height:46px; border-radius:14px; flex:none;
+    display:grid; place-items:center; font-size:1.35rem;
+    margin-bottom:14px; position:relative;
+    background:rgba(255,255,255,.75); color:var(--card-deep);
+  }
+  .mod-morado .mod-icon{ background:rgba(255,255,255,.18); color:#fff; }
+
+  .mod-title{
+    display:block; font-family:'Space Grotesk'; font-weight:700;
+    font-size:1.35rem; letter-spacing:-.3px; position:relative;
+  }
+  .mod-desc{
+    display:block; font-size:.9rem; opacity:.78; margin-top:5px;
+    max-width:36ch; line-height:1.45; position:relative;
+  }
+
+  .mod-foot{
+    margin-top:auto; padding-top:14px; border-top:1px solid var(--card-line);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    position:relative;
+  }
+  .mod-stat{ font-size:.88rem; font-weight:600; display:flex; align-items:center; gap:7px; opacity:.92; }
+  .stat-n{ font-family:'Space Grotesk'; font-size:1.3rem; font-weight:700; }
+
+  .mod-arrow{
+    width:40px; height:40px; border-radius:50%; flex:none;
+    display:grid; place-items:center; background:var(--card-arrow);
+    transition:transform .25s, background .25s, color .25s;
+  }
+  .mod-card:hover .mod-arrow{ transform:translateX(6px); background:var(--card-deep); color:#fff; }
+  .mod-morado:hover .mod-arrow{ background:#fff; color:var(--morado); }
+
+  .mod-hero{ min-height:264px; }
+  .mod-hero .mod-title{ font-size:2rem; }
+  .mod-hero .mod-desc{ font-size:1rem; max-width:40ch; }
+  .mod-hero .mod-arrow{ width:auto; padding:0 18px; border-radius:999px; gap:8px; display:inline-flex; align-items:center; }
+
+  @media (max-width:575.98px){
+    .mod-hero{ min-height:0; }
+    .mod-hero .mod-title{ font-size:1.6rem; }
+    .mod-num{ font-size:3rem; }
+    .mod-hero .mod-num{ font-size:4rem; }
+    .brand-title{ font-size:1.2rem; }
+  }
+
+  .hint-add{ margin-top:22px; font-size:.8rem; color:var(--ink-soft); }
+  .hint-add code{ background:rgba(34,30,51,.06); padding:2px 7px; border-radius:6px; font-size:.78em; }
+
+  /* ============ Modal de contraseña ============ */
+  .pass-card{
+    border:none; border-radius:26px; position:relative;
+    padding:30px 26px 24px;
+    box-shadow:0 30px 60px -20px rgba(34,30,51,.35);
+  }
+  .pass-close{
+    position:absolute; top:14px; right:14px; width:36px; height:36px;
+    border:none; border-radius:12px; background:transparent; color:var(--ink-soft);
+    display:grid; place-items:center;
+  }
+  .pass-close:hover{ background:rgba(34,30,51,.06); color:var(--ink); }
+  .pass-head{ text-align:center; padding:0 8px; }
+  .pass-icon{
+    width:58px; height:58px; border-radius:18px; margin:0 auto 14px;
+    display:grid; place-items:center; background:#EFE9FF; color:var(--lila-deep); font-size:1.5rem;
+  }
+  .pass-head h5{ font-family:'Space Grotesk'; font-weight:700; margin:0; }
+  .pass-head p{ font-size:.87rem; color:var(--ink-soft); margin:8px 0 0; line-height:1.5; }
+
+  .pass-field{ position:relative; margin:18px 2px 4px; }
+  .pass-field input{
+    width:100%; border:1.5px solid var(--line); border-radius:14px;
+    padding:13px 48px 13px 16px; font-size:1rem; background:var(--bg);
+    transition:border-color .2s, box-shadow .2s, background .2s;
+  }
+  .pass-field input:focus{
+    outline:none; border-color:var(--lila-deep);
+    box-shadow:0 0 0 4px rgba(107,75,214,.14); background:#fff;
+  }
+  .pass-eye{
+    position:absolute; right:7px; top:50%; transform:translateY(-50%);
+    border:none; background:transparent; color:var(--ink-soft);
+    width:38px; height:38px; border-radius:10px;
+  }
+  .pass-eye:hover{ background:rgba(34,30,51,.06); }
+
+  .pass-error{
+    margin:10px 2px 0; font-size:.85rem; font-weight:500; color:#B42318;
+    background:#FDECEA; border-radius:10px; padding:9px 12px;
+    display:flex; align-items:flex-start; gap:8px;
+  }
+
+  .btn-pass{
+    width:100%; margin-top:16px; border:none; border-radius:14px;
+    background:var(--morado); color:#fff; font-weight:600; padding:13px;
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    transition:background .2s;
+  }
+  .btn-pass:hover{ background:var(--morado-deep); color:#fff; }
+  .btn-pass:disabled{ opacity:.75; }
+
+  /* ============ Toasts ============ */
+  .toast-container{
+    position:fixed; bottom:22px; right:22px; z-index:1080;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .app-toast{
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:12px 18px 12px 14px; font-size:.9rem; font-weight:500;
+    box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
+    opacity:0; transform:translateY(12px);
+    transition:opacity .3s ease, transform .3s ease;
+    max-width:340px;
+  }
+  .app-toast.show{ opacity:1; transform:none; }
+  .toast-success i{ color:#178F72; }
+  .toast-warning i{ color:#D9770E; }
+  .toast-danger i{ color:#B42318; }
+
+  .site-footer{ padding:26px 0 36px; text-align:center; font-size:.82rem; color:var(--ink-soft); }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-mark"><i class="bi bi-mortarboard-fill"></i></div>
+        <div>
+          <h1 class="brand-title">Registro Estudiantil</h1>
+          <p class="brand-sub">Panel de gestión docente</p>
+        </div>
+      </div>
+      <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+        <div class="text-end">
+          <div class="clock-time" id="clockTime">--:--:--</div>
+          <div class="clock-date" id="clockDate">&nbsp;</div>
+        </div>
+        <button class="btn-sync" id="btnSync">
+          <i class="bi bi-arrow-repeat"></i><span class="btn-sync-label">Sincronizar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container pb-4">
+
+  <!-- Estado de los datos locales -->
+  <section class="status-bar" aria-live="polite">
+    <span class="status-dot warn" id="statusDot"></span>
+    <div>
+      <div class="status-title" id="statusTitle">Verificando datos locales…</div>
+      <div class="status-meta" id="statusMeta"></div>
+    </div>
+    <div class="status-stats d-flex align-items-center gap-2 flex-wrap ms-auto" id="statusStats"></div>
+  </section>
+
+  <!-- Tarjetas de módulos (se generan desde el arreglo MODULES) -->
+  <section class="row g-3 g-lg-4" id="moduleGrid"></section>
+
+  <p class="hint-add">
+    ¿Nueva funcionalidad? Agrega un objeto al arreglo <code>MODULES</code> en este archivo
+    y crea su página dentro de <code>pages/</code>: el panel la dibuja automáticamente.
+  </p>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    Registro Estudiantil — los datos viven en tu hoja de cálculo; este panel los lee
+    y los guarda localmente en cada dispositivo para un acceso inmediato.
+  </div>
+</footer>
+
+<!-- Modal de contraseña para la primera sincronización -->
+<div class="modal fade" id="passModal" tabindex="-1" aria-hidden="true" aria-labelledby="passTitle" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content pass-card">
+      <button type="button" class="pass-close" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <div class="pass-head">
+        <div class="pass-icon"><i class="bi bi-shield-lock-fill"></i></div>
+        <h5 id="passTitle">Descargar datos del libro</h5>
+        <p>Ingresa la contraseña de administrador. Se pedirá una sola vez en este dispositivo;
+           después los datos se leen desde tu almacenamiento local, sin esperar al servidor.</p>
+      </div>
+      <form id="passForm" novalidate>
+        <div class="pass-field">
+          <input type="password" id="passInput" placeholder="Contraseña" autocomplete="current-password">
+          <button type="button" class="pass-eye" id="btnEye" aria-label="Mostrar u ocultar contraseña">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+        <div class="pass-error d-none" id="passError"><i class="bi bi-exclamation-circle-fill"></i> <span></span></div>
+        <button type="submit" class="btn-pass" id="btnPassSubmit">
+          <span>Descargar datos</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor de notificaciones -->
+<div class="toast-container" id="toastWrap" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ============================================================
+   CONFIGURACIÓN
+   Pega aquí la URL de tu Web App de Apps Script
+   (en Apps Script: Implementar > Nueva implementación > Aplicación web).
+   Cada página del proyecto tendrá su propia constante CONFIG.
+   ============================================================ */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
+  DATA_KEY: 'RE_DATA_V1',    // caché local: { syncedAt, sheets:{ Hoja:[filas] } }
+  TOKEN_KEY: 'RE_TOKEN_V1'   // sesión válida de este dispositivo
+};
+
+/* ============================================================
+   MÓDULOS DEL PANEL
+   Para agregar una funcionalidad nueva en el futuro, añade un
+   objeto aquí y crea su archivo dentro de pages/.
+   ============================================================ */
+const MODULES = [
+  {
+    id:'asistencia', title:'Asistencia', color:'morado', hero:true,
+    desc:'Pase de lista del día: presente, ausente y tardanza, en un solo gesto y con escritura directa a la hoja.',
+    icon:'bi-calendar2-check', href:'pages/asistencia.html',
+    size:'col-12 col-lg-7',
+    stat:()=>'<i class="bi bi-calendar3"></i> Hoy · ' + hoy()
+  },
+  {
+    id:'estudiantes', title:'Estudiantes', color:'celeste',
+    desc:'Ficha de cada estudiante: datos personales, contacto y observaciones.',
+    icon:'bi-people', href:'pages/estudiantes.html',
+    size:'col-12 col-md-6 col-lg-5',
+    stat:(s)=>statRegistros(s,'Estudiantes','estudiantes')
+  },
+  {
+    id:'notas', title:'Notas', color:'naranja',
+    desc:'Calificaciones por materia, evaluación y período, con promedios automáticos.',
+    icon:'bi-journal-check', href:'pages/notas.html',
+    size:'col-12 col-md-6 col-lg-5',
+    stat:(s)=>statRegistros(s,'Notas','notas')
+  },
+  {
+    id:'horas', title:'Horas sociales', color:'turquesa',
+    desc:'Horas de servicio comunitario realizadas y validadas.',
+    icon:'bi-heart-pulse', href:'pages/horas-sociales.html',
+    size:'col-12 col-md-6 col-lg-3',
+    stat:(s)=>statRegistros(s,'HorasSociales','registros')
+  },
+  {
+    id:'clases', title:'Clases', color:'lila',
+    desc:'Secciones, materias y horarios que conforman cada grupo.',
+    icon:'bi-easel', href:'pages/clases.html',
+    size:'col-12 col-md-6 col-lg-4',
+    stat:(s)=>statRegistros(s,'Clases','clases')
+  }
+];
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+const $ = (sel)=> document.querySelector(sel);
+
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function hoy(){
+  return cap(new Date().toLocaleDateString('es',{ weekday:'long', day:'numeric', month:'long' }));
+}
+
+function statRegistros(sheets, hoja, label){
+  const rows = sheets ? sheets[hoja] : null;
+  if(!Array.isArray(rows)) return '<i class="bi bi-cloud-slash"></i> sin datos locales';
+  return '<span class="stat-n" data-count="' + rows.length + '">0</span> ' + label;
+}
+
+function totalRegistros(sheets){
+  let t = 0;
+  Object.values(sheets || {}).forEach(r => { if(Array.isArray(r)) t += r.length; });
+  return t;
+}
+
+function getLocalData(){
+  try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); }
+  catch(e){ return null; }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderModules(){
+  $('#moduleGrid').innerHTML = MODULES.map((m, i)=>`
+    <div class="${m.size}">
+      <a class="mod-card mod-${m.color}${m.hero ? ' mod-hero' : ''}" href="${m.href}">
+        <span class="mod-pattern"></span>
+        <span class="mod-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="mod-icon"><i class="bi ${m.icon}"></i></span>
+        <span class="mod-title">${m.title}</span>
+        <span class="mod-desc">${m.desc}</span>
+        <span class="mod-foot">
+          <span class="mod-stat" data-stat="${m.id}"></span>
+          <span class="mod-arrow">${m.hero ? 'Abrir <i class="bi bi-arrow-right"></i>' : '<i class="bi bi-arrow-right"></i>'}</span>
+        </span>
+      </a>
+    </div>`).join('');
+}
+
+function refreshStats(){
+  const data = getLocalData();
+  const sheets = (data && data.sheets) || {};
+  MODULES.forEach(m=>{
+    const el = document.querySelector('[data-stat="' + m.id + '"]');
+    if(el && m.stat) el.innerHTML = m.stat(sheets);
+  });
+  document.querySelectorAll('.stat-n').forEach(countUp);
+  renderStatusBar(sheets, data);
+}
+
+function renderStatusBar(sheets, data){
+  const dot = $('#statusDot'), title = $('#statusTitle'),
+        meta = $('#statusMeta'), stats = $('#statusStats');
+  if(data){
+    dot.className = 'status-dot ok';
+    title.textContent = 'Datos locales cargados';
+    const f = new Date(data.syncedAt);
+    meta.textContent = 'Última sincronización: '
+      + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
+      + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' });
+    stats.innerHTML =
+      '<span class="status-chip"><strong>' + totalRegistros(sheets) + '</strong> registros</span>' +
+      '<span class="status-chip"><strong>' + Object.keys(sheets).length + '</strong> hojas</span>' +
+      '<button class="btn-mini" id="btnMiniSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>';
+  }else{
+    dot.className = 'status-dot warn';
+    title.textContent = 'Sin datos en este dispositivo';
+    meta.textContent = 'Sincroniza una vez para descargar el libro y trabajar sin esperas.';
+    stats.innerHTML = '<button class="btn-mini" id="btnMiniSync"><i class="bi bi-cloud-arrow-down"></i> Cargar datos</button>';
+  }
+  $('#btnMiniSync').addEventListener('click', doSync);
+}
+
+function countUp(el){
+  const target = parseInt(el.dataset.count, 10) || 0;
+  if(!target){ el.textContent = '0'; return; }
+  const dur = 650, t0 = performance.now();
+  (function step(t){
+    const p = Math.min((t - t0) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * e).toLocaleString('es');
+    if(p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+function tick(){
+  const n = new Date();
+  $('#clockTime').textContent = n.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  $('#clockDate').textContent = cap(n.toLocaleDateString('es',{ weekday:'long', day:'numeric', month:'long' }));
+}
+
+/* ============================================================
+   COMUNICACIÓN CON APPS SCRIPT
+   Contrato: POST con body JSON (texto plano, para evitar CORS).
+     { action:'login', password } -> { ok, token, data:{ syncedAt, sheets } }
+     { action:'sync',  token }    -> { ok, data:{...} } | { ok:false, error:'TOKEN_INVALIDO' }
+   ============================================================ */
+function hayUrl(){
+  return CONFIG.API_URL && !CONFIG.API_URL.includes('PEGA_AQUI');
+}
+
+async function api(payload){
+  const res = await fetch(CONFIG.API_URL, { method:'POST', body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function guardarDatos(r){
+  localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
+  localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify({
+    syncedAt: (r.data && r.data.syncedAt) || new Date().toISOString(),
+    sheets:   (r.data && r.data.sheets) || {}
+  }));
+}
+
+async function doSync(){
+  if(!hayUrl()){
+    toast('Primero pega la URL de tu Web App en CONFIG.API_URL.', 'warning');
+    return;
+  }
+  const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+  if(!token){ abrirModal(); return; }
+
+  setSyncLoading(true);
+  try{
+    const r = await api({ action:'sync', token: token });
+    if(r && r.ok){
+      guardarDatos(r);
+      refreshStats();
+      toast('Datos actualizados desde la hoja de cálculo.', 'success');
+    }else{
+      localStorage.removeItem(CONFIG.TOKEN_KEY);
+      abrirModal();
+    }
+  }catch(e){
+    toast('No pude conectar con el servidor. Revisa la URL y tu conexión.', 'danger');
+  }
+  setSyncLoading(false);
+}
+
+/* ============================================================
+   MODAL DE CONTRASEÑA
+   ============================================================ */
+let passModal = null;
+
+function abrirModal(){
+  $('#passError').classList.add('d-none');
+  $('#passInput').value = '';
+  passModal.show();
+  setTimeout(()=> $('#passInput').focus(), 400);
+}
+
+function showPassError(msg){
+  const b = $('#passError');
+  b.querySelector('span').textContent = msg;
+  b.classList.remove('d-none');
+}
+
+function setPassLoading(on){
+  $('#btnPassSubmit').disabled = on;
+  $('#btnPassSubmit .spinner-border').classList.toggle('d-none', !on);
+}
+
+function setSyncLoading(on){
+  $('#btnSync').disabled = on;
+  $('#btnSync .btn-sync-label').textContent = on ? 'Sincronizando…' : 'Sincronizar';
+}
+
+async function onSubmitPass(e){
+  e.preventDefault();
+  $('#passError').classList.add('d-none');
+  const pw = $('#passInput').value;
+  if(!pw){ showPassError('Escribe la contraseña para continuar.'); return; }
+
+  setPassLoading(true);
+  try{
+    const r = await api({ action:'login', password: pw });
+    if(r && r.ok){
+      guardarDatos(r);
+      passModal.hide();
+      refreshStats();
+      toast('Datos descargados y guardados en este dispositivo.', 'success');
+    }else{
+      showPassError(
+        (r && r.error === 'CONTRASENA_INCORRECTA')
+          ? 'Contraseña incorrecta. Vuelve a intentarlo.'
+          : ((r && r.error) || 'Respuesta inesperada del servidor.')
+      );
+    }
+  }catch(e2){
+    showPassError('No pude conectar con el servidor. Revisa la URL del Web App.');
+  }
+  setPassLoading(false);
+}
+
+function toggleEye(){
+  const inp = $('#passInput');
+  const esClave = inp.type === 'password';
+  inp.type = esClave ? 'text' : 'password';
+  $('#btnEye i').className = esClave ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+
+/* ============================================================
+   NOTIFICACIONES
+   ============================================================ */
+function toast(msg, kind = 'success'){
+  const icons = {
+    success:'check-circle-fill',
+    warning:'exclamation-triangle-fill',
+    danger:'x-circle-fill'
+  };
+  const el = document.createElement('div');
+  el.className = 'app-toast toast-' + kind;
+  el.innerHTML = '<i class="bi bi-' + (icons[kind] || icons.success) + '"></i><span></span>';
+  el.querySelector('span').textContent = msg;
+  $('#toastWrap').appendChild(el);
+  requestAnimationFrame(()=> el.classList.add('show'));
+  setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=> el.remove(), 350);
+  }, 4000);
+}
+
+/* ============================================================
+   INICIO
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', ()=>{
+  passModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('passModal'));
+  renderModules();
+  refreshStats();
+  tick();
+  setInterval(tick, 1000);
+  $('#btnSync').addEventListener('click', doSync);
+  $('#passForm').addEventListener('submit', onSubmitPass);
+  $('#btnEye').addEventListener('click', toggleEye);
+});
+</script>
+</body>
+</html>
