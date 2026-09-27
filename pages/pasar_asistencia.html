@@ -26,8 +26,6 @@
     --rojo:#B42318;     --verde:#178F72;
   }
 
-  /* Respaldo defensivo: aunque Bootstrap CSS no cargue,
-     nada debe verse desplegado */
   .modal:not(.show){ display:none; }
 
   body{
@@ -78,6 +76,15 @@
   .panel-head h2{ font-family:'Space Grotesk'; font-weight:700; font-size:1.05rem; margin:0; }
   .panel-body{ padding:18px 20px; }
 
+  /* Banner del horario de asistencia */
+  .banner-horario{ border-radius:12px; padding:11px 15px; font-size:.86rem;
+    font-weight:600; display:flex; gap:10px; align-items:center; margin-bottom:14px;
+    border:1px solid transparent; }
+  .banner-horario.abierta{ background:rgba(23,143,114,.10); color:var(--turquesa-ink);
+    border-color:rgba(23,143,114,.25); }
+  .banner-horario.cerrada{ background:rgba(180,35,24,.08); color:var(--rojo);
+    border-color:rgba(180,35,24,.22); }
+
   #lector{ width:100%; border-radius:14px; overflow:hidden; background:#221E33; min-height:60px; }
   #lector video{ width:100% !important; border-radius:14px; display:block; }
   .cam-off{
@@ -118,7 +125,6 @@
   .be-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .be-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
 
-  /* Tarjeta flash al escanear */
   #flash{ position:fixed; inset:0; z-index:1070; display:none; place-items:center;
     background:rgba(34,30,51,.45); backdrop-filter:blur(3px); padding:20px; }
   #flash.visible{ display:grid; }
@@ -130,11 +136,13 @@
     display:grid; place-items:center; font-size:1.8rem; }
   .fi-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .fi-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .fi-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
   .flash-nombre{ font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; line-height:1.25; }
   .flash-estado{ display:inline-block; margin-top:10px; border-radius:999px;
     padding:6px 18px; font-weight:700; font-size:.9rem; letter-spacing:.03em; }
   .fe-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .fe-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .fe-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
   .flash-meta{ margin-top:8px; font-size:.82rem; color:var(--ink-soft); }
 
   .empty-mini{ text-align:center; color:var(--ink-soft); font-size:.88rem; padding:26px 10px; }
@@ -193,10 +201,13 @@
           <i class="bi bi-camera-video"></i>
           <h2>Lector de códigos QR</h2>
           <span class="ms-auto badge text-bg-light" style="font-size:.72rem;">
-            TARDE después de las <span id="horaLimite"></span>
+            Horario: <span id="badgeHorario">--</span>
           </span>
         </div>
         <div class="panel-body">
+          <div class="banner-horario abierta" id="bannerHorario">
+            <i class="bi bi-clock-history"></i><span id="bannerTexto">…</span>
+          </div>
           <div id="lector">
             <div class="cam-off" id="camOff">
               <i class="bi bi-qr-code-scan"></i>
@@ -254,36 +265,55 @@
 <!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
 <script src="../libs/bootstrap.bundle.min.js"
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
-<!-- Lector QR: primero local (libs/); si falta, CDN. Si ninguno
-     carga, la página usa la detección nativa BarcodeDetector -->
+<!-- Lector QR: primero local (libs/); si falta, CDN -->
 <script src="../libs/html5-qrcode.min.js"
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(s);"></script>
 
 <script>
 const CONFIG = {
-  API_URL:    'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
-  DATA_KEY:   'RE_DATA_V1',
-  TOKEN_KEY:  'RE_TOKEN_V1',
-  QUEUE_KEY:  'RE_QUEUE_V1',
-  ASIST_KEY:  'RE_ASIST_V1',   // registro local del día (pantalla y duplicados)
-  HORA_TARDE: '08:00'          // 'HH:MM': después de esto se marca TARDE
+  API_URL:     'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
+  DATA_KEY:    'RE_DATA_V1',
+  TOKEN_KEY:   'RE_TOKEN_V1',
+  QUEUE_KEY:   'RE_QUEUE_V1',
+  ASIST_KEY:   'RE_ASIST_V1',
+  TZ:          'America/El_Salvador', // zona horaria oficial del registro
+  HORA_INICIO: '07:00',               // ventana permitida para registrar
+  HORA_FIN:    '12:00',               // fuera de este rango NO se registra
+  HORA_TARDE:  '08:00'                // TARDE después de esto ('' = nunca TARDE)
 };
 
 const S = {
   cola: [], token: '', flushing: false,
   hoy: { fecha:'', items:[] },
   scanner: null, camOn: false,
-  nativa: null,               // motor alternativo (BarcodeDetector)
+  nativa: null,
   lastScan: { text:'', t:0 }
 };
 
 const $ = s => document.querySelector(s);
 
-/* ============ UTILIDADES ============ */
+/* ============ TIEMPO (siempre hora El Salvador) ============ */
 const pad = n => String(n).padStart(2,'0');
-function hoyISO(){ const d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
-function horaAhora(){ const d = new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
-function estadoPorHora(h){ return (CONFIG.HORA_TARDE && h > CONFIG.HORA_TARDE) ? 'TARDE' : 'PRESENTE'; }
+
+function ahoraSV(){
+  return new Date(new Date().toLocaleString('en-US', { timeZone: CONFIG.TZ }));
+}
+function hoyISO(){
+  const d = ahoraSV();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function horaAhora(){
+  const d = ahoraSV();
+  return pad(d.getHours())+':'+pad(d.getMinutes());
+}
+/* ¿La hora está dentro de la ventana permitida? */
+function enVentana(h){
+  if(!CONFIG.HORA_INICIO || !CONFIG.HORA_FIN) return true;
+  return h >= CONFIG.HORA_INICIO && h <= CONFIG.HORA_FIN;
+}
+function estadoPorHora(h){
+  return (CONFIG.HORA_TARDE && h > CONFIG.HORA_TARDE) ? 'TARDE' : 'PRESENTE';
+}
 
 function sinTildes(s){
   return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -322,8 +352,6 @@ function vibrar(ok){ try{ navigator.vibrate && navigator.vibrate(ok ? 80 : [60,6
 /* ============ DATOS LOCALES ============ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
 
-/* Estudiantes del caché local (sin contraseña: si no hay caché, la
-   lista queda vacía y el servidor completa el nombre al confirmar) */
 function estudiantesLocales(){
   const d = leerData();
   const filas = (d && d.sheets && d.sheets.Estudiantes) || [];
@@ -360,6 +388,15 @@ function registrarDesdeTexto(texto){
   texto = String(texto || '').trim();
   if(!texto) return;
 
+  /* Ventana horaria: fuera de ella NO se registra nada */
+  const hoy = hoyISO(), hora = horaAhora();
+  if(!enVentana(hora)){
+    beep(false); vibrar(false);
+    mostrarFlashCerrado(hora);
+    toast('Fuera del horario de asistencia (' + CONFIG.HORA_INICIO + '–' + CONFIG.HORA_FIN + '). No se registró.', 'warning');
+    return;
+  }
+
   let id = '', nie = texto;
   try{
     const j = JSON.parse(texto);
@@ -378,7 +415,6 @@ function registrarDesdeTexto(texto){
   if(est){ id = est.id; nie = est.nie; }
   if(!id && !nie){ beep(false); toast('Código no reconocido.', 'danger'); return; }
 
-  const hoy = hoyISO(), hora = horaAhora();
   const estado = estadoPorHora(hora);
   const item = {
     id, nie,
@@ -399,7 +435,6 @@ function registrarDesdeTexto(texto){
   mostrarFlash(item, !!previo);
   beep(estado === 'PRESENTE'); vibrar(true);
 
-  /* Encola y envía: la hoja Asistencia NO pide contraseña */
   S.cola.push({
     action:'asistencia', sheet:'Asistencia',
     id, nie, nombre:item.nombre, grado:item.grado,
@@ -410,7 +445,6 @@ function registrarDesdeTexto(texto){
   flushCola();
 }
 
-/* Envía la cola en orden; sin red queda pendiente y reintenta */
 async function flushCola(){
   if(!hayUrl() || S.flushing || !S.cola.length) return;
   S.flushing = true; renderStatus();
@@ -427,9 +461,6 @@ async function flushCola(){
         const it = S.hoy.items.find(x => (op.id && x.id === op.id) || (!op.id && x.nie === op.nie));
         if(it && !it.nombre){ it.nombre = r.nombre; guardarAsist(); renderHoy(); }
       }
-    }else if(r && r.error && String(r.error).startsWith('ERROR_SERVIDOR')){
-      S.cola.shift(); persistirCola();
-      toast('El servidor rechazó un registro: ' + r.error, 'danger');
     }else{
       S.cola.shift(); persistirCola();
       toast('Registro rechazado: ' + ((r && r.error) || 'error'), 'danger');
@@ -446,13 +477,12 @@ async function iniciarCam(){
   $('#camOff').style.display = 'none';
   try{
     if(typeof Html5Qrcode !== 'undefined'){
-      /* Reutiliza el lector si ya existe (evita duplicarlo al reintentar) */
       if(!S.scanner) S.scanner = new Html5Qrcode('lector');
       await S.scanner.start(
         { facingMode:'environment' },
         { fps:10, qrbox:{ width:250, height:250 } },
         onScan,
-        () => {}   /* frames sin QR: se ignoran */
+        () => {}
       );
       S.camOn = true;
       uiCamOn();
@@ -499,7 +529,7 @@ async function iniciarNativa(){
         const codes = await detector.detect(video);
         if(codes.length && codes[0].rawValue) onScan(codes[0].rawValue);
       }
-    }catch(e){ /* frame ilegible: se ignora */ }
+    }catch(e){}
     S.nativa.raf = requestAnimationFrame(loop);
   };
   loop();
@@ -514,7 +544,6 @@ function detenerNativa(){
   S.nativa = null;
 }
 
-/* ============ CÁMARA — controles comunes ============ */
 function uiCamOn(){
   $('#btnCam').classList.add('d-none');
   $('#btnCamOff').classList.remove('d-none');
@@ -559,6 +588,19 @@ function mostrarFlash(item, yaEstaba){
   flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 2600);
 }
 
+function mostrarFlashCerrado(hora){
+  $('#flIco').className = 'flash-ico fi-cerrado';
+  $('#flIcoI').className = 'bi bi-slash-circle';
+  $('#flNombre').textContent = 'Fuera de horario';
+  $('#flEstado').textContent = 'ASISTENCIA CERRADA';
+  $('#flEstado').className = 'flash-estado fe-cerrado';
+  $('#flMeta').textContent = 'Se registra de ' + CONFIG.HORA_INICIO
+    + ' a ' + CONFIG.HORA_FIN + ' · hora actual ' + hora;
+  $('#flash').classList.add('visible');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 3000);
+}
+
 /* ============ RENDER ============ */
 function renderHoy(){
   const items = S.hoy.items;
@@ -585,7 +627,7 @@ function renderHoy(){
       }).join('')
     : '<li class="empty-mini">Aún no hay escaneos hoy. Inicia el escáner o registra un NIE a mano.</li>';
 
-  $('#fechaLista').textContent = new Date().toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
+  $('#fechaLista').textContent = ahoraSV().toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
 }
 
 function renderStatus(){
@@ -599,16 +641,27 @@ function renderStatus(){
   }
   dot.className = 'status-dot ' + (S.cola.length ? 'warn' : 'ok');
   tit.textContent = S.cola.length ? 'Enviando registros…' : 'En línea — escritura directa a la hoja';
-  met.textContent = 'Hoja «Asistencia»: un estudiante por fila, un día por columna.';
+  met.textContent = 'Hoja «Asistencia»: nombre por fila, un día por columna.';
   chips.innerHTML =
     '<span class="chip">Marca: <strong>ESTADO hh:mm</strong></span>' +
     (S.cola.length ? '<span class="chip chip-pend"><strong>' + S.cola.length + '</strong> pendiente(s)</span>' : '');
 }
 
 function tick(){
-  const n = new Date();
-  $('#reloj').textContent = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
-  $('#fechaHoy').textContent = n.toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
+  const sv = ahoraSV();
+  $('#reloj').textContent = pad(sv.getHours()) + ':' + pad(sv.getMinutes()) + ':' + pad(sv.getSeconds());
+  $('#fechaHoy').textContent = 'Hora El Salvador · ' + sv.toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
+
+  const h = pad(sv.getHours()) + ':' + pad(sv.getMinutes());
+  const abierta = enVentana(h);
+  const b = $('#bannerHorario');
+  b.className = 'banner-horario ' + (abierta ? 'abierta' : 'cerrada');
+  $('#bannerTexto').textContent = abierta
+    ? 'Asistencia abierta — cierra a las ' + CONFIG.HORA_FIN
+      + (CONFIG.HORA_TARDE ? ' · TARDE después de las ' + CONFIG.HORA_TARDE : '')
+      + ' · hora ' + h
+    : 'Asistencia cerrada — se registra de ' + CONFIG.HORA_INICIO
+      + ' a ' + CONFIG.HORA_FIN + ' · hora actual ' + h;
 }
 
 /* ============ INICIO ============ */
@@ -617,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toast('Bootstrap no cargó: verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'warning');
   }
   cargarAsist();
-  $('#horaLimite').textContent = CONFIG.HORA_TARDE;
+  $('#badgeHorario').textContent = CONFIG.HORA_INICIO + ' – ' + CONFIG.HORA_FIN;
   tick(); setInterval(tick, 1000);
   renderHoy();
   renderStatus();
