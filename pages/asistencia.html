@@ -20,7 +20,7 @@
     --line:rgba(34,30,51,.10); --paper:#FFFFFF;
     --celeste:#C9E5F6;  --celeste-ink:#123C59;
     --naranja:#FFB459;  --naranja-ink:#59300A;
-    --lila:#DED6FF;     --lila-ink:#3B2A80;
+    --lila:#DED6FF;     --lila-ink:#3B2A80;  --lila-deep:#6B4BD6;
     --turquesa:#A8E8D6; --turquesa-ink:#0B4B3D;
     --morado:#5A3EA6;   --morado-ink:#F4EFFF; --morado-deep:#443077;
     --rojo:#B42318;     --verde:#178F72;
@@ -105,7 +105,7 @@
     font-family:'Space Grotesk'; font-weight:700; }
   .lm-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .lm-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
-  .lm-falta{ background:rgba(180,35,24,.09); color:var(--rojo); }
+  .lm-just{ background:rgba(107,75,214,.12); color:var(--lila-deep); }
   .lm-na{ background:rgba(34,30,51,.05); color:rgba(34,30,51,.35); }
 
   /* ============ Tarjetas por grado ============ */
@@ -150,6 +150,15 @@
   thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
     text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
     background:var(--paper); }
+  /* Nombre clicable: abre el historial de justificaciones */
+  .nom-link{
+    background:none; border:none; padding:0; margin:0;
+    font:inherit; font-weight:600; color:inherit; text-align:left;
+    cursor:pointer; border-bottom:1.5px dashed rgba(90,62,166,.35);
+    transition:color .15s, border-color .15s;
+  }
+  .nom-link:hover{ color:var(--morado-deep); border-bottom-color:var(--morado); }
+  .nom-link:focus-visible{ outline:2px solid var(--morado); outline-offset:2px; border-radius:4px; }
   /* Columnas finales de conteo, destacadas */
   .col-res{ text-align:center; padding:8px 12px; width:84px; min-width:84px;
     background:rgba(90,62,166,.07); border-bottom:1px solid var(--line);
@@ -166,6 +175,8 @@
   .glifo{ line-height:1; }
   .m-ok{ background:rgba(23,143,114,.09); color:var(--verde); }
   .m-tarde{ background:rgba(217,119,14,.11); color:var(--naranja-deep); }
+  .m-just{ background:rgba(107,75,214,.08); color:var(--lila-deep); }
+  .m-just .glifo{ text-transform:uppercase; }
   .m-falta{ background:rgba(180,35,24,.06); color:var(--rojo); }
   .m-na{ color:rgba(34,30,51,.18); }
   td.res{ font-family:'Space Grotesk'; font-weight:700; font-size:1rem;
@@ -176,6 +187,59 @@
   td.res.res-cero{ color:rgba(34,30,51,.35); }
   tbody tr:hover .celda{ filter:brightness(.96); }
   tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
+
+  /* ============ Modal de justificaciones ============ */
+  .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
+    box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
+  .app-modal .m-close{
+    position:absolute; top:13px; right:13px; width:34px; height:34px;
+    border:none; border-radius:11px; background:transparent; color:var(--ink-soft);
+    display:grid; place-items:center;
+  }
+  .app-modal .m-close:hover{ background:rgba(34,30,51,.06); color:var(--ink); }
+  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .m-icon{ width:44px; height:44px; border-radius:14px; flex:none;
+    display:grid; place-items:center; font-size:1.2rem; }
+  .m-head h5{ font-family:'Space Grotesk'; font-weight:700; margin:0; font-size:1.15rem;
+    word-break:break-word; }
+  .m-head p{ margin:2px 0 0; font-size:.8rem; color:var(--ink-soft); }
+  .just-lista{ max-height:340px; overflow-y:auto; margin-top:10px;
+    border-top:1px solid var(--line); }
+  .just-item{ display:flex; align-items:center; gap:12px; padding:10px 2px;
+    border-bottom:1px solid var(--line); }
+  .just-item:last-child{ border-bottom:none; }
+  .just-fecha{ font-family:'Space Grotesk'; font-weight:700; min-width:58px;
+    font-variant-numeric:tabular-nums; }
+  .just-letra{ width:30px; height:30px; border-radius:9px; flex:none;
+    display:grid; place-items:center; font-family:'Space Grotesk'; font-weight:700;
+    background:rgba(107,75,214,.12); color:var(--lila-deep); text-transform:uppercase; }
+  .just-txt{ font-size:.9rem; line-height:1.35; }
+  .just-vacia{ text-align:center; color:var(--ink-soft); font-size:.9rem; padding:24px 8px; }
+
+  /* ============ Estado vacío / toasts ============ */
+  .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
+    border-radius:22px; padding:56px 24px; text-align:center; }
+  .empty-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
+    display:grid; place-items:center; font-size:1.7rem;
+    background:var(--turquesa); color:var(--turquesa-ink); }
+  .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
+  .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
+  .btn-primario{ display:inline-flex; align-items:center; gap:8px;
+    background:var(--morado); color:#fff; border:none; padding:11px 20px;
+    border-radius:999px; font-weight:600; font-size:.92rem;
+    box-shadow:0 8px 18px -8px rgba(90,62,166,.55); transition:background .2s; }
+  .btn-primario:hover{ background:var(--morado-deep); color:#fff; }
+
+  .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
+    display:flex; flex-direction:column; gap:10px; }
+  .app-toast{ display:flex; align-items:center; gap:10px; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:12px 18px 12px 14px;
+    font-size:.9rem; font-weight:500; box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
+    opacity:0; transform:translateY(12px); transition:opacity .3s, transform .3s; max-width:340px; }
+  .app-toast.show{ opacity:1; transform:none; }
+  .toast-success i{ color:#178F72; }
+  .toast-warning i{ color:#D9770E; }
+  .toast-danger i{ color:#B42318; }
 
   /* ============ Escritorio: todo más grande ============ */
   @media (min-width:992px){
@@ -198,6 +262,9 @@
     .col-res{ width:110px; min-width:110px; font-size:.82rem; }
     td.res{ font-size:1.25rem; }
     .mes{ font-size:.85rem; padding:10px 14px; }
+    .m-head h5{ font-size:1.25rem; }
+    .just-txt{ font-size:.96rem; }
+    .just-lista{ max-height:420px; }
   }
 
   /* ============ Móvil: compacto y limpio ============ */
@@ -214,46 +281,8 @@
     .col-res{ width:62px; min-width:62px; padding:6px 6px; font-size:.66rem; }
     td.res{ font-size:.95rem; padding:5px 4px; }
     .btn-back{ width:38px; height:38px; }
+    .app-toast{ max-width:calc(100vw - 44px); }
   }
-
-  /* ============ Estado vacío / modales / toasts ============ */
-  .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
-    border-radius:22px; padding:56px 24px; text-align:center; }
-  .empty-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
-    display:grid; place-items:center; font-size:1.7rem;
-    background:var(--turquesa); color:var(--turquesa-ink); }
-  .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
-  .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
-
-  .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
-    box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
-  .m-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .m-icon{ width:44px; height:44px; border-radius:14px; flex:none;
-    display:grid; place-items:center; font-size:1.2rem; }
-  .frm-label{ font-size:.72rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:block; }
-  .frm-input{ width:100%; border:1.5px solid var(--line); border-radius:12px;
-    padding:10px 13px; font-size:.95rem; background:var(--bg); }
-  .frm-input:focus{ outline:none; border-color:var(--lila-deep); background:#fff;
-    box-shadow:0 0 0 4px rgba(107,75,214,.12); }
-  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
-  .frm-error.visible{ display:block; }
-  .btn-aceptar{ width:100%; margin-top:18px; border:none; border-radius:13px;
-    background:var(--morado); color:#fff; font-weight:600; padding:12px;
-    display:inline-flex; align-items:center; justify-content:center; gap:9px; }
-  .btn-aceptar:hover{ background:var(--morado-deep); color:#fff; }
-  .btn-aceptar:disabled{ opacity:.75; }
-
-  .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
-    display:flex; flex-direction:column; gap:10px; }
-  .app-toast{ display:flex; align-items:center; gap:10px; background:#fff;
-    border:1px solid var(--line); border-radius:14px; padding:12px 18px 12px 14px;
-    font-size:.9rem; font-weight:500; box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
-    opacity:0; transform:translateY(12px); transition:opacity .3s, transform .3s; max-width:340px; }
-  .app-toast.show{ opacity:1; transform:none; }
-  .toast-success i{ color:#178F72; }
-  .toast-warning i{ color:#D9770E; }
-  .toast-danger i{ color:#B42318; }
 
   @media (prefers-reduced-motion:reduce){
     *{ animation:none !important; transition:none !important; }
@@ -269,7 +298,7 @@
       <div class="brand-mark"><i class="bi bi-table"></i></div>
       <div>
         <h1 class="brand-title">Asistencia</h1>
-        <p class="brand-sub">Por grado y mes · lista completa con asistencias (+) y faltas (−)</p>
+        <p class="brand-sub">Por grado y mes · lista completa con asistencias (+), faltas (−) y justificaciones (letra)</p>
       </div>
       <div class="ms-auto">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -306,34 +335,31 @@
     <span>Marca:</span>
     <span class="mini-mark lm-ok">+</span> presente
     <span class="mini-mark lm-tarde">+</span> tarde
-    <span class="mini-mark lm-falta">−</span> falta
+    <span class="mini-mark lm-just">A</span> justificada (letra del motivo)
     <span class="mini-mark lm-na">·</span> sin clase
-    <span class="ms-auto" style="font-size:.76rem;">FALTAS = días con clase sin registro · Pasa el cursor para ver la hora.</span>
+    <span class="ms-auto" style="font-size:.76rem;">
+      Pasa el cursor sobre una letra para ver el motivo ·
+      <strong>Haz clic en el nombre</strong> para ver su historial.
+    </span>
   </div>
 
   <section id="listado"></section>
 </main>
 
-<!-- Modal: contraseña (primera carga en este dispositivo) -->
-<div class="modal fade" id="mdPass" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+<!-- Modal: historial de justificaciones del estudiante -->
+<div class="modal fade" id="mdJust" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content app-modal">
-      <div class="m-head" style="justify-content:center;">
-        <div class="m-icon" style="background:#EFE9FF; color:var(--lila-deep);"><i class="bi bi-shield-lock-fill"></i></div>
+      <button type="button" class="m-close" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <div class="m-head">
+        <div class="m-icon" style="background:rgba(107,75,214,.12); color:var(--lila-deep);"><i class="bi bi-clipboard2-check"></i></div>
+        <div>
+          <h5 id="justNombre">—</h5>
+          <p id="justMeta"></p>
+        </div>
       </div>
-      <h5 class="text-center" style="font-family:'Space Grotesk'; font-weight:700;">Conectar con la hoja de cálculo</h5>
-      <p class="text-center mb-1" style="font-size:.87rem; color:var(--ink-soft);">
-        Ingresa la contraseña de administrador. Se pedirá una sola vez en este dispositivo.
-      </p>
-      <form id="frmPass" novalidate>
-        <label class="frm-label" for="inpPass" style="margin-top:10px;">Contraseña</label>
-        <input class="frm-input" type="password" id="inpPass" autocomplete="current-password">
-        <div class="frm-error text-center" id="passError"></div>
-        <button type="submit" class="btn-aceptar" id="btnPassSubmit">
-          <span>Conectar y descargar</span>
-          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
-        </button>
-      </form>
+      <div class="d-flex gap-2 flex-wrap" id="justChips"></div>
+      <div class="just-lista" id="justLista"></div>
     </div>
   </div>
 </div>
@@ -359,13 +385,33 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v4';
+const VERSION = 'v6';
 
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
   DATA_KEY:  'RE_DATA_V1',
   TOKEN_KEY: 'RE_TOKEN_V1',
   VIEW_KEY:  'RE_ASIS_VIEW_V1'
+};
+
+/* Motivos por defecto (idénticos a los que crea el .gs en la hoja
+   Motivos); se usan solo si esa hoja aún no está en el caché */
+const DEF_MOTIVOS = {
+  a:'Enfermedad del estudiante',
+  b:'Enfermedad o cuidado de un familiar',
+  c:'Consulta médica o dental',
+  d:'Falta de transporte',
+  e:'Clima adverso o calamidad natural',
+  f:'Fallecimiento de un familiar (duelo)',
+  g:'Actividad familiar importante',
+  h:'Trámite personal o gubernamental',
+  i:'Embarazo o control prenatal',
+  j:'Accidente o discapacidad temporal',
+  k:'Razones económicas del hogar',
+  l:'Corte de agua o energía en el hogar',
+  m:'Inseguridad o riesgo en la zona',
+  n:'Actividad escolar autorizada',
+  o:'Otro motivo autorizado por el docente'
 };
 
 const S = { q: '', grado: 'todos', mes: 'todos', token: '', busy: false };
@@ -381,10 +427,8 @@ function modalONada(inst){
   toast('Bootstrap JS no cargó. Verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'danger');
   return false;
 }
-const mdPass = () => instanciaModal('mdPass');
 
 /* ============ UTILIDADES ============ */
-const pad = n => String(n).padStart(2,'0');
 const NOMBRES_MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
                      'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MC = ['mc-celeste','mc-naranja','mc-turquesa','mc-lila','mc-morado'];
@@ -428,6 +472,20 @@ function nombreMes(mm){
   return NOMBRES_MES[parseInt(mm,10) - 1] || ('Mes ' + mm);
 }
 
+/* Mapa letra -> texto del motivo (hoja Motivos del caché;
+   si no existe, los 15 por defecto) */
+function mapaMotivos(){
+  const d = leerData();
+  const filas = (d && d.sheets && d.sheets.Motivos) || [];
+  const mapa = {};
+  filas.forEach(r => {
+    const k = String(r.letra || '').toLowerCase();
+    if(/^[a-o]$/.test(k) && String(r.motivo || '').trim()) mapa[k] = String(r.motivo).trim();
+  });
+  if(!Object.keys(mapa).length) return { ...DEF_MOTIVOS };
+  return mapa;
+}
+
 /* ============ DATOS ============ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
 
@@ -449,14 +507,12 @@ function indexAsistencia(fechas){
   return mapa;
 }
 
-/* Fuente de filas = hoja Estudiantes (completa, sin archivados).
-   La asistencia solo se CRUZA para pintar marcas. */
+/* Fuente de filas = hoja Estudiantes (completa, sin archivados) */
 function construirDatos(){
   const d = leerData();
   const filasEst = (d && d.sheets && d.sheets.Estudiantes) || [];
   if(!filasEst.length) return null;
 
-  /* Fechas existentes en la hoja Asistencia (puede estar vacía) */
   const asisRaw = (d.sheets && d.sheets['Asistencia']) || [];
   const fechas = asisRaw.length
     ? Object.keys(asisRaw[0]).filter(h => /^\d{1,2}\/\d{1,2}$/.test(String(h)))
@@ -471,6 +527,8 @@ function construirDatos(){
       return {
         id, nie,
         nombre: [e.nombre1, e.nombre2, e.apellido1, e.apellido2].filter(Boolean).join(' '),
+        apellido1: e.apellido1 || '', apellido2: e.apellido2 || '',
+        nombre1: e.nombre1 || '', nombre2: e.nombre2 || '',
         grado:  String(e.grado || '').trim() || 'Sin grado',
         clave:  claveDe(id, nie)
       };
@@ -489,7 +547,6 @@ function camposOrden(e){
   return [e.apellido1 || '', e.apellido2 || '', e.nombre1 || '', e.nombre2 || ''];
 }
 
-/* Meses presentes en las columnas, en orden cronológico */
 function mesesDisponibles(fechas){
   const seen = new Set(), out = [];
   fechas.forEach(f => {
@@ -557,7 +614,6 @@ function renderListado(){
     return;
   }
 
-  /* Si el mes guardado ya no existe, vuelve a "todo el año" */
   const meses = mesesDisponibles(datos.fechas);
   if(S.mes !== 'todos' && meses.length && !meses.includes(S.mes)){
     S.mes = 'todos';
@@ -598,22 +654,20 @@ function renderListado(){
 
 function tablaGrado(grado, estudiantes, datos, fv, k){
   const gs = gruposDeMes(fv);
+  const mMap = mapaMotivos();
 
-  /* Banda de meses (sobre las columnas de días) */
   let mesesHtml = '';
   gs.forEach((g, i) => {
     mesesHtml += `<th class="mes ${MC[(k + i) % MC.length]}" colspan="${g.n}">`
       + esc(nombreMes(g.mm)) + '</th>';
   });
 
-  /* Encabezados de días */
   let diasHtml = '';
   fv.forEach(f => {
     diasHtml += `<th class="dia" title="${esc(f)}">${esc(String(f).split('/')[0])}</th>`;
   });
 
-  /* Días con clase para este grado: columnas con al menos una marca
-     entre sus estudiantes */
+  /* Días con clase para este grado */
   const idxs = fv.map(f => datos.fechas.indexOf(f));
   const diaActivo = fv.map((f, i) =>
     estudiantes.some(e => {
@@ -622,21 +676,20 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
     }));
 
   /* Filas: TODOS los estudiantes del grado.
-     + = asistió (verde presente / naranja tarde)
-     − = falta (día con clase sin registro del estudiante)
-     · = sin clase ese día para el grado */
+     + = asistió · − = falta · letra = justificada · · = sin clase */
   const conDatos = estudiantes
     .map(e => {
       const a = datos.asis[e.clave];
       const marcas = fv.map((f, i) => a ? (a.marcas[idxs[i]] || '') : '');
       let asist = 0;
       marcas.forEach((m, i) => {
-        if(diaActivo[i]){
-          if(m.trim()) asist++;
-        }
+        if(!diaActivo[i]) return;
+        const v = m.trim();
+        if(!v || /^[a-o]$/i.test(v)) return;   // falta justificada no es asistencia
+        asist++;
       });
-      const faltas = diaActivo.filter(Boolean).length - asist;
-      return { e, marcas, asist, faltas: Math.max(0, faltas) };
+      const faltas = Math.max(0, diaActivo.filter(Boolean).length - asist);
+      return { e, marcas, asist, faltas };
     })
     .sort((a,b) =>
       claveDeCampos(camposOrden(a.e)).localeCompare(claveDeCampos(camposOrden(b.e)), 'es'));
@@ -649,13 +702,20 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
         tds += '<td class="celda m-na" title="Sin clase"><span class="glifo">·</span></td>';
         return;
       }
-      if(!m){
+      const v = m.trim();
+      if(!v){
         tds += '<td class="celda m-falta" title="Falta"><span class="glifo">−</span></td>';
         return;
       }
-      const tarde = /^TARDE/i.test(m);
-      const hora = (m.match(/(\d{1,2}:\d{2})/) || [,''])[1];
-      tds += `<td class="celda ${tarde ? 'm-tarde' : 'm-ok'}" title="${esc(m)}">`
+      if(/^[a-o]$/i.test(v)){
+        const txt = mMap[v.toLowerCase()];
+        tds += `<td class="celda m-just" title="Justificada: ${esc(v)}${txt ? ' · ' + esc(txt) : ''}">`
+             + `<span class="glifo">${esc(v)}</span></td>`;
+        return;
+      }
+      const tarde = /^TARDE/i.test(v);
+      const hora = (v.match(/(\d{1,2}:\d{2})/) || [,''])[1];
+      tds += `<td class="celda ${tarde ? 'm-tarde' : 'm-ok'}" title="${esc(v)}">`
            + '<span class="glifo">+</span>'
            + (hora ? `<small>${esc(hora)}</small>` : '')
            + '</td>';
@@ -663,10 +723,11 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
     const clsA = c.asist === 0 ? 'res-cero' : 'res-ok';
     const clsF = c.faltas === 0 ? 'res-cero' : 'res-falta';
     body += `<tr>
-      <td class="col-nombre">${esc(c.e.nombre || ('NIE ' + c.e.nie))}</td>
+      <td class="col-nombre"><button type="button" class="nom-link" data-clave="${esc(c.e.clave)}"
+        title="Ver justificaciones de ${esc(c.e.nombre || c.e.nie)}">${esc(c.e.nombre || ('NIE ' + c.e.nie))}</button></td>
       ${tds}
       <td class="res ${clsA}" title="Asistencias del periodo">${c.asist}</td>
-      <td class="res ${clsF}" title="Faltas del periodo">${c.faltas}</td>
+      <td class="res ${clsF}" title="Faltas del periodo (sin contar justificadas)">${c.faltas}</td>
     </tr>`;
   });
 
@@ -694,6 +755,58 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
         </table>
       </div>
     </article>`;
+}
+
+/* ============ MODAL: HISTORIAL DE JUSTIFICACIONES ============ */
+function abrirJust(clave){
+  const datos = construirDatos();
+  if(!datos) return;
+  const e = datos.estudiantes.find(x => x.clave === clave);
+  if(!e) return;
+
+  const mMap = mapaMotivos();
+  const a = datos.asis[clave];
+  const marcas = a ? a.marcas : [];
+
+  /* Días con clase del grado (todo el año, para el resumen) */
+  const comps = datos.estudiantes.filter(x => x.grado === e.grado);
+  const diasClase = datos.fechas.filter((f, i) =>
+    comps.some(x => {
+      const ax = datos.asis[x.clave];
+      return ax && (ax.marcas[i] || '').trim();
+    })
+  ).length;
+
+  let asist = 0;
+  const justs = [];
+  datos.fechas.forEach((f, i) => {
+    const v = (marcas[i] || '').trim();
+    if(!v) return;
+    if(/^[a-o]$/i.test(v)){
+      justs.push({ f, letra: v.toLowerCase(), txt: mMap[v.toLowerCase()] || '' });
+    }else{
+      asist++;
+    }
+  });
+  const faltas = Math.max(0, diasClase - asist - justs.length);
+
+  $('#justNombre').textContent = e.nombre || ('NIE ' + e.nie);
+  $('#justMeta').textContent = e.grado + (e.nie ? ' · NIE ' + e.nie : '');
+  $('#justChips').innerHTML =
+    `<span class="chip"><strong>${asist}</strong> asistencias</span>` +
+    `<span class="chip"><strong>${faltas}</strong> faltas</span>` +
+    `<span class="chip"><strong>${justs.length}</strong> justificadas</span>`;
+
+  $('#justLista').innerHTML = justs.length
+    ? justs.map(j => `
+        <div class="just-item">
+          <span class="just-fecha">${esc(j.f)}</span>
+          <span class="just-letra">${esc(j.letra)}</span>
+          <span class="just-txt">${esc(j.txt || 'Motivo no definido en la hoja Motivos')}</span>
+        </div>`).join('')
+    : '<div class="just-vacia">Este estudiante no tiene faltas justificadas registradas.</div>';
+
+  modalONada(instanciaModal('mdJust'));
 }
 
 function renderGradosSelect(){
@@ -788,7 +901,7 @@ async function refrescar(silencioso){
 
 /* ============ LOGIN ============ */
 function abrirPass(){
-  const m = mdPass();
+  const m = instanciaModal('mdPass');
   if(!modalONada(m)) return;
   $('#passError').classList.remove('visible');
   $('#inpPass').value = '';
@@ -808,7 +921,7 @@ async function onSubmitPass(e){
       localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
       localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
       S.token = r.token;
-      const mp = mdPass(); if(mp) mp.hide();
+      const mp = instanciaModal('mdPass'); if(mp) mp.hide();
       render();
       toast('Conectado: datos descargados en este dispositivo.', 'success');
     }else{
@@ -844,6 +957,12 @@ function init(){
   $('#inpBuscar').addEventListener('input', e => { S.q = e.target.value; renderListado(); });
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; guardarVista(); renderListado(); renderStatus(); });
   $('#selMes').addEventListener('change', e => { S.mes = e.target.value; guardarVista(); renderListado(); renderStatus(); });
+
+  /* Clic en el nombre -> historial de justificaciones */
+  $('#listado').addEventListener('click', e => {
+    const b = e.target.closest('.nom-link');
+    if(b && b.dataset.clave) abrirJust(b.dataset.clave);
+  });
 
   refrescar(true);
 }
