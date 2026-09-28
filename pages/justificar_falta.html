@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF6EF">
+<title>Justificar falta · Registro Estudiantil</title>
+
+<!-- Bootstrap + iconos: primero desde libs/ (tu repo); si falta, CDN -->
+<link rel="stylesheet" href="../libs/bootstrap.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
+<link rel="stylesheet" href="../libs/bootstrap-icons.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
+<!-- Tipografías -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#FAF6EF; --ink:#221E33; --ink-soft:rgba(34,30,51,.6);
+    --line:rgba(34,30,51,.10); --paper:#FFFFFF;
+    --celeste:#C9E5F6;  --celeste-ink:#123C59;
+    --naranja:#FFB459;  --naranja-ink:#59300A;  --naranja-deep:#D9770E;
+    --lila:#DED6FF;     --lila-ink:#3B2A80;     --lila-deep:#6B4BD6;
+    --turquesa:#A8E8D6; --turquesa-ink:#0B4B3D;
+    --morado:#5A3EA6;   --morado-ink:#F4EFFF;   --morado-deep:#443077;
+    --rojo:#B42318;     --verde:#178F72;
+  }
+
+  /* ============================================================
+     LAYOUT GENERAL (reutilizable en todas las páginas)
+     ============================================================ */
+  .wrap-fluid{
+    width:100%; max-width:1920px; margin:0 auto;
+    padding-left:clamp(12px, 3vw, 44px);
+    padding-right:clamp(12px, 3vw, 44px);
+  }
+  .site-header{ padding:clamp(18px, 2.6vw, 30px) 0 12px; }
+  .brand-title{ font-size:clamp(1.2rem, 1rem + 0.9vw, 1.75rem); }
+  .brand-sub{ font-size:clamp(.76rem, .72rem + .2vw, .86rem); }
+  /* ============================================================ */
+
+  .modal:not(.show){ display:none; }
+
+  body{
+    font-family:'DM Sans',sans-serif; color:var(--ink);
+    background-color:var(--bg);
+    background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
+    background-size:26px 26px; min-height:100vh;
+  }
+  .brand-mark{ width:clamp(44px, 3vw, 54px); height:clamp(44px, 3vw, 54px);
+    border-radius:14px; flex:none;
+    background:var(--naranja); color:var(--naranja-ink); display:grid; place-items:center;
+    font-size:clamp(1.2rem, 1rem + .4vw, 1.5rem); }
+  .brand-title{ font-family:'Space Grotesk'; font-weight:700; margin:0; }
+  .brand-sub{ margin:0; color:var(--ink-soft); }
+  .btn-back{ width:42px; height:42px; border-radius:13px; flex:none;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    display:grid; place-items:center; transition:background .2s, transform .2s; }
+  .btn-back:hover{ background:var(--lila); color:var(--lila-ink); transform:translateX(-2px); }
+
+  /* ============ Panel del formulario ============ */
+  .panel-form{
+    background:var(--paper); border:1px solid var(--line); border-radius:22px;
+    box-shadow:0 4px 14px -10px rgba(34,30,51,.18);
+    max-width:880px; margin:0 auto 20px; overflow:hidden;
+  }
+  .panel-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:15px 22px; border-bottom:1px solid var(--line);
+    background:var(--naranja); color:var(--naranja-ink); }
+  .panel-head h2{ font-family:'Space Grotesk'; font-weight:700;
+    font-size:clamp(1.02rem, .95rem + .3vw, 1.2rem); margin:0; }
+  .panel-body{ padding:clamp(16px, 2vw, 26px); }
+
+  .intro{ display:flex; gap:10px; align-items:flex-start; font-size:.88rem;
+    color:var(--ink-soft); background:rgba(107,75,214,.07);
+    border:1px solid rgba(107,75,214,.18); border-radius:12px;
+    padding:11px 14px; margin-bottom:18px; line-height:1.45; }
+  .intro i{ color:var(--lila-deep); font-size:1.05rem; margin-top:1px; }
+
+  .frm-label{ font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:block; }
+  .frm-input{ width:100%; border:1.5px solid var(--line); border-radius:12px;
+    padding:11px 13px; font-size:.98rem; background:var(--bg);
+    transition:border-color .2s, box-shadow .2s, background .2s; }
+  .frm-input:focus{ outline:none; border-color:var(--naranja-deep); background:#fff;
+    box-shadow:0 0 0 4px rgba(217,119,14,.12); }
+  .frm-input.invalido{ border-color:var(--rojo); background:#FDF6F5; }
+  .frm-error{ font-size:.78rem; color:var(--rojo); margin-top:4px; display:none; }
+  .frm-error.visible{ display:block; }
+
+  /* Verificación del NIE */
+  .verif{ display:flex; align-items:center; gap:8px; margin-top:7px;
+    font-size:.86rem; font-weight:600; min-height:22px; }
+  .verif .v-ico{ width:22px; height:22px; border-radius:7px; flex:none;
+    display:grid; place-items:center; font-size:.75rem;
+    font-family:'Space Grotesk'; font-weight:700; }
+  .v-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
+  .v-bad{ background:rgba(180,35,24,.10); color:var(--rojo); }
+  .v-load{ background:rgba(34,30,51,.06); color:var(--ink-soft); }
+  .verif.ok{ color:var(--verde); }
+  .verif.bad{ color:var(--rojo); }
+
+  .btn-enviar{ width:100%; margin-top:20px; border:none; border-radius:13px;
+    background:var(--morado); color:#fff; font-weight:600; padding:13px;
+    font-size:1rem; display:inline-flex; align-items:center; justify-content:center;
+    gap:9px; transition:background .2s; }
+  .btn-enviar:hover{ background:var(--morado-deep); color:#fff; }
+  .btn-enviar:disabled{ opacity:.75; }
+
+  /* Resultado del envío */
+  .resultado{ border-radius:16px; padding:18px 20px; margin-top:18px;
+    display:none; gap:14px; align-items:flex-start; border:1px solid transparent; }
+  .resultado.visible{ display:flex; }
+  .resultado .r-ico{ width:46px; height:46px; border-radius:14px; flex:none;
+    display:grid; place-items:center; font-family:'Space Grotesk';
+    font-weight:700; font-size:1.5rem; }
+  .resultado h4{ font-family:'Space Grotesk'; font-weight:700; font-size:1.05rem; margin:0 0 4px; }
+  .resultado p{ margin:0; font-size:.9rem; line-height:1.45; }
+  .res-ok{ background:rgba(23,143,114,.09); border-color:rgba(23,143,114,.25); }
+  .res-ok .r-ico{ background:rgba(23,143,114,.15); color:var(--verde); }
+  .res-aviso{ background:rgba(217,119,14,.08); border-color:rgba(217,119,14,.3); }
+  .res-aviso .r-ico{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .res-error{ background:rgba(180,35,24,.07); border-color:rgba(180,35,24,.25); }
+  .res-error .r-ico{ background:rgba(180,35,24,.10); color:var(--rojo); }
+
+  /* Reglas */
+  .reglas{ max-width:880px; margin:0 auto; display:grid; gap:10px;
+    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); }
+  .regla{ background:var(--paper); border:1px solid var(--line); border-radius:16px;
+    padding:13px 16px; display:flex; gap:10px; align-items:flex-start;
+    font-size:.84rem; color:var(--ink-soft); line-height:1.4; }
+  .regla i{ color:var(--naranja-deep); font-size:1.05rem; margin-top:1px; flex:none; }
+  .regla b{ color:var(--ink); }
+
+  .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
+    display:flex; flex-direction:column; gap:10px; }
+  .app-toast{ display:flex; align-items:center; gap:10px; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:12px 18px 12px 14px;
+    font-size:.9rem; font-weight:500; box-shadow:0 14px 30px -12px rgba(34,30,51,.3);
+    opacity:0; transform:translateY(12px); transition:opacity .3s, transform .3s; max-width:340px; }
+  .app-toast.show{ opacity:1; transform:none; }
+  .toast-success i{ color:#178F72; }
+  .toast-warning i{ color:#D9770E; }
+  .toast-danger i{ color:#B42318; }
+
+  /* ============ Escritorio: todo más grande ============ */
+  @media (min-width:992px){
+    .panel-body{ padding:28px 32px; }
+    .intro{ font-size:.95rem; }
+    .frm-input{ font-size:1.05rem; padding:13px 15px; }
+    .frm-label{ font-size:.78rem; }
+    .verif{ font-size:.95rem; }
+    .btn-enviar{ font-size:1.08rem; padding:15px; }
+    .resultado h4{ font-size:1.15rem; }
+    .resultado p{ font-size:.96rem; }
+    .regla{ font-size:.9rem; }
+  }
+
+  /* ============ Móvil ============ */
+  @media (max-width:575.98px){
+    .brand-title{ font-size:1.15rem; }
+    .panel-head{ padding:12px 14px; }
+    .intro{ font-size:.82rem; }
+    .app-toast{ max-width:calc(100vw - 44px); }
+    .btn-back{ width:38px; height:38px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap-fluid">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a class="btn-back" href="../index.html" aria-label="Volver al panel"><i class="bi bi-arrow-left"></i></a>
+      <div class="brand-mark"><i class="bi bi-clipboard2-check"></i></div>
+      <div>
+        <h1 class="brand-title">Justificar falta</h1>
+        <p class="brand-sub">Registra el motivo de tu inasistencia · queda la letra en la hoja Asistencia</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap-fluid pb-5">
+
+  <section class="panel-form">
+    <div class="panel-head">
+      <i class="bi bi-pencil-square"></i>
+      <h2>Formulario de justificación</h2>
+    </div>
+    <div class="panel-body">
+
+      <div class="intro">
+        <i class="bi bi-info-circle"></i>
+        <span>Escribe tu <b>NIE</b> para que el sistema encuentre tu nombre.
+              Elige la <b>fecha</b> del día que faltaste (no puede ser futura)
+              y el <b>motivo</b>. Si ese día ya tienes asistencia registrada,
+              no se permitirá la justificación.</span>
+      </div>
+
+      <form id="frmJust" novalidate>
+        <div class="row g-3">
+          <div class="col-12 col-md-5">
+            <label class="frm-label" for="inpNie">Tu NIE *</label>
+            <input class="frm-input" id="inpNie" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="Ej. 20256434">
+            <div class="verif" id="verif"></div>
+            <div class="frm-error" id="eNie">Verifica tu NIE para continuar.</div>
+          </div>
+          <div class="col-12 col-md-7">
+            <label class="frm-label" for="inpNombre">Tu nombre completo *</label>
+            <input class="frm-input" id="inpNombre" maxlength="80" autocomplete="off" list="dlEstudiantes" placeholder="Escríbelo para buscarlo">
+            <datalist id="dlEstudiantes"></datalist>
+            <div class="frm-error" id="eNombre">Selecciona tu nombre de la lista.</div>
+          </div>
+          <div class="col-12 col-md-5">
+            <label class="frm-label" for="inpFecha">Fecha de la falta *</label>
+            <input class="frm-input" id="inpFecha" type="date">
+            <div class="frm-error" id="eFecha">No se permiten fechas futuras.</div>
+          </div>
+          <div class="col-12 col-md-7">
+            <label class="frm-label" for="selMotivo">Motivo de la inasistencia *</label>
+            <select class="frm-input" id="selMotivo"></select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-enviar" id="btnEnviar">
+          <i class="bi bi-send"></i><span>Enviar justificación</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+
+        <div class="resultado" id="resultado">
+          <span class="r-ico" id="rIco">J</span>
+          <div>
+            <h4 id="rTitulo">—</h4>
+            <p id="rTexto"></p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="reglas">
+    <div class="regla"><i class="bi bi-calendar-x"></i>
+      <span><b>Solo hoy o días pasados.</b> No se aceptan fechas futuras.</span></div>
+    <div class="regla"><i class="bi bi-check2-circle"></i>
+      <span><b>Si ya tienes asistencia</b> registrada ese día, la justificación será rechazada.</span></div>
+    <div class="regla"><i class="bi bi-grid-3x3-gap"></i>
+      <span><b>En la hoja queda la letra</b> del motivo (a, b, c…). El docente define los textos.</span></div>
+  </section>
+</main>
+
+<div class="toast-container" id="toastWrap" aria-live="polite"></div>
+
+<!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
+<script src="../libs/bootstrap.bundle.min.js"
+        onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
+
+<script>
+/* ============================================================
+   DIAGNÓSTICO VISIBLE — cualquier error se pinta en consola.
+   ============================================================ */
+window.addEventListener('error', function(ev){
+  console.error('Error en la página:', ev.message, 'línea', ev.lineno);
+});
+
+const VERSION = 'v1';
+
+const CONFIG = {
+  API_URL:  'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
+  DATA_KEY: 'RE_DATA_V1',
+  TZ:       'America/El_Salvador'
+};
+
+/* Motivos por defecto (se usan si la hoja "Motivos" aún no existe;
+   cuando exista, la hoja manda) */
+const DEF_MOTIVOS = [
+  ['a','Enfermedad del estudiante'],
+  ['b','Enfermedad o cuidado de un familiar'],
+  ['c','Consulta médica o dental'],
+  ['d','Falta de transporte'],
+  ['e','Clima adverso o calamidad natural'],
+  ['f','Fallecimiento de un familiar (duelo)'],
+  ['g','Actividad familiar importante'],
+  ['h','Trámite personal o gubernamental'],
+  ['i','Embarazo o control prenatal'],
+  ['j','Accidente o discapacidad temporal'],
+  ['k','Razones económicas del hogar'],
+  ['l','Corte de agua o energía en el hogar'],
+  ['m','Inseguridad o riesgo en la zona'],
+  ['n','Actividad escolar autorizada'],
+  ['o','Otro motivo autorizado por el docente']
+];
+
+const S = { sel: null, est: [], motivos: [], debounce: null };
+
+const $ = s => document.querySelector(s);
+
+/* ============ UTILIDADES ============ */
+const pad = n => String(n).padStart(2,'0');
+
+function ahoraSV(){
+  return new Date(new Date().toLocaleString('en-US', { timeZone: CONFIG.TZ }));
+}
+function hoyISO(){
+  const d = ahoraSV();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function compararTexto(a, b){ return String(a).localeCompare(String(b), 'es'); }
+function sinTildes(s){
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function nombreCompleto(e){
+  return [e.nombre1, e.nombre2, e.apellido1, e.apellido2].filter(Boolean).join(' ');
+}
+function hayUrl(){ return CONFIG.API_URL && !CONFIG.API_URL.includes('PEGA_AQUI'); }
+async function api(payload){
+  const res = await fetch(CONFIG.API_URL, { method:'POST', body: JSON.stringify(payload) });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+function toast(msg, kind = 'success'){
+  const icons = { success:'check-circle-fill', warning:'exclamation-triangle-fill', danger:'x-circle-fill' };
+  const el = document.createElement('div');
+  el.className = 'app-toast toast-' + kind;
+  el.innerHTML = '<i class="bi bi-' + (icons[kind] || icons.success) + '"></i><span></span>';
+  el.querySelector('span').textContent = msg;
+  $('#toastWrap').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
+}
+
+/* ============ DATOS ============ */
+function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
+
+function cargarEstudiantes(){
+  const d = leerData();
+  S.est = ((d && d.sheets && d.sheets.Estudiantes) || [])
+    .filter(e => String(e.archivado || '') !== 'SI')
+    .map(e => ({
+      id: String(e.id || ''), nie: String(e.nie ?? ''),
+      nombre1: e.nombre1 || '', nombre2: e.nombre2 || '',
+      apellido1: e.apellido1 || '', apellido2: e.apellido2 || '',
+      grado: String(e.grado || '').trim() || 'Sin grado'
+    }));
+}
+
+function cargarMotivos(){
+  const d = leerData();
+  const filas = (d && d.sheets && d.sheets.Motivos) || [];
+  const lista = filas
+    .map(r => [String(r.letra || '').toLowerCase(), String(r.motivo || '')])
+    .filter(x => /^[a-o]$/.test(x[0]) && x[1]);
+  S.motivos = lista.length ? lista : DEF_MOTIVOS;
+}
+
+/* Busca en el caché; si no hay caché, pregunta al servidor */
+async function buscarNIE(nie){
+  const local = S.est.find(e => e.nie === nie);
+  if(local){
+    return { ok:true, id: local.id, nombre: nombreCompleto(local), grado: local.grado };
+  }
+  if(hayUrl()){
+    try{
+      const r = await api({ action:'buscar', nie });
+      if(r && r.ok) return r;
+      return { ok:false, error:(r && r.error) || 'NIE_NO_ENCONTRADO' };
+    }catch(e){
+      return { ok:false, error:'SIN_CONEXION' };
+    }
+  }
+  return { ok:false, error:'NIE_NO_ENCONTRADO' };
+}
+
+/* ============ VERIFICACIÓN DEL NIE ============ */
+function setVerif(estado, texto){
+  const v = $('#verif');
+  if(estado === 'load'){
+    v.className = 'verif';
+    v.innerHTML = '<span class="v-ico v-load"><i class="bi bi-three-dots"></i></span> Buscando…';
+    return;
+  }
+  if(estado === 'ok'){
+    v.className = 'verif ok';
+    v.innerHTML = '<span class="v-ico v-ok"><i class="bi bi-check-lg"></i></span> ' + esc(texto);
+    return;
+  }
+  if(estado === 'bad'){
+    v.className = 'verif bad';
+    v.innerHTML = '<span class="v-ico v-bad"><i class="bi bi-x-lg"></i></span> ' + esc(texto);
+    return;
+  }
+  v.className = 'verif';
+  v.innerHTML = '';
+}
+
+async function verificarNIE(){
+  const nie = $('#inpNie').value.trim();
+  if(!nie){
+    S.sel = null;
+    setVerif('off');
+    return;
+  }
+  setVerif('load');
+  const r = await buscarNIE(nie);
+  if(r.ok){
+    S.sel = { id: String(r.id || ''), nie, nombre: r.nombre, grado: r.grado || '' };
+    if($('#inpNombre').value.trim() === '') $('#inpNombre').value = r.nombre;
+    setVerif('ok', r.nombre + (r.grado ? ' · ' + r.grado : ''));
+    $('#eNie').classList.remove('visible');
+    $('#inpNie').classList.remove('invalido');
+  }else{
+    S.sel = null;
+    const msg = r.error === 'ESTUDIANTE_ARCHIVADO' ? 'Estudiante archivado'
+      : r.error === 'SIN_CONEXION' ? 'Sin conexión para verificar'
+      : 'NIE no encontrado';
+    setVerif('bad', msg);
+  }
+}
+
+/* ============ BUSCADOR POR NOMBRE ============ */
+function poblarDatalist(){
+  const dl = $('#dlEstudiantes');
+  const q = sinTildes($('#inpNombre').value.trim());
+  let lista = S.est;
+  if(q) lista = S.est.filter(e => sinTildes(nombreCompleto(e)).includes(q));
+  lista = lista
+    .sort((a,b) => claveOrden(a).localeCompare(claveOrden(b), 'es'))
+    .slice(0, 60);
+  dl.innerHTML = lista.map(e =>
+    `<option value="${esc(nombreCompleto(e))}">${esc(e.grado)} · NIE ${esc(e.nie)}</option>`
+  ).join('');
+}
+
+function claveOrden(e){
+  return [e.apellido1, e.apellido2, e.nombre1, e.nombre2]
+    .map(sinTildes)
+    .map(t => t.split(/\s+/).filter(w => w && w !== 'de' && w !== 'del').join(' '))
+    .join(' ');
+}
+
+function onNombreChange(){
+  const val = $('#inpNombre').value.trim();
+  if(!val) return;
+  const est = S.est.find(e => sinTildes(nombreCompleto(e)) === sinTildes(val));
+  if(est){
+    $('#inpNie').value = est.nie;
+    verificarNIE();
+  }
+}
+
+/* ============ MOTIVOS Y FECHA ============ */
+function poblarMotivos(){
+  $('#selMotivo').innerHTML = '<option value="">— Selecciona un motivo —</option>'
+    + S.motivos.map(m =>
+        `<option value="${esc(m[0])}">${esc(m[0])} · ${esc(m[1])}</option>`).join('');
+}
+
+/* ============ ENVÍO ============ */
+function setResultado(tipo, titulo, texto){
+  const r = $('#resultado');
+  const ico = tipo === 'ok' ? '+' : (tipo === 'aviso' ? '!' : '×');
+  r.className = 'resultado visible ' + (tipo === 'ok' ? 'res-ok' : tipo === 'aviso' ? 'res-aviso' : 'res-error');
+  $('#rIco').textContent = ico;
+  $('#rTitulo').textContent = titulo;
+  $('#rTexto').textContent = texto;
+}
+
+function limpiarResultado(){
+  $('#resultado').className = 'resultado';
+}
+
+async function onSubmit(e){
+  e.preventDefault();
+  limpiarResultado();
+  let valido = true;
+
+  $('#inpNie').classList.remove('invalido');
+  $('#inpNombre').classList.remove('invalido');
+  $('#inpFecha').classList.remove('invalido');
+  $('#eNie').classList.remove('visible');
+  $('#eNombre').classList.remove('visible');
+  $('#eFecha').classList.remove('visible');
+
+  if(!S.sel){
+    $('#inpNie').classList.add('invalido');
+    $('#eNie').classList.add('visible');
+    valido = false;
+  }
+  if(!$('#inpNombre').value.trim()){
+    $('#inpNombre').classList.add('invalido');
+    $('#eNombre').classList.add('visible');
+    valido = false;
+  }
+  const fecha = $('#inpFecha').value;
+  if(!fecha || fecha > hoyISO()){
+    $('#inpFecha').classList.add('invalido');
+    $('#eFecha').classList.add('visible');
+    valido = false;
+  }
+  const letra = $('#selMotivo').value;
+  if(!letra){
+    $('#selMotivo').classList.add('invalido');
+    valido = false;
+    toast('Selecciona el motivo de la inasistencia.', 'warning');
+  }
+  if(!valido) return;
+
+  const btn = $('#btnEnviar');
+  btn.disabled = true;
+  btn.querySelector('.spinner-border').classList.remove('d-none');
+  try{
+    const r = await api({
+      action:'justificar',
+      id: S.sel.id, nie: S.sel.nie,
+      fecha, motivo: letra
+    });
+    if(r && r.ok){
+      const motivoTxt = r.motivo ? (' — ' + r.motivo) : '';
+      setResultado('ok',
+        'Justificación registrada (' + r.letra + ')',
+        (r.nombre || S.sel.nombre) + ' · fecha ' + r.fecha + motivoTxt
+        + '. Tu docente podrá verla en la hoja de asistencia.'
+        + (r.previo ? ' (Se reemplazó el motivo anterior: ' + r.previo + ')' : ''));
+      toast('Justificación enviada correctamente.', 'success');
+    }else{
+      const err = (r && r.error) || 'ERROR';
+      if(err === 'YA_HAY_ASISTENCIA'){
+        setResultado('aviso',
+          'Ya hay asistencia registrada',
+          'En la fecha seleccionada ya aparece tu asistencia (SI), por lo que no se puede justificar. Selecciona otra fecha.');
+      }else if(err === 'FECHA_FUTURA'){
+        setResultado('error', 'Fecha no permitida',
+          'No se permiten fechas futuras. Elige hoy o un día anterior.');
+      }else if(err === 'ESTUDIANTE_ARCHIVADO'){
+        setResultado('error', 'Estudiante archivado',
+          'Este NIE corresponde a un estudiante archivado; no puede justificar faltas.');
+      }else if(err === 'NIE_NO_ENCONTRADO'){
+        setResultado('error', 'NIE no encontrado',
+          'No encontré ese NIE en la lista de estudiantes. Verifícalo e intenta de nuevo.');
+      }else if(err === 'MOTIVO_INVALIDO'){
+        setResultado('error', 'Motivo no válido',
+          'El motivo seleccionado ya no está permitido. Recarga la página e intenta de nuevo.');
+      }else{
+        setResultado('error', 'No se pudo registrar',
+          'El servidor respondió: ' + err + '. Intenta más tarde.');
+      }
+      toast('No se pudo registrar la justificación.', 'danger');
+    }
+  }catch(e2){
+    setResultado('error', 'Sin conexión',
+      'No pude comunicar con el servidor. Verifica tu internet e intenta de nuevo.');
+    toast('Sin conexión con el servidor.', 'danger');
+  }
+  btn.disabled = false;
+  btn.querySelector('.spinner-border').classList.add('d-none');
+}
+
+/* ============ INICIO — blindado ============ */
+function init(){
+  cargarEstudiantes();
+  cargarMotivos();
+  poblarMotivos();
+
+  const hoy = hoyISO();
+  const f = $('#inpFecha');
+  f.max = hoy;
+  f.value = hoy;
+
+  poblarDatalist();
+
+  $('#inpNie').addEventListener('input', () => {
+    clearTimeout(S.debounce);
+    S.debounce = setTimeout(verificarNIE, 400);
+  });
+  $('#inpNie').addEventListener('blur', verificarNIE);
+  $('#inpNombre').addEventListener('input', poblarDatalist);
+  $('#inpNombre').addEventListener('change', onNombreChange);
+  $('#selMotivo').addEventListener('change', e => e.target.classList.remove('invalido'));
+  $('#frmJust').addEventListener('submit', onSubmit);
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
+</script>
+</body>
+</html>
