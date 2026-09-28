@@ -62,8 +62,8 @@
   .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
   .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
   .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.15); }
-  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; }
-  .status-meta{ font-size:.78rem; color:var(--ink-soft); }
+  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; word-break:break-word; }
+  .status-meta{ font-size:.78rem; color:var(--ink-soft); word-break:break-word; }
   .chip{ background:rgba(34,30,51,.05); border-radius:999px; padding:6px 13px;
     font-size:.82rem; font-weight:500; white-space:nowrap; }
   .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
@@ -145,6 +145,37 @@
   tbody tr:hover .celda{ filter:brightness(.96); }
   tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
 
+  /* ============ Consolidado mensual ============ */
+  .cons-wrap{ padding:14px 20px 18px; border-top:1px solid var(--line);
+    background:rgba(34,30,51,.015); }
+  .cons-title{ display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+    font-family:'Space Grotesk'; font-weight:700; font-size:.9rem;
+    color:var(--ink-soft); margin-bottom:10px; }
+  .cons-title .cons-dias{
+    background:rgba(90,62,166,.1); color:var(--morado-deep);
+    border-radius:999px; padding:3px 11px; font-size:.74rem; }
+  .scroll-x-cons{ overflow-x:auto; }
+  .cons-table{ border-collapse:collapse; width:100%; min-width:520px; font-size:.86rem; }
+  .cons-table th{
+    font-family:'Space Grotesk'; font-weight:600; font-size:.7rem;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);
+    background:rgba(34,30,51,.03); padding:8px 12px; text-align:center;
+    border-bottom:1px solid var(--line); white-space:nowrap; }
+  .cons-table th:first-child{ text-align:left; }
+  .cons-table td{ padding:8px 12px; border-bottom:1px solid var(--line);
+    text-align:center; font-family:'Space Grotesk'; font-weight:600; }
+  .cons-table td:first-child{ text-align:left; font-family:'DM Sans';
+    font-weight:600; }
+  .cons-table tbody tr:hover td{ background:rgba(107,75,214,.05); }
+  .cons-table .c-num-ok{ color:var(--verde); }
+  .cons-table .c-num-tarde{ color:var(--naranja-deep); }
+  .cons-table .c-num-falta{ color:var(--rojo); }
+  .pct{ display:inline-block; min-width:52px; border-radius:999px;
+    padding:3px 10px; font-size:.78rem; font-weight:700; }
+  .pc-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
+  .pc-med{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .pc-bad{ background:rgba(180,35,24,.10); color:var(--rojo); }
+
   /* ============ Estado vacío / modales / toasts ============ */
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
     border-radius:22px; padding:56px 24px; text-align:center; }
@@ -198,7 +229,7 @@
       <div class="brand-mark"><i class="bi bi-table"></i></div>
       <div>
         <h1 class="brand-title">Asistencia</h1>
-        <p class="brand-sub">Consulta de la hoja «Asistencia» · un día por columna, agrupados por mes</p>
+        <p class="brand-sub">Consulta por grado y mes · con consolidado de asistencias y faltas</p>
       </div>
       <div class="ms-auto">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -212,7 +243,7 @@
   <section class="status-bar" aria-live="polite">
     <span class="status-dot warn" id="statusDot"></span>
     <div>
-      <div class="status-title" id="statusTitle">Verificando…</div>
+      <div class="status-title" id="statusTitle">Cargando página…</div>
       <div class="status-meta" id="statusMeta"></div>
     </div>
     <div class="ms-auto d-flex gap-2 flex-wrap" id="statusChips"></div>
@@ -226,13 +257,16 @@
     <select class="select-grado" id="selGrado" aria-label="Filtrar por grado">
       <option value="todos">Todos los grados</option>
     </select>
+    <select class="select-grado" id="selMes" aria-label="Filtrar por mes">
+      <option value="todos">Todo el año</option>
+    </select>
   </section>
 
   <div class="leyenda">
     <span>Marca:</span>
     <span class="mini-mark lm-ok"><i class="bi bi-check-lg"></i></span> presente
     <span class="mini-mark lm-tarde"><i class="bi bi-alarm"></i></span> tarde
-    <span class="mini-mark lm-vacia"><i class="bi bi-dot"></i></span> sin registro
+    <span class="mini-mark lm-vacia"><i class="bi bi-dot"></i></span> falta / sin registro
     <span class="ms-auto" style="font-size:.74rem;">Pasa el cursor sobre una marca para ver la hora completa.</span>
   </div>
 
@@ -270,16 +304,43 @@
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
 
 <script>
+/* ============================================================
+   DIAGNÓSTICO VISIBLE — cualquier error se pinta en la barra.
+   ============================================================ */
+window.addEventListener('error', function(ev){
+  try{
+    var t = document.getElementById('statusTitle');
+    var m = document.getElementById('statusMeta');
+    var d = document.getElementById('statusDot');
+    if(t) t.textContent = 'Error en la página: ' + (ev.message || 'desconocido');
+    if(m) m.textContent = 'Línea ' + (ev.lineno || '?') + ' — copia este texto y avísame.';
+    if(d) d.className = 'status-dot off';
+  }catch(e){}
+});
+
+const VERSION = 'v2';
+
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
   DATA_KEY:  'RE_DATA_V1',
-  TOKEN_KEY: 'RE_TOKEN_V1'
+  TOKEN_KEY: 'RE_TOKEN_V1',
+  VIEW_KEY:  'RE_ASIS_VIEW_V1'   // recuerda grado y mes elegidos
 };
 
-const S = { q: '', grado: 'todos', token: '', busy: false };
+const S = { q: '', grado: 'todos', mes: 'todos', token: '', busy: false };
 
 const $ = s => document.querySelector(s);
-const mdPass = () => bootstrap.Modal.getOrCreateInstance($('#mdPass'));
+
+function instanciaModal(id){
+  if(!window.bootstrap) return null;
+  return bootstrap.Modal.getOrCreateInstance(document.getElementById(id));
+}
+function modalONada(inst){
+  if(inst){ inst.show(); return true; }
+  toast('Bootstrap JS no cargó. Verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'danger');
+  return false;
+}
+const mdPass = () => instanciaModal('mdPass');
 
 /* ============ UTILIDADES ============ */
 const pad = n => String(n).padStart(2,'0');
@@ -289,6 +350,9 @@ const MC = ['mc-celeste','mc-naranja','mc-turquesa','mc-lila','mc-morado'];
 const GC = ['gc-celeste','gc-naranja','gc-turquesa','gc-lila','gc-morado'];
 const GI = ['bi-mortarboard','bi-backpack','bi-book','bi-pencil-square','bi-easel'];
 
+function compararTexto(a, b){
+  return String(a).localeCompare(String(b), 'es');
+}
 function sinTildes(s){
   return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
@@ -319,6 +383,9 @@ function claveDeCampos(campos){
     .map(t => t.split(/\s+/).filter(w => w && w !== 'de' && w !== 'del').join(' '))
     .join(' ');
 }
+function nombreMes(mm){
+  return NOMBRES_MES[parseInt(mm,10) - 1] || ('Mes ' + mm);
+}
 
 /* ============ DATOS ============ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
@@ -330,7 +397,7 @@ function indexEstudiantes(){
   const porId = {}, porNie = {};
   filas.forEach(e => {
     if(e.id) porId[String(e.id)] = e;
-    if(e.nie !== undefined && e.nie !== '') porNie[String(e.nie)] = e;
+    if(e.nie !== undefined && String(e.nie) !== '') porNie[String(e.nie)] = e;
   });
   return { porId, porNie };
 }
@@ -346,6 +413,8 @@ function construirMatriz(){
   const headers = Object.keys(filasRaw[0]);
   const fechas = headers.filter(h => /^\d{1,2}\/\d{1,2}$/.test(String(h)));
 
+  /* DEDUPLICACIÓN: una fila por estudiante (por id, nie o nombre) */
+  const vistos = new Set();
   const filas = filasRaw
     .filter(r => String(r.nombre || '') || String(r.id || '') || String(r.nie || ''))
     .map(r => {
@@ -356,21 +425,41 @@ function construirMatriz(){
         nombre: String(r.nombre || '') ||
                 (est ? [est.nombre1, est.nombre2, est.apellido1, est.apellido2]
                        .filter(Boolean).join(' ') : ''),
-        grado:  String(r.grado || '') || (est ? (est.grado || '') : ''),
+        grado:  String(r.grado || '').trim() || (est ? String(est.grado || '').trim() : ''),
         est,
         marcas: fechas.map(f => String(r[f] || ''))
       };
+    })
+    .filter(f => {
+      const k = f.id || ('N' + f.nie) || ('NM' + sinTildes(f.nombre));
+      if(!k || vistos.has(k)) return false;
+      vistos.add(k);
+      return true;
     });
   return { fechas, filas };
 }
 
 function camposOrden(f){
-  /* Con ficha en Estudiantes: apellido1, apellido2, nombre1, nombre2.
-     Sin ficha: el nombre completo tal cual (mejor esfuerzo). */
   if(f.est){
     return [f.est.apellido1, f.est.apellido2, f.est.nombre1, f.est.nombre2];
   }
   return [f.nombre, '', '', ''];
+}
+
+/* Meses presentes en las columnas, en orden cronológico */
+function mesesDisponibles(fechas){
+  const seen = new Set(), out = [];
+  fechas.forEach(f => {
+    const mm = String(f).split('/')[1];
+    if(!seen.has(mm)){ seen.add(mm); out.push(mm); }
+  });
+  return out;
+}
+
+/* Fechas del mes elegido ('todos' = todas) */
+function fechasVisibles(fechas){
+  if(S.mes === 'todos') return fechas;
+  return fechas.filter(f => String(f).split('/')[1] === S.mes);
 }
 
 /* Agrupa fechas contiguas por mes (las columnas ya están en orden) */
@@ -385,11 +474,48 @@ function gruposDeMes(fechas){
   return gs;
 }
 
+/* ============ CONSOLIDADO MENSUAL ============
+   Días activos del grado = columnas con al menos una marca entre
+   sus estudiantes. Falta = día activo sin marca del estudiante. */
+function consolidadoGrado(filas, fechasVis){
+  const diasActivos = fechasVis.filter((f, i) =>
+    filas.some(fr => (fr.marcasVis[i] || '').trim())).length;
+
+  const filasCons = filas.map(fr => {
+    let pres = 0, tar = 0;
+    fr.marcasVis.forEach(m => {
+      const v = (m || '').trim();
+      if(!v) return;
+      if(/^TARDE/i.test(v)) tar++; else pres++;
+    });
+    const faltas = Math.max(0, diasActivos - pres - tar);
+    const pct = diasActivos ? Math.round((pres + tar) / diasActivos * 100) : 0;
+    return { fr, pres, tar, faltas, pct };
+  });
+
+  filasCons.sort((a,b) =>
+    claveDeCampos(camposOrden(a.fr)).localeCompare(claveDeCampos(camposOrden(b.fr)), 'es'));
+
+  return { diasActivos, filasCons };
+}
+
+function clasePct(p){
+  return p >= 85 ? 'pc-ok' : (p >= 70 ? 'pc-med' : 'pc-bad');
+}
+
 /* ============ RENDER ============ */
 function render(){
-  renderListado();
-  renderGradosSelect();
-  renderStatus();
+  try{ renderGradosSelect(); }catch(e){ reportarFalla('grados', e); }
+  try{ renderMesesSelect();  }catch(e){ reportarFalla('meses', e); }
+  try{ renderListado();      }catch(e){ reportarFalla('listado', e); }
+  try{ renderStatus();       }catch(e){ reportarFalla('estado', e); }
+}
+
+function reportarFalla(seccion, e){
+  const dot = $('#statusDot'), tit = $('#statusTitle');
+  if(dot) dot.className = 'status-dot off';
+  if(tit) tit.textContent = 'Error en la sección ' + seccion + ': ' + (e && e.message ? e.message : e);
+  console.error('[' + seccion + ']', e);
 }
 
 function renderListado(){
@@ -410,7 +536,9 @@ function renderListado(){
   }
 
   const m = construirMatriz();
-  if(!m || !m.filas_len){
+
+  /* FIX del bug principal: antes decía !m.filas_len (siempre vacío) */
+  if(!m || !m.filas.length){
     cont.innerHTML = `
       <div class="empty-card">
         <div class="empty-ico"><i class="bi bi-calendar2-week"></i></div>
@@ -433,6 +561,28 @@ function renderListado(){
     return;
   }
 
+  /* Si el mes guardado ya no existe en los datos, vuelve a "todo el año" */
+  const meses = mesesDisponibles(m.fechas);
+  if(S.mes !== 'todos' && !meses.includes(S.mes)){
+    S.mes = 'todos';
+    renderMesesSelect();
+    guardarVista();
+  }
+
+  const fv = fechasVisibles(m.fechas);
+  if(!fv.length){
+    cont.innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-calendar-x"></i></div>
+        <h3>Sin registros en ${esc(nombreMes(S.mes))}</h3>
+        <p>Elige otro mes o vuelve a «Todo el año» en el selector.</p>
+      </div>`;
+    return;
+  }
+
+  /* Marcas recortadas a las fechas visibles */
+  const idxs = fv.map(f => m.fechas.indexOf(f));
+
   const q = sinTildes(S.q.trim());
   const visibles = m.filas.filter(f => {
     if(S.grado !== 'todos' && (f.grado || 'Sin grado') !== S.grado) return false;
@@ -445,47 +595,46 @@ function renderListado(){
       <div class="empty-card">
         <div class="empty-ico"><i class="bi bi-search"></i></div>
         <h3>Sin resultados</h3>
-        <p>Ningún estudiante coincide con la búsqueda o el filtro de grado actual.</p>
+        <p>Ningún estudiante coincide con la búsqueda o el filtro actual.</p>
       </div>`;
     return;
   }
 
-  /* Agrupar por grado y ordenar dentro de cada uno */
+  visibles.forEach(f => { f.marcasVis = idxs.map(i => f.marcas[i] || ''); });
+
   const porGrado = {};
   visibles.forEach(f => {
     const g = f.grado || 'Sin grado';
     (porGrado[g] = porGrado[g] || []).push(f);
   });
-  const grados = Object.keys(porGrado).sort((a,b) => a.localeCompare(b,'es'));
+  const grados = Object.keys(porGrado).sort(compararTexto);
 
   let html = '', k = 0;
   grados.forEach(g => {
-    const lista = porGrado[g]
-      .sort((a,b) => claveDeCampos(camposOrden(a)).localeCompare(claveDeCampos(camposOrden(b)), 'es'));
-    html += tablaGrado(g, lista, m.fechas, k);
+    html += tablaGrado(g, porGrado[g], fv, k);
     k++;
   });
   cont.innerHTML = html;
 }
 
-function tablaGrado(grado, filas, fechas, k){
-  const gs = gruposDeMes(fechas);
+function tablaGrado(grado, filas, fechasVis, k){
+  const gs = gruposDeMes(fechasVis);
 
   let mesesHtml = '';
   gs.forEach((g, i) => {
     mesesHtml += `<th class="mes ${MC[(k + i) % MC.length]}" colspan="${g.n}">`
-      + (NOMBRES_MES[parseInt(g.mm,10) - 1] || g.mm) + '</th>';
+      + esc(nombreMes(g.mm)) + '</th>';
   });
 
   let diasHtml = '';
-  fechas.forEach(f => {
+  fechasVis.forEach(f => {
     diasHtml += `<th class="dia" title="${esc(f)}">${esc(String(f).split('/')[0])}</th>`;
   });
 
   let body = '';
   filas.forEach(f => {
     let tds = '';
-    f.marcas.forEach(m => {
+    f.marcasVis.forEach(m => {
       if(!m){ tds += '<td class="celda vacia"><i class="bi bi-dot"></i></td>'; return; }
       const tarde = /^TARDE/i.test(m);
       const hora = (m.match(/(\d{1,2}:\d{2})/) || [,''])[1];
@@ -497,12 +646,30 @@ function tablaGrado(grado, filas, fechas, k){
     body += `<tr><td class="col-nombre">${esc(f.nombre || ('NIE ' + f.nie))}</td>${tds}</tr>`;
   });
 
+  /* Consolidado del periodo visible para este grado */
+  const cons = consolidadoGrado(filas, fechasVis);
+  const tituloCons = (S.mes === 'todos')
+    ? 'Consolidado del año'
+    : 'Consolidado de ' + nombreMes(S.mes);
+
+  let consBody = '';
+  cons.filasCons.forEach(c => {
+    consBody += `<tr>
+      <td>${esc(c.fr.nombre || ('NIE ' + c.fr.nie))}</td>
+      <td class="c-num-ok">${c.pres}</td>
+      <td class="c-num-tarde">${c.tar}</td>
+      <td class="c-num-falta">${c.faltas}</td>
+      <td>${cons.diasActivos}</td>
+      <td><span class="pct ${clasePct(c.pct)}">${c.pct}%</span></td>
+    </tr>`;
+  });
+
   return `
     <article class="grade-card">
       <div class="grade-head ${GC[k % GC.length]}">
         <span class="g-ico"><i class="bi ${GI[k % GI.length]}"></i></span>
         <h2>${esc(grado)}</h2>
-        <span class="grade-count">${filas.length} est · ${fechas.length} días</span>
+        <span class="grade-count">${filas.length} est · ${fechasVis.length} días</span>
       </div>
       <div class="scroll-x">
         <table class="table asis-table">
@@ -516,16 +683,39 @@ function tablaGrado(grado, filas, fechas, k){
           <tbody>${body}</tbody>
         </table>
       </div>
+      <div class="cons-wrap">
+        <div class="cons-title">
+          <i class="bi bi-clipboard-data"></i> ${esc(tituloCons)}
+          <span class="cons-dias">${cons.diasActivos} día${cons.diasActivos === 1 ? '' : 's'} con registro</span>
+        </div>
+        <div class="scroll-x-cons">
+          <table class="cons-table">
+            <thead><tr>
+              <th>Estudiante</th><th>Presentes</th><th>Tarde</th>
+              <th>Faltas</th><th>Días</th><th>% Asistencia</th>
+            </tr></thead>
+            <tbody>${consBody}</tbody>
+          </table>
+        </div>
+      </div>
     </article>`;
 }
 
 function renderGradosSelect(){
   const m = construirMatriz();
   const grados = m ? [...new Set(m.filas.map(f => f.grado || 'Sin grado'))]
-                     .sort((a,b) => a.localeCompare(b,'es')) : [];
+                     .sort(compararTexto) : [];
   const sel = $('#selGrado');
   sel.innerHTML = '<option value="todos">Todos los grados</option>'
     + grados.map(g => `<option value="${esc(g)}" ${g === S.grado ? 'selected' : ''}>${esc(g)}</option>`).join('');
+}
+
+function renderMesesSelect(){
+  const m = construirMatriz();
+  const meses = m ? mesesDisponibles(m.fechas) : [];
+  const sel = $('#selMes');
+  sel.innerHTML = '<option value="todos">Todo el año</option>'
+    + meses.map(mm => `<option value="${esc(mm)}" ${mm === S.mes ? 'selected' : ''}>${esc(nombreMes(mm))}</option>`).join('');
 }
 
 function renderStatus(){
@@ -542,8 +732,7 @@ function renderStatus(){
 
   const m = construirMatriz();
   const nEst = m ? m.filas.length : 0;
-  const nDias = m ? m.fechas.length : 0;
-  const nMes = m ? gruposDeMes(m.fechas).length : 0;
+  const fv = m ? fechasVisibles(m.fechas) : [];
 
   dot.className = 'status-dot ' + (S.busy ? 'warn' : 'ok');
   tit.textContent = S.busy ? 'Actualizando desde la hoja…'
@@ -551,12 +740,27 @@ function renderStatus(){
   const f = new Date(data.syncedAt);
   met.textContent = 'Última descarga del libro: '
     + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
-    + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' });
+    + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' })
+    + ' · ' + VERSION;
 
   chips.innerHTML =
     (nEst ? `<span class="chip"><strong>${nEst}</strong> estudiantes</span>` : '') +
-    (nDias ? `<span class="chip"><strong>${nDias}</strong> días</span>` : '') +
-    (nMes  ? `<span class="chip"><strong>${nMes}</strong> meses</span>` : '');
+    (fv.length ? `<span class="chip"><strong>${fv.length}</strong> días</span>` : '') +
+    `<span class="chip">${esc(S.mes === 'todos' ? 'Todo el año' : nombreMes(S.mes))}</span>`;
+}
+
+/* ============ VISTA RECORDADA (grado + mes) ============ */
+function cargarVista(){
+  try{
+    const v = JSON.parse(localStorage.getItem(CONFIG.VIEW_KEY));
+    if(v && typeof v === 'object'){
+      if(v.grado) S.grado = String(v.grado);
+      if(v.mes)   S.mes   = String(v.mes);
+    }
+  }catch(e){}
+}
+function guardarVista(){
+  localStorage.setItem(CONFIG.VIEW_KEY, JSON.stringify({ grado:S.grado, mes:S.mes }));
 }
 
 /* ============ SINCRONIZACIÓN ============ */
@@ -588,9 +792,10 @@ async function refrescar(silencioso){
 
 /* ============ LOGIN ============ */
 function abrirPass(){
+  const m = mdPass();
+  if(!modalONada(m)) return;
   $('#passError').classList.remove('visible');
   $('#inpPass').value = '';
-  mdPass().show();
   setTimeout(() => $('#inpPass').focus(), 400);
 }
 
@@ -607,7 +812,7 @@ async function onSubmitPass(e){
       localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
       localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
       S.token = r.token;
-      mdPass().hide();
+      const mp = mdPass(); if(mp) mp.hide();
       render();
       toast('Conectado: datos descargados en este dispositivo.', 'success');
     }else{
@@ -623,18 +828,35 @@ async function onSubmitPass(e){
   $('#btnPassSubmit .spinner-border').classList.add('d-none');
 }
 
-/* ============ INICIO ============ */
-document.addEventListener('DOMContentLoaded', () => {
+/* ============ INICIO — blindado ============ */
+function init(){
+  const data0 = leerData();
+  if(data0){
+    $('#statusTitle').textContent = 'Datos cargados — preparando vista…';
+    $('#statusDot').className = 'status-dot ok';
+  }else{
+    $('#statusTitle').textContent = 'Sin datos todavía';
+    $('#statusDot').className = 'status-dot off';
+  }
+
+  cargarVista();
   S.token = localStorage.getItem(CONFIG.TOKEN_KEY) || '';
   render();
 
   $('#btnSync').addEventListener('click', () => refrescar(false));
   $('#frmPass').addEventListener('submit', onSubmitPass);
   $('#inpBuscar').addEventListener('input', e => { S.q = e.target.value; renderListado(); });
-  $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
+  $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; guardarVista(); renderListado(); renderStatus(); });
+  $('#selMes').addEventListener('change', e => { S.mes = e.target.value; guardarVista(); renderListado(); renderStatus(); });
 
   refrescar(true);   // sincroniza en silencio si ya hay sesión en el dispositivo
-});
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
 </script>
 </body>
 </html>
