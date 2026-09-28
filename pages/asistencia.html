@@ -26,6 +26,23 @@
     --rojo:#B42318;     --verde:#178F72;
   }
 
+  /* ============================================================
+     LAYOUT GENERAL (reutilizable en todas las páginas)
+     Pantalla completa con márgenes fluidos + tipografía escalable.
+     ============================================================ */
+  .wrap-fluid{
+    width:100%; max-width:1920px; margin:0 auto;
+    padding-left:clamp(12px, 3vw, 44px);
+    padding-right:clamp(12px, 3vw, 44px);
+  }
+  .site-header{ padding:clamp(18px, 2.6vw, 30px) 0 12px; }
+  .brand-title{ font-size:clamp(1.2rem, 1rem + 0.9vw, 1.75rem); }
+  .brand-sub{ font-size:clamp(.76rem, .72rem + .2vw, .86rem); }
+
+  /* ============================================================
+     FIN LAYOUT GENERAL
+     ============================================================ */
+
   .modal:not(.show){ display:none; }
 
   body{
@@ -34,11 +51,12 @@
     background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
     background-size:26px 26px; min-height:100vh;
   }
-  .site-header{ padding:22px 0 12px; }
-  .brand-mark{ width:46px; height:46px; border-radius:14px; flex:none;
-    background:var(--turquesa); color:var(--turquesa-ink); display:grid; place-items:center; font-size:1.3rem; }
-  .brand-title{ font-family:'Space Grotesk'; font-weight:700; font-size:1.35rem; margin:0; }
-  .brand-sub{ margin:0; font-size:.78rem; color:var(--ink-soft); }
+  .brand-mark{ width:clamp(44px, 3vw, 54px); height:clamp(44px, 3vw, 54px);
+    border-radius:14px; flex:none;
+    background:var(--turquesa); color:var(--turquesa-ink); display:grid; place-items:center;
+    font-size:clamp(1.2rem, 1rem + .4vw, 1.5rem); }
+  .brand-title{ font-family:'Space Grotesk'; font-weight:700; margin:0; }
+  .brand-sub{ margin:0; color:var(--ink-soft); }
   .btn-back{ width:42px; height:42px; border-radius:13px; flex:none;
     border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
     display:grid; place-items:center; transition:background .2s, transform .2s; }
@@ -81,12 +99,14 @@
   .select-grado:focus{ outline:none; border-color:var(--morado); }
 
   .leyenda{ display:flex; gap:8px; flex-wrap:wrap; align-items:center;
-    font-size:.8rem; color:var(--ink-soft); margin-bottom:14px; }
-  .leyenda .mini-mark{ display:inline-grid; place-items:center; width:24px; height:24px;
-    border-radius:8px; font-size:.8rem; }
+    font-size:.82rem; color:var(--ink-soft); margin-bottom:14px; }
+  .leyenda .mini-mark{ display:inline-grid; place-items:center; min-width:26px; height:26px;
+    padding:0 6px; border-radius:8px; font-size:.85rem;
+    font-family:'Space Grotesk'; font-weight:700; }
   .lm-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .lm-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
-  .lm-vacia{ background:rgba(34,30,51,.05); color:rgba(34,30,51,.35); }
+  .lm-falta{ background:rgba(180,35,24,.09); color:var(--rojo); }
+  .lm-na{ background:rgba(34,30,51,.05); color:rgba(34,30,51,.35); }
 
   /* ============ Tarjetas por grado ============ */
   .grade-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px;
@@ -106,46 +126,49 @@
   .gc-morado .g-ico, .gc-morado .grade-count{ background:rgba(255,255,255,.18); color:#fff; }
 
   /* ============ Tabla de asistencia ============ */
-  .scroll-x{ overflow-x:auto; }
-  .asis-table{ border-collapse:separate; border-spacing:0; margin:0; font-size:.86rem; }
+  .scroll-x{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .scroll-x::-webkit-scrollbar{ height:8px; }
+  .scroll-x::-webkit-scrollbar-track{ background:transparent; }
+  .scroll-x::-webkit-scrollbar-thumb{ background:rgba(34,30,51,.15); border-radius:99px; }
+  .asis-table{ border-collapse:separate; border-spacing:0; margin:0; font-size:.88rem; }
   .asis-table thead th{ border-bottom:none; }
-  .mes{ text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:.76rem;
-    text-transform:uppercase; letter-spacing:.06em; padding:8px 12px;
-    border-left:1px solid rgba(255,255,255,.35); }
-  .mes:first-of-type{ border-left:none; }
+  .mes{ text-align:center; font-family:'Space Grotesk'; font-weight:700; font-size:.78rem;
+    text-transform:uppercase; letter-spacing:.06em; padding:8px 12px; }
+  .mes + .mes{ border-left:2px solid rgba(255,255,255,.5); }
   .mc-celeste{ background:var(--celeste); color:var(--celeste-ink); }
   .mc-naranja{ background:var(--naranja); color:var(--naranja-ink); }
   .mc-turquesa{ background:var(--turquesa); color:var(--turquesa-ink); }
   .mc-lila{ background:var(--lila); color:var(--lila-ink); }
   .mc-morado{ background:var(--morado); color:var(--morado-ink); }
-  .dia{ text-align:center; font-family:'Space Grotesk'; font-weight:600; font-size:.7rem;
+  .dia{ text-align:center; font-family:'Space Grotesk'; font-weight:600; font-size:.72rem;
     color:var(--ink-soft); background:rgba(34,30,51,.035);
-    padding:6px 4px; width:58px; min-width:58px;
+    padding:6px 4px; width:50px; min-width:50px;
     border-bottom:1px solid var(--line); border-left:1px solid var(--line); }
-  .col-nombre{ position:sticky; left:0; z-index:2; min-width:200px; max-width:240px;
+  .col-nombre{ position:sticky; left:0; z-index:2; min-width:170px; max-width:240px;
     text-align:left; padding:9px 16px; background:var(--paper); font-weight:600;
     border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
   thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
     text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
     background:var(--paper); }
   /* Columnas finales de conteo, destacadas */
-  .col-res{ text-align:center; padding:8px 12px; width:86px; min-width:86px;
+  .col-res{ text-align:center; padding:8px 12px; width:84px; min-width:84px;
     background:rgba(90,62,166,.07); border-bottom:1px solid var(--line);
     border-left:1px solid var(--line); }
   thead .col-res{
     font-family:'Space Grotesk'; font-weight:700; font-size:.72rem;
     text-transform:uppercase; letter-spacing:.05em; color:var(--morado-deep);
     vertical-align:middle; }
-  .celda{ text-align:center; padding:6px 4px; width:58px; min-width:58px;
+  .celda{ text-align:center; padding:6px 4px; width:50px; min-width:50px;
     border-bottom:1px solid var(--line); border-left:1px solid var(--line);
-    font-family:'Space Grotesk'; font-weight:700; font-size:.85rem; }
-  .celda small{ display:block; font-size:.6rem; font-weight:600; opacity:.75;
+    font-family:'Space Grotesk'; font-weight:700; font-size:1rem; }
+  .celda small{ display:block; font-size:.58rem; font-weight:600; opacity:.75;
     font-variant-numeric:tabular-nums; }
-  .celda i{ font-size:.95rem; }
+  .glifo{ line-height:1; }
   .m-ok{ background:rgba(23,143,114,.09); color:var(--verde); }
   .m-tarde{ background:rgba(217,119,14,.11); color:var(--naranja-deep); }
-  .vacia{ color:rgba(34,30,51,.22); }
-  td.res{ font-family:'Space Grotesk'; font-weight:700; font-size:.95rem;
+  .m-falta{ background:rgba(180,35,24,.06); color:var(--rojo); }
+  .m-na{ color:rgba(34,30,51,.18); }
+  td.res{ font-family:'Space Grotesk'; font-weight:700; font-size:1rem;
     background:rgba(90,62,166,.05); border-bottom:1px solid var(--line);
     border-left:1px solid var(--line); text-align:center; padding:6px 8px; }
   td.res.res-ok{ color:var(--verde); }
@@ -153,6 +176,45 @@
   td.res.res-cero{ color:rgba(34,30,51,.35); }
   tbody tr:hover .celda{ filter:brightness(.96); }
   tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
+
+  /* ============ Escritorio: todo más grande ============ */
+  @media (min-width:992px){
+    .btn-secundario{ padding:12px 22px; font-size:.98rem; }
+    .status-title{ font-size:1.05rem; }
+    .status-meta{ font-size:.84rem; }
+    .chip{ font-size:.88rem; padding:7px 15px; }
+    .leyenda{ font-size:.9rem; }
+    .leyenda .mini-mark{ min-width:30px; height:30px; font-size:1rem; }
+    .grade-head{ padding:16px 24px; }
+    .grade-head h2{ font-size:1.3rem; }
+    .grade-count{ font-size:.9rem; padding:6px 15px; }
+    .asis-table{ font-size:1rem; }
+    .dia{ width:72px; min-width:72px; font-size:.82rem; padding:8px 4px; }
+    .celda{ width:72px; min-width:72px; padding:11px 6px; font-size:1.2rem; }
+    .celda small{ font-size:.68rem; }
+    .glifo{ font-size:1.25rem; }
+    .col-nombre{ min-width:280px; max-width:340px; font-size:1.02rem; padding:12px 18px; }
+    thead .col-nombre{ font-size:.8rem; }
+    .col-res{ width:110px; min-width:110px; font-size:.82rem; }
+    td.res{ font-size:1.25rem; }
+    .mes{ font-size:.85rem; padding:10px 14px; }
+  }
+
+  /* ============ Móvil: compacto y limpio ============ */
+  @media (max-width:575.98px){
+    .brand-title{ font-size:1.15rem; }
+    .status-bar, .toolbar{ padding:11px 12px; gap:10px; }
+    .buscador{ flex-basis:100%; }
+    .select-grado{ flex:1 1 100%; }
+    .grade-head{ padding:12px 14px; }
+    .col-nombre{ min-width:132px; max-width:180px; padding:8px 10px; font-size:.85rem; }
+    .dia{ width:42px; min-width:42px; font-size:.64rem; padding:5px 2px; }
+    .celda{ width:42px; min-width:42px; padding:5px 2px; font-size:.95rem; }
+    .celda small{ font-size:.5rem; }
+    .col-res{ width:62px; min-width:62px; padding:6px 6px; font-size:.66rem; }
+    td.res{ font-size:.95rem; padding:5px 4px; }
+    .btn-back{ width:38px; height:38px; }
+  }
 
   /* ============ Estado vacío / modales / toasts ============ */
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
@@ -201,13 +263,13 @@
 <body>
 
 <header class="site-header">
-  <div class="container">
+  <div class="wrap-fluid">
     <div class="d-flex align-items-center gap-3 flex-wrap">
       <a class="btn-back" href="../index.html" aria-label="Volver al panel"><i class="bi bi-arrow-left"></i></a>
       <div class="brand-mark"><i class="bi bi-table"></i></div>
       <div>
         <h1 class="brand-title">Asistencia</h1>
-        <p class="brand-sub">Por grado y mes · lista completa de estudiantes con asistencias y faltas</p>
+        <p class="brand-sub">Por grado y mes · lista completa con asistencias (+) y faltas (−)</p>
       </div>
       <div class="ms-auto">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -216,7 +278,7 @@
   </div>
 </header>
 
-<main class="container pb-5">
+<main class="wrap-fluid pb-5">
 
   <section class="status-bar" aria-live="polite">
     <span class="status-dot warn" id="statusDot"></span>
@@ -242,10 +304,11 @@
 
   <div class="leyenda">
     <span>Marca:</span>
-    <span class="mini-mark lm-ok"><i class="bi bi-check-lg"></i></span> presente
-    <span class="mini-mark lm-tarde"><i class="bi bi-alarm"></i></span> tarde
-    <span class="mini-mark lm-vacia"><i class="bi bi-dot"></i></span> falta / sin registro
-    <span class="ms-auto" style="font-size:.74rem;">Pasa el cursor sobre una marca para ver la hora completa.</span>
+    <span class="mini-mark lm-ok">+</span> presente
+    <span class="mini-mark lm-tarde">+</span> tarde
+    <span class="mini-mark lm-falta">−</span> falta
+    <span class="mini-mark lm-na">·</span> sin clase
+    <span class="ms-auto" style="font-size:.76rem;">FALTAS = días con clase sin registro · Pasa el cursor para ver la hora.</span>
   </div>
 
   <section id="listado"></section>
@@ -296,7 +359,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -380,7 +443,7 @@ function indexAsistencia(fechas){
   const mapa = {};
   filasRaw.forEach(r => {
     const k = claveDe(String(r.id || ''), r.nie);
-    if(!k || mapa[k]) return;                 // dedupe: primera occurrence
+    if(!k || mapa[k]) return;                 // dedupe: primera aparición
     mapa[k] = { marcas: fechas.map(f => String(r[f] || '')) };
   });
   return mapa;
@@ -441,7 +504,7 @@ function fechasVisibles(fechas){
 }
 function gruposDeMes(fechas){
   const gs = [];
-  fechas.forEach((f, i) => {
+  fechas.forEach(f => {
     const mm = String(f).split('/')[1];
     const u = gs[gs.length - 1];
     if(!u || u.mm !== mm) gs.push({ mm, n: 0 });
@@ -549,25 +612,31 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
     diasHtml += `<th class="dia" title="${esc(f)}">${esc(String(f).split('/')[0])}</th>`;
   });
 
-  /* Días activos del grado: columnas con al menos una marca entre
-     los estudiantes de este grado */
+  /* Días con clase para este grado: columnas con al menos una marca
+     entre sus estudiantes */
   const idxs = fv.map(f => datos.fechas.indexOf(f));
   const diaActivo = fv.map((f, i) =>
     estudiantes.some(e => {
       const a = datos.asis[e.clave];
       return a && (a.marcas[idxs[i]] || '').trim();
     }));
-  const diasActivos = diaActivo.filter(Boolean).length;
 
-  /* Filas: TODOS los estudiantes del grado, con o sin registro */
+  /* Filas: TODOS los estudiantes del grado.
+     + = asistió (verde presente / naranja tarde)
+     − = falta (día con clase sin registro del estudiante)
+     · = sin clase ese día para el grado */
   const conDatos = estudiantes
     .map(e => {
       const a = datos.asis[e.clave];
       const marcas = fv.map((f, i) => a ? (a.marcas[idxs[i]] || '') : '');
       let asist = 0;
-      marcas.forEach(m => { if(m.trim()) asist++; });
-      const faltas = Math.max(0, diasActivos - asist);
-      return { e, marcas, asist, faltas };
+      marcas.forEach((m, i) => {
+        if(diaActivo[i]){
+          if(m.trim()) asist++;
+        }
+      });
+      const faltas = diaActivo.filter(Boolean).length - asist;
+      return { e, marcas, asist, faltas: Math.max(0, faltas) };
     })
     .sort((a,b) =>
       claveDeCampos(camposOrden(a.e)).localeCompare(claveDeCampos(camposOrden(b.e)), 'es'));
@@ -575,12 +644,19 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
   let body = '';
   conDatos.forEach(c => {
     let tds = '';
-    c.marcas.forEach(m => {
-      if(!m){ tds += '<td class="celda vacia"><i class="bi bi-dot"></i></td>'; return; }
+    c.marcas.forEach((m, i) => {
+      if(!diaActivo[i]){
+        tds += '<td class="celda m-na" title="Sin clase"><span class="glifo">·</span></td>';
+        return;
+      }
+      if(!m){
+        tds += '<td class="celda m-falta" title="Falta"><span class="glifo">−</span></td>';
+        return;
+      }
       const tarde = /^TARDE/i.test(m);
       const hora = (m.match(/(\d{1,2}:\d{2})/) || [,''])[1];
       tds += `<td class="celda ${tarde ? 'm-tarde' : 'm-ok'}" title="${esc(m)}">`
-           + `<i class="bi ${tarde ? 'bi-alarm' : 'bi-check-lg'}"></i>`
+           + '<span class="glifo">+</span>'
            + (hora ? `<small>${esc(hora)}</small>` : '')
            + '</td>';
     });
@@ -589,17 +665,19 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
     body += `<tr>
       <td class="col-nombre">${esc(c.e.nombre || ('NIE ' + c.e.nie))}</td>
       ${tds}
-      <td class="res ${clsA}">${c.asist}</td>
-      <td class="res ${clsF}">${c.faltas}</td>
+      <td class="res ${clsA}" title="Asistencias del periodo">${c.asist}</td>
+      <td class="res ${clsF}" title="Faltas del periodo">${c.faltas}</td>
     </tr>`;
   });
+
+  const diasClase = diaActivo.filter(Boolean).length;
 
   return `
     <article class="grade-card">
       <div class="grade-head ${GC[k % GC.length]}">
         <span class="g-ico"><i class="bi ${GI[k % GI.length]}"></i></span>
         <h2>${esc(grado)}</h2>
-        <span class="grade-count">${estudiantes.length} est · ${diasActivos} días con registro</span>
+        <span class="grade-count">${estudiantes.length} est · ${diasClase} día${diasClase === 1 ? '' : 's'} con clase</span>
       </div>
       <div class="scroll-x">
         <table class="table asis-table">
