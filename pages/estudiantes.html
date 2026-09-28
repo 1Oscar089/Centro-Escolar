@@ -83,8 +83,8 @@
   .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
   .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
   .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.15); }
-  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; }
-  .status-meta{ font-size:.78rem; color:var(--ink-soft); }
+  .status-title{ font-weight:700; font-size:.95rem; line-height:1.2; word-break:break-word; }
+  .status-meta{ font-size:.78rem; color:var(--ink-soft); word-break:break-word; }
 
   .chip{
     background:rgba(34,30,51,.05); border-radius:999px;
@@ -309,17 +309,15 @@
 
 <main class="container pb-5">
 
-  <!-- Estado de datos y conexión -->
   <section class="status-bar" aria-live="polite">
     <span class="status-dot warn" id="statusDot"></span>
     <div>
-      <div class="status-title" id="statusTitle">Verificando…</div>
+      <div class="status-title" id="statusTitle">Cargando página…</div>
       <div class="status-meta" id="statusMeta"></div>
     </div>
     <div class="ms-auto d-flex gap-2 flex-wrap" id="statusChips"></div>
   </section>
 
-  <!-- Búsqueda y filtros -->
   <section class="toolbar">
     <div class="buscador">
       <i class="bi bi-search"></i>
@@ -334,7 +332,6 @@
     </label>
   </section>
 
-  <!-- Listado por grado -->
   <section id="listado"></section>
 </main>
 
@@ -437,6 +434,23 @@
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
 
 <script>
+/* ============================================================
+   DIAGNÓSTICO VISIBLE — cualquier error de JavaScript se pinta
+   en la barra de estado. Nunca más "Verificando…" eterno.
+   ============================================================ */
+window.addEventListener('error', function(ev){
+  try{
+    var t = document.getElementById('statusTitle');
+    var m = document.getElementById('statusMeta');
+    var d = document.getElementById('statusDot');
+    if(t) t.textContent = 'Error en la página: ' + (ev.message || 'desconocido');
+    if(m) m.textContent = 'Línea ' + (ev.lineno || '?') + ' — copia este texto y avísame.';
+    if(d) d.className = 'status-dot off';
+  }catch(e){}
+});
+
+const VERSION = 'v5';
+
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
   DATA_KEY:  'RE_DATA_V1',
@@ -459,9 +473,22 @@ const S = {
 };
 
 const $  = s => document.querySelector(s);
-const mdEst   = () => bootstrap.Modal.getOrCreateInstance($('#mdEstudiante'));
-const mdDel   = () => bootstrap.Modal.getOrCreateInstance($('#mdEliminar'));
-const mdPass  = () => bootstrap.Modal.getOrCreateInstance($('#mdPass'));
+
+/* Modales tolerantes: si Bootstrap no está (aún), devuelven null
+   y el llamador avisa en lugar de romper la página */
+function instanciaModal(id){
+  if(!window.bootstrap) return null;
+  return bootstrap.Modal.getOrCreateInstance(document.getElementById(id));
+}
+const mdEst  = () => instanciaModal('mdEstudiante');
+const mdDel  = () => instanciaModal('mdEliminar');
+const mdPass = () => instanciaModal('mdPass');
+
+function modalONada(inst, alCerrar){
+  if(inst){ inst.show(); return true; }
+  toast('Bootstrap JS no cargó. Verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'danger');
+  return false;
+}
 
 /* ============================================================
    UTILIDADES
@@ -478,13 +505,11 @@ function ahoraLocal(){
        + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
 }
 
-/* Quita tildes y minúsculas para comparar */
 function sinTildes(s){
   return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
 
-/* Clave de orden: apellido1 → apellido2 → nombre1 → nombre2,
-   ignorando las palabras "de" y "del" */
+/* Orden: apellido1 → apellido2 → nombre1 → nombre2, sin "de"/"del" */
 function claveOrden(e){
   return [e.apellido1, e.apellido2, e.nombre1, e.nombre2]
     .map(sinTildes)
@@ -520,18 +545,16 @@ function toast(msg, kind = 'success'){
 /* ============================================================
    GENERADOR QR PROPIO (incrustado, SIN librerías externas)
    Estándar ISO/IEC 18004: modo byte, corrección nivel L,
-   versiones 1-5 (una sola línea de bloques; hasta 106 bytes,
-   más que suficiente para {"id","nie"}).
+   versiones 1-5 (hasta 106 bytes; sobra para {"id","nie"}).
    ============================================================ */
 const QR_L = [
-  { v:1, total: 26, ec:  7, align: null, remBits: 0 },
-  { v:2, total: 44, ec: 10, align: 18,   remBits: 7 },
-  { v:3, total: 70, ec: 15, align: 22,   remBits: 7 },
-  { v:4, total:100, ec: 20, align: 26,   remBits: 7 },
-  { v:5, total:134, ec: 26, align: 30,   remBits: 7 }
+  { v:1, total: 26, ec:  7, align: null },
+  { v:2, total: 44, ec: 10, align: 18   },
+  { v:3, total: 70, ec: 15, align: 22   },
+  { v:4, total:100, ec: 20, align: 26   },
+  { v:5, total:134, ec: 26, align: 30   }
 ];
 
-/* Aritmética de Reed-Solomon sobre GF(256), polinomio 0x11D */
 function qrRsMul(x, y){
   let z = 0;
   for (let i = 7; i >= 0; i--){
@@ -564,22 +587,20 @@ function qrRsRemainder(data, divisor){
   return res;
 }
 
-/* Genera la matriz del QR: devuelve {size, mod:[[bool]]} */
 function qrGenerar(texto){
   const bytes = new TextEncoder().encode(String(texto));
   const info  = QR_L.find(q => bytes.length <= (q.total - q.ec - 2));
   if (!info) throw new Error('El contenido excede la capacidad del QR');
 
-  /* --- flujo de bits: modo byte + contador + datos + relleno --- */
   const bits = [];
   const push = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
   const capBits = (info.total - info.ec) * 8;
 
-  push(4, 4);                              /* modo: byte */
-  push(bytes.length, 8);                   /* contador (v1-9) */
+  push(4, 4);
+  push(bytes.length, 8);
   bytes.forEach(b => push(b, 8));
-  push(0, Math.min(4, capBits - bits.length));   /* terminador */
-  while (bits.length % 8 !== 0) bits.push(0);    /* a byte completo */
+  push(0, Math.min(4, capBits - bits.length));
+  while (bits.length % 8 !== 0) bits.push(0);
 
   const dataCW = [];
   for (let i = 0; i < bits.length; i += 8){
@@ -592,7 +613,6 @@ function qrGenerar(texto){
 
   const todos = dataCW.concat(qrRsRemainder(dataCW, qrRsDivisor(info.ec)));
 
-  /* --- matriz y módulos de función --- */
   const size = info.v * 4 + 17;
   const mod = [], fn = [];
   for (let i = 0; i < size; i++){
@@ -601,7 +621,6 @@ function qrGenerar(texto){
   }
   const setFn = (x, y, dark) => { mod[y][x] = dark; fn[y][x] = true; };
 
-  /* finders + separadores */
   function finder(cx, cy){
     for (let dy = -4; dy <= 4; dy++)
       for (let dx = -4; dx <= 4; dx++){
@@ -613,7 +632,6 @@ function qrGenerar(texto){
   }
   finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
 
-  /* patrón de alineamiento (uno en v2-v5) */
   if (info.align){
     const c = info.align;
     for (let dy = -2; dy <= 2; dy++)
@@ -621,13 +639,11 @@ function qrGenerar(texto){
         setFn(c + dx, c + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
   }
 
-  /* patrones de temporización */
   for (let i = 0; i < size; i++){
     if (!fn[6][i]) setFn(i, 6, i % 2 === 0);
     if (!fn[i][6]) setFn(6, i, i % 2 === 0);
   }
 
-  /* módulo oscuro + reserva de áreas de formato */
   setFn(8, size - 8, true);
   for (let i = 0; i <= 8; i++){
     if (!fn[i][8]) setFn(8, i, false);
@@ -638,7 +654,6 @@ function qrGenerar(texto){
     setFn(8, i, false);
   }
 
-  /* --- colocar los datos en zigzag --- */
   let idx = 0;
   for (let right = size - 1; right >= 1; right -= 2){
     if (right === 6) right = 5;
@@ -655,7 +670,6 @@ function qrGenerar(texto){
     }
   }
 
-  /* --- máscaras y penalidad (se elige la de menor penalidad) --- */
   const MASCARAS = [
     (x, y) => (x + y) % 2 === 0,
     (x, y) => y % 2 === 0,
@@ -719,7 +733,6 @@ function qrGenerar(texto){
     for (let x = 0; x < size; x++)
       if (!fn[y][x] && MASCARAS[mejor](x, y)) mod[y][x] = !mod[y][x];
 
-  /* --- información de formato (nivel L = 01, con la máscara elegida) --- */
   const fdata = (1 << 3) | mejor;
   let rem = fdata;
   for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
@@ -737,11 +750,10 @@ function qrGenerar(texto){
   return { size, mod };
 }
 
-/* Dibuja la matriz en un canvas y devuelve dataURL PNG */
 function qrDataURL(texto, px){
   const qr = qrGenerar(texto);
   const escala = Math.max(4, Math.floor(px / (qr.size + 8)));
-  const margen = 4;                       /* zona silenciosa */
+  const margen = 4;
   const dim = (qr.size + margen * 2) * escala;
   const c = document.createElement('canvas');
   c.width = dim; c.height = dim;
@@ -757,7 +769,6 @@ function qrDataURL(texto, px){
 
 /* ============================================================
    CARGA DE jsPDF CON RESPALDO (única librería externa restante)
-   Orden: libs/ del repo -> jsDelivr -> unpkg
    ============================================================ */
 function cargarScript(urls){
   return new Promise((resolve, reject) => {
@@ -872,9 +883,10 @@ function reaplicarCola(){
    LOGIN (primera vez en el dispositivo)
    ============================================================ */
 function abrirPass(){
+  const m = mdPass();
+  if(!modalONada(m)) return;
   $('#passError').classList.remove('visible');
   $('#inpPass').value = '';
-  mdPass().show();
   setTimeout(() => $('#inpPass').focus(), 400);
 }
 
@@ -893,7 +905,7 @@ async function onSubmitPass(e){
       S.token = r.token;
       cargarDeLocal();
       reaplicarCola();
-      mdPass().hide();
+      const m = mdPass(); if(m) m.hide();
       render();
       toast('Conectado: datos descargados en este dispositivo.', 'success');
       flushCola();
@@ -962,9 +974,17 @@ function estudiantesVisibles(){
 }
 
 function render(){
-  renderListado();
-  renderGradosSelect();
-  renderStatus();
+  /* Sección por sección con reporte: si una falla, el resto vive */
+  try{ renderListado(); }catch(e){ reportarFalla('listado', e); }
+  try{ renderGradosSelect(); }catch(e){ reportarFalla('grados', e); }
+  try{ renderStatus(); }catch(e){ reportarFalla('estado', e); }
+}
+
+function reportarFalla(seccion, e){
+  const dot = $('#statusDot'), tit = $('#statusTitle');
+  if(dot) dot.className = 'status-dot off';
+  if(tit) tit.textContent = 'Error en la sección ' + seccion + ': ' + (e && e.message ? e.message : e);
+  console.error('[' + seccion + ']', e);
 }
 
 function renderListado(){
@@ -1100,7 +1120,7 @@ function renderStatus(){
   met.textContent = 'Última descarga del libro: '
     + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
     + f.toLocaleTimeString('es',{ hour:'2-digit', minute:'2-digit' })
-    + (S.flushing ? ' · enviando…' : '');
+    + ' · ' + VERSION;
 
   chips.innerHTML =
     `<span class="chip"><strong>${activos}</strong> activos</span>` +
@@ -1113,6 +1133,8 @@ function renderStatus(){
    FORMULARIO CREAR / EDITAR
    ============================================================ */
 function abrirFormulario(est){
+  const m = mdEst();
+  if(!modalONada(m)) return;
   $('#frmEstudiante').reset();
   document.querySelectorAll('.frm-input').forEach(i => i.classList.remove('invalido'));
   document.querySelectorAll('.frm-error').forEach(e => e.classList.remove('visible'));
@@ -1124,7 +1146,6 @@ function abrirFormulario(est){
     $('#fApellido1').value = est.apellido1; $('#fApellido2').value = est.apellido2;
     $('#fNie').value = est.nie;           $('#fGrado').value = est.grado;
   }
-  mdEst().show();
   setTimeout(() => $('#fNombre1').focus(), 400);
 }
 
@@ -1174,16 +1195,9 @@ function onSubmitEstudiante(ev){
     actualizadoEn: ahoraLocal()
   };
 
-  const btn = $('#btnGuardar');
-  btn.disabled = true;
-  btn.querySelector('.spinner-border').classList.remove('d-none');
-
   ejecutar({ action: id ? 'update' : 'write', sheet: CONFIG.HOJA, id: row.id, row });
-  mdEst().hide();
+  const m = mdEst(); if(m) m.hide();
   toast(id ? 'Estudiante actualizado.' : 'Estudiante agregado.', 'success');
-
-  btn.disabled = false;
-  btn.querySelector('.spinner-border').classList.add('d-none');
 }
 
 /* ============================================================
@@ -1200,6 +1214,8 @@ function accionFila(ev){
     abrirFormulario(est);
 
   }else if(btn.dataset.acc === 'archivar'){
+    /* Solo cambia 'archivado': el .gs v5 hace MERGE y conserva
+       el resto de columnas (fix del borrado de nombre/grado) */
     const archivando = est.archivado !== 'SI';
     ejecutar({ action:'update', sheet:CONFIG.HOJA, id: est.id,
       row:{ id: est.id, archivado: archivando ? 'SI' : '',
@@ -1207,10 +1223,11 @@ function accionFila(ev){
     toast(archivando ? nombreCompleto(est) + ' archivado.' : nombreCompleto(est) + ' restaurado.', 'success');
 
   }else if(btn.dataset.acc === 'eliminar'){
+    const m = mdDel();
+    if(!modalONada(m)) return;
     S.eliminando = est;
     $('#delTexto').innerHTML = 'Se eliminará <strong>' + nombreCompleto(est)
       + '</strong> de la lista y de la hoja del libro al sincronizar.';
-    mdDel().show();
   }
 }
 
@@ -1219,14 +1236,14 @@ function confirmarEliminar(){
   const est = S.eliminando;
   S.eliminando = null;
   ejecutar({ action:'delete', sheet:CONFIG.HOJA, id: est.id });
-  mdDel().hide();
+  const m = mdDel(); if(m) m.hide();
   toast(nombreCompleto(est) + ' eliminado.', 'success');
 }
 
 /* ============================================================
    CARNETS QR EN PDF
-   10 carnets por página A4. El QR se genera con el algoritmo
-   incrustado (sin librerías); solo jsPDF se carga con respaldo.
+   10 carnets por página A4. QR generado inline; solo jsPDF
+   se carga con respaldo multi-fuente.
    ============================================================ */
 async function generarCarnetsPDF(){
   try{
@@ -1256,7 +1273,7 @@ async function generarCarnetsPDF(){
     for(let i = 0; i < lista.length; i++){
       if(i > 0 && i % (COLS*ROWS) === 0) doc.addPage();
       const col = i % COLS, row = Math.floor(i / COLS) % ROWS;
-      await dibujarCarnet(doc, lista[i], MX + col*(CW+GAP), MY + row*(CH+GAP), CW, CH);
+      dibujarCarnet(doc, lista[i], MX + col*(CW+GAP), MY + row*(CH+GAP), CW, CH);
     }
     doc.save('carnets-estudiantes.pdf');
     toast('PDF descargado: ' + lista.length + ' carnets.', 'success');
@@ -1266,7 +1283,7 @@ async function generarCarnetsPDF(){
   btn.disabled = false;
 }
 
-async function dibujarCarnet(doc, e, x, y, w, h){
+function dibujarCarnet(doc, e, x, y, w, h){
   const MORADO = [90,62,166], TINTA = [34,30,51], GRIS = [110,105,130];
   const qr = qrDataURL(JSON.stringify({ id:e.id, nie:e.nie }), 320);
 
@@ -1303,13 +1320,20 @@ async function dibujarCarnet(doc, e, x, y, w, h){
 }
 
 /* ============================================================
-   INICIO
+   INICIO — blindado: pinta el estado primero y protege cada paso
    ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
-  if(!window.bootstrap){
-    toast('Bootstrap no cargó: verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'warning');
+function init(){
+  /* Pinta el estado YA, antes de cualquier cosa que pueda fallar */
+  const data0 = leerData();
+  if(data0){
+    $('#statusTitle').textContent = 'Datos cargados — preparando vista…';
+    $('#statusDot').className = 'status-dot ok';
+  }else{
+    $('#statusTitle').textContent = 'Sin datos todavía';
+    $('#statusDot').className = 'status-dot off';
   }
-  cargarDeLocal();
+
+  try{ cargarDeLocal(); }catch(e){ reportarFalla('carga local', e); return; }
   render();
 
   $('#btnNuevo').addEventListener('click', () => abrirFormulario(null));
@@ -1324,8 +1348,14 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
   $('#chkArch').addEventListener('change', e => { S.verArch = e.target.checked; renderListado(); });
 
-  flushCola();
-});
+  flushCola();   // reintenta operaciones pendientes de sesiones anteriores
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();   // por si el script ya corre con el DOM listo
+}
 </script>
 </body>
 </html>
