@@ -28,7 +28,6 @@
 
   /* ============================================================
      LAYOUT GENERAL (reutilizable en todas las páginas)
-     Pantalla completa con márgenes fluidos + tipografía escalable.
      ============================================================ */
   .wrap-fluid{
     width:100%; max-width:1920px; margin:0 auto;
@@ -38,10 +37,7 @@
   .site-header{ padding:clamp(18px, 2.6vw, 30px) 0 12px; }
   .brand-title{ font-size:clamp(1.2rem, 1rem + 0.9vw, 1.75rem); }
   .brand-sub{ font-size:clamp(.76rem, .72rem + .2vw, .86rem); }
-
-  /* ============================================================
-     FIN LAYOUT GENERAL
-     ============================================================ */
+  /* ============================================================ */
 
   .modal:not(.show){ display:none; }
 
@@ -131,7 +127,7 @@
     border-bottom:1px solid var(--line); }
   .reg-item:last-child{ border-bottom:none; }
   .reg-ico{ width:38px; height:38px; border-radius:12px; flex:none;
-    display:grid; place-items:center; font-size:1rem;
+    display:grid; place-items:center;
     background:rgba(23,143,114,.12); color:var(--verde);
     font-family:'Space Grotesk'; font-weight:700; font-size:1.15rem; }
   .reg-nombre{ font-weight:600; font-size:.93rem; line-height:1.25; }
@@ -142,24 +138,34 @@
     border-radius:999px; padding:2px 9px;
     background:rgba(23,143,114,.12); color:var(--verde); }
 
-  #flash{ position:fixed; inset:0; z-index:1070; display:none; place-items:center;
-    background:rgba(34,30,51,.45); backdrop-filter:blur(3px); padding:20px; }
-  #flash.visible{ display:grid; }
-  .flash-card{ background:#fff; border-radius:24px; padding:34px 44px; text-align:center;
-    max-width:400px; width:100%; box-shadow:0 30px 70px -20px rgba(0,0,0,.5);
-    animation:pop .3s cubic-bezier(.2,.9,.3,1.3); }
-  @keyframes pop{ from{ transform:scale(.85); opacity:0; } to{ transform:scale(1); opacity:1; } }
-  .flash-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 14px;
-    display:grid; place-items:center; font-size:1.8rem;
-    font-family:'Space Grotesk'; font-weight:700; font-size:2.2rem; }
-  .fi-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .fi-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
-  .flash-nombre{ font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; line-height:1.25; }
-  .flash-estado{ display:inline-block; margin-top:10px; border-radius:999px;
-    padding:6px 18px; font-weight:700; font-size:.9rem; letter-spacing:.03em; }
-  .fe-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .fe-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
-  .flash-meta{ margin-top:8px; font-size:.82rem; color:var(--ink-soft); }
+  /* ============================================================
+     AVISO FLOTANTE DE ESCANEO (no bloqueante)
+     Aparece arriba, no tapa la cámara, se va solo en 1.6s.
+     Un escaneo nuevo lo reemplaza al instante.
+     ============================================================ */
+  #aviso{
+    position:fixed; top:14px; left:50%; transform:translate(-50%, -16px);
+    z-index:1070; display:flex; align-items:center; gap:12px;
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:10px 18px 10px 12px; max-width:min(430px, calc(100vw - 28px));
+    box-shadow:0 16px 40px -12px rgba(34,30,51,.4);
+    opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  #aviso.visible{ opacity:1; transform:translate(-50%, 0); }
+  .av-ico{ width:40px; height:40px; border-radius:12px; flex:none;
+    display:grid; place-items:center;
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.4rem; }
+  .av-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
+  .av-bad{ background:rgba(180,35,24,.10); color:var(--rojo); }
+  .av-txt{ min-width:0; }
+  .av-nombre{ font-family:'Space Grotesk'; font-weight:700; font-size:1rem;
+    line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .av-estado{ font-size:.74rem; font-weight:700; letter-spacing:.04em; }
+  .av-ok-t{ color:var(--verde); }
+  .av-bad-t{ color:var(--rojo); }
+  .av-meta{ font-size:.74rem; color:var(--ink-soft);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
   .empty-mini{ text-align:center; color:var(--ink-soft); font-size:.88rem; padding:26px 10px; }
 
@@ -194,10 +200,11 @@
     .reg-meta{ font-size:.82rem; }
     .reg-hora{ font-size:1.05rem; }
     .reg-ico{ width:44px; height:44px; font-size:1.3rem; }
-    .flash-card{ padding:44px 54px; max-width:460px; }
-    .flash-nombre{ font-size:1.55rem; }
-    .flash-estado{ font-size:1rem; }
     .app-toast{ font-size:.96rem; }
+    #aviso{ padding:12px 22px 12px 14px; }
+    .av-ico{ width:46px; height:46px; font-size:1.6rem; }
+    .av-nombre{ font-size:1.12rem; }
+    .av-estado, .av-meta{ font-size:.8rem; }
   }
 
   /* ============ Móvil: compacto y limpio ============ */
@@ -208,9 +215,10 @@
     .panel-head{ padding:12px 14px; }
     .cam-off{ padding:36px 16px; }
     .manual input{ flex-basis:100%; }
-    .flash-card{ padding:28px 24px; }
-    .flash-nombre{ font-size:1.15rem; }
     .app-toast{ max-width:calc(100vw - 44px); }
+    #aviso{ top:10px; padding:8px 14px 8px 10px; gap:10px; }
+    .av-ico{ width:34px; height:34px; font-size:1.15rem; }
+    .av-nombre{ font-size:.9rem; }
     .btn-back{ width:38px; height:38px; }
   }
 
@@ -228,7 +236,7 @@
       <div class="brand-mark"><i class="bi bi-qr-code-scan"></i></div>
       <div>
         <h1 class="brand-title">Pasar asistencia</h1>
-        <p class="brand-sub">Escanea el carné · se registra solo SI asistió, en el horario permitido</p>
+        <p class="brand-sub">Escanea sin parar: el aviso aparece arriba y no interrumpe el lector</p>
       </div>
       <div class="ms-auto text-end">
         <div class="reloj" id="reloj">--:--:--</div>
@@ -237,6 +245,16 @@
     </div>
   </div>
 </header>
+
+<!-- Aviso flotante de cada escaneo (no bloquea la cámara) -->
+<div id="aviso" role="status" aria-live="polite">
+  <span class="av-ico av-ok" id="avIco">+</span>
+  <span class="av-txt">
+    <span class="av-nombre" id="avNombre">—</span><br>
+    <span class="av-estado av-ok-t" id="avEstado">ASISTENCIA REGISTRADA</span>
+    <span class="av-meta d-block" id="avMeta"></span>
+  </span>
+</div>
 
 <main class="wrap-fluid pb-5">
 
@@ -305,16 +323,6 @@
   </div>
 </main>
 
-<!-- Tarjeta flash al escanear -->
-<div id="flash">
-  <div class="flash-card">
-    <div class="flash-ico fi-ok" id="flIco">+</div>
-    <div class="flash-nombre" id="flNombre">—</div>
-    <span class="flash-estado fe-ok" id="flEstado">ASISTENCIA REGISTRADA</span>
-    <div class="flash-meta" id="flMeta"></div>
-  </div>
-</div>
-
 <div class="toast-container" id="toastWrap" aria-live="polite"></div>
 
 <!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
@@ -340,7 +348,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 
 const CONFIG = {
   API_URL:     'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -357,12 +365,17 @@ const CONFIG = {
    No registrar = no escaneó = falta (celda vacía en la hoja). */
 const MARCA = 'SI';
 
+/* El aviso flotante se oculta solo tras este tiempo (ms);
+   un escaneo nuevo lo reemplaza antes sin esperar */
+const AVISO_MS = 1600;
+
 const S = {
   cola: [], token: '', flushing: false,
   hoy: { fecha:'', items:[] },
   scanner: null, camOn: false,
   nativa: null,
-  lastScan: { text:'', t:0 }
+  lastScan: { text:'', t:0 },
+  avisoTimer: null
 };
 
 const $ = s => document.querySelector(s);
@@ -381,7 +394,6 @@ function horaAhora(){
   const d = ahoraSV();
   return pad(d.getHours())+':'+pad(d.getMinutes());
 }
-/* ¿La hora está dentro de la ventana permitida? */
 function enVentana(h){
   if(!CONFIG.HORA_INICIO || !CONFIG.HORA_FIN) return true;
   return h >= CONFIG.HORA_INICIO && h <= CONFIG.HORA_FIN;
@@ -409,14 +421,18 @@ function toast(msg, kind = 'success'){
   requestAnimationFrame(() => el.classList.add('show'));
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
 }
-function beep(ok){
+function beep(tipo){
   try{
     const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.frequency.value = ok ? 880 : 220;
-    g.gain.value = .12; o.start();
-    setTimeout(() => o.stop(), ok ? 120 : 350);
+    const tono = (freq, t0, dur) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq;
+      g.gain.value = .12; o.start(t0); o.stop(t0 + dur);
+    };
+    if(tipo === 'ok')        tono(880, ctx.currentTime, .12);
+    else if(tipo === 'ya'){ tono(660, ctx.currentTime, .08); tono(660, ctx.currentTime + .12, .08); }
+    else                     tono(220, ctx.currentTime, .3);
   }catch(e){}
 }
 function vibrar(ok){ try{ navigator.vibrate && navigator.vibrate(ok ? 80 : [60,60,60]); }catch(e){} }
@@ -455,6 +471,19 @@ function cargarAsist(){
 function guardarAsist(){ localStorage.setItem(CONFIG.ASIST_KEY, JSON.stringify(S.hoy)); }
 function persistirCola(){ localStorage.setItem(CONFIG.QUEUE_KEY, JSON.stringify(S.cola)); }
 
+/* ============ AVISO FLOTANTE (no bloqueante) ============ */
+function mostrarAviso({ ok, nombre, estado, meta }){
+  $('#avIco').className = 'av-ico ' + (ok ? 'av-ok' : 'av-bad');
+  $('#avIco').textContent = ok ? '+' : '−';
+  $('#avNombre').textContent = nombre;
+  $('#avEstado').textContent = estado;
+  $('#avEstado').className = 'av-estado ' + (ok ? 'av-ok-t' : 'av-bad-t');
+  $('#avMeta').textContent = meta || '';
+  $('#aviso').classList.add('visible');
+  clearTimeout(S.avisoTimer);
+  S.avisoTimer = setTimeout(() => $('#aviso').classList.remove('visible'), AVISO_MS);
+}
+
 /* ============ REGISTRO DE UN ESCANEO ============ */
 function registrarDesdeTexto(texto){
   texto = String(texto || '').trim();
@@ -463,9 +492,9 @@ function registrarDesdeTexto(texto){
   /* Ventana horaria: fuera de ella NO se registra nada */
   const hoy = hoyISO(), hora = horaAhora();
   if(!enVentana(hora)){
-    beep(false); vibrar(false);
-    mostrarFlashCerrado(hora);
-    toast('Fuera del horario (' + CONFIG.HORA_INICIO + '–' + CONFIG.HORA_FIN + '). No se registró.', 'warning');
+    beep('cerrado'); vibrar(false);
+    mostrarAviso({ ok:false, nombre:'Fuera de horario', estado:'ASISTENCIA CERRADA',
+      meta:'Se registra de ' + CONFIG.HORA_INICIO + ' a ' + CONFIG.HORA_FIN + ' · hora ' + hora });
     return;
   }
 
@@ -480,19 +509,20 @@ function registrarDesdeTexto(texto){
 
   const est = buscarEstudiante(id, nie);
   if(est && est.archivado){
-    beep(false); vibrar(false);
-    toast('Ese estudiante está archivado; no se registró.', 'warning');
+    beep('ya'); vibrar(false);
+    mostrarAviso({ ok:false, nombre: nombreCompleto(est) || ('NIE ' + nie),
+      estado:'ARCHIVADO', meta:'No se registró' });
     return;
   }
   if(est){ id = est.id; nie = est.nie; }
-  if(!id && !nie){ beep(false); toast('Código no reconocido.', 'danger'); return; }
+  if(!id && !nie){ beep('cerrado'); mostrarAviso({ ok:false, nombre:'Código no reconocido', estado:'ERROR', meta:'' }); return; }
 
-  /* ¿Ya estaba registrado hoy? Solo avisa; no envía nada de nuevo */
+  /* ¿Ya estaba registrado hoy? Aviso rápido; no envía nada de nuevo */
   const previo = S.hoy.items.find(it => (id && it.id === id) || (!id && nie && it.nie === nie));
   if(previo){
-    mostrarFlashYa(previo);
-    beep(true); vibrar(true);
-    toast('Ya estaba registrado hoy.', 'warning');
+    beep('ya'); vibrar(true);
+    mostrarAviso({ ok:true, nombre: previo.nombre || ('NIE ' + previo.nie),
+      estado:'YA REGISTRADO', meta:'Registrado a las ' + previo.hora });
     return;
   }
 
@@ -506,8 +536,13 @@ function registrarDesdeTexto(texto){
   S.hoy.items.unshift(item);
   guardarAsist();
   renderHoy();
-  mostrarFlashOk(item);
-  beep(true); vibrar(true);
+  beep('ok'); vibrar(true);
+  mostrarAviso({
+    ok:true,
+    nombre: item.nombre || ('NIE ' + item.nie),
+    estado:'ASISTENCIA REGISTRADA',
+    meta:(item.grado ? item.grado + ' · ' : '') + 'a las ' + item.hora
+  });
 
   S.cola.push({
     action:'asistencia', sheet:'Asistencia',
@@ -641,46 +676,9 @@ async function detenerCam(){
 
 function onScan(texto){
   const ahora = Date.now();
-  if(texto === S.lastScan.text && ahora - S.lastScan.t < 3000) return;
+  if(texto === S.lastScan.text && ahora - S.lastScan.t < 2000) return;
   S.lastScan = { text: texto, t: ahora };
   registrarDesdeTexto(texto);
-}
-
-/* ============ FLASH ============ */
-let flashTimer = null;
-function mostrarFlashOk(item){
-  $('#flIco').className = 'flash-ico fi-ok';
-  $('#flIco').textContent = '+';
-  $('#flNombre').textContent = item.nombre || ('NIE ' + item.nie);
-  $('#flEstado').textContent = 'ASISTENCIA REGISTRADA';
-  $('#flEstado').className = 'flash-estado fe-ok';
-  $('#flMeta').textContent = (item.grado ? item.grado + ' · ' : '') + 'a las ' + item.hora;
-  $('#flash').classList.add('visible');
-  clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 2600);
-}
-function mostrarFlashYa(item){
-  $('#flIco').className = 'flash-ico fi-ok';
-  $('#flIco').textContent = '+';
-  $('#flNombre').textContent = item.nombre || ('NIE ' + item.nie);
-  $('#flEstado').textContent = 'YA REGISTRADO';
-  $('#flEstado').className = 'flash-estado fe-ok';
-  $('#flMeta').textContent = 'Registrado a las ' + item.hora;
-  $('#flash').classList.add('visible');
-  clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 2400);
-}
-function mostrarFlashCerrado(hora){
-  $('#flIco').className = 'flash-ico fi-cerrado';
-  $('#flIco').textContent = '−';
-  $('#flNombre').textContent = 'Fuera de horario';
-  $('#flEstado').textContent = 'ASISTENCIA CERRADA';
-  $('#flEstado').className = 'flash-estado fe-cerrado';
-  $('#flMeta').textContent = 'Se registra de ' + CONFIG.HORA_INICIO
-    + ' a ' + CONFIG.HORA_FIN + ' · hora actual ' + hora;
-  $('#flash').classList.add('visible');
-  clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 3000);
 }
 
 /* ============ RENDER ============ */
@@ -762,7 +760,6 @@ function init(){
   $('#inpManual').addEventListener('keydown', e => {
     if(e.key === 'Enter'){ e.preventDefault(); $('#btnManual').click(); }
   });
-  $('#flash').addEventListener('click', () => $('#flash').classList.remove('visible'));
 
   flushCola();
   window.addEventListener('beforeunload', () => { if(S.camOn) detenerCam(); });
