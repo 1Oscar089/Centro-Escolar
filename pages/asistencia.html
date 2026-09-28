@@ -28,7 +28,6 @@
 
   /* ============================================================
      LAYOUT GENERAL (reutilizable en todas las páginas)
-     Pantalla completa con márgenes fluidos + tipografía escalable.
      ============================================================ */
   .wrap-fluid{
     width:100%; max-width:1920px; margin:0 auto;
@@ -38,10 +37,7 @@
   .site-header{ padding:clamp(18px, 2.6vw, 30px) 0 12px; }
   .brand-title{ font-size:clamp(1.2rem, 1rem + 0.9vw, 1.75rem); }
   .brand-sub{ font-size:clamp(.76rem, .72rem + .2vw, .86rem); }
-
-  /* ============================================================
-     FIN LAYOUT GENERAL
-     ============================================================ */
+  /* ============================================================ */
 
   .modal:not(.show){ display:none; }
 
@@ -68,6 +64,11 @@
     transition:border-color .2s; }
   .btn-secundario:hover{ border-color:var(--morado); color:var(--morado-deep); }
   .btn-secundario:disabled{ opacity:.7; }
+  .btn-primario{ display:inline-flex; align-items:center; gap:8px;
+    background:var(--morado); color:#fff; border:none; padding:11px 20px;
+    border-radius:999px; font-weight:600; font-size:.92rem;
+    box-shadow:0 8px 18px -8px rgba(90,62,166,.55); transition:background .2s; }
+  .btn-primario:hover{ background:var(--morado-deep); color:#fff; }
 
   .status-bar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:13px 18px; display:flex; align-items:center; gap:13px; flex-wrap:wrap; margin-bottom:16px; }
@@ -104,7 +105,7 @@
     padding:0 6px; border-radius:8px; font-size:.85rem;
     font-family:'Space Grotesk'; font-weight:700; }
   .lm-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .lm-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+  .lm-falta{ background:rgba(180,35,24,.09); color:var(--rojo); }
   .lm-just{ background:rgba(107,75,214,.12); color:var(--lila-deep); }
   .lm-na{ background:rgba(34,30,51,.05); color:rgba(34,30,51,.35); }
 
@@ -150,7 +151,6 @@
   thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
     text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
     background:var(--paper); }
-  /* Nombre clicable: abre el historial de justificaciones */
   .nom-link{
     background:none; border:none; padding:0; margin:0;
     font:inherit; font-weight:600; color:inherit; text-align:left;
@@ -159,36 +159,34 @@
   }
   .nom-link:hover{ color:var(--morado-deep); border-bottom-color:var(--morado); }
   .nom-link:focus-visible{ outline:2px solid var(--morado); outline-offset:2px; border-radius:4px; }
-  /* Columnas finales de conteo, destacadas */
-  .col-res{ text-align:center; padding:8px 12px; width:84px; min-width:84px;
+  /* Columnas finales de conteo (3: ASIST | FALTAS | JUST) */
+  .col-res{ text-align:center; padding:8px 10px; width:80px; min-width:80px;
     background:rgba(90,62,166,.07); border-bottom:1px solid var(--line);
     border-left:1px solid var(--line); }
   thead .col-res{
-    font-family:'Space Grotesk'; font-weight:700; font-size:.72rem;
+    font-family:'Space Grotesk'; font-weight:700; font-size:.7rem;
     text-transform:uppercase; letter-spacing:.05em; color:var(--morado-deep);
     vertical-align:middle; }
   .celda{ text-align:center; padding:6px 4px; width:50px; min-width:50px;
     border-bottom:1px solid var(--line); border-left:1px solid var(--line);
     font-family:'Space Grotesk'; font-weight:700; font-size:1rem; }
-  .celda small{ display:block; font-size:.58rem; font-weight:600; opacity:.75;
-    font-variant-numeric:tabular-nums; }
   .glifo{ line-height:1; }
   .m-ok{ background:rgba(23,143,114,.09); color:var(--verde); }
-  .m-tarde{ background:rgba(217,119,14,.11); color:var(--naranja-deep); }
+  .m-falta{ background:rgba(180,35,24,.06); color:var(--rojo); }
   .m-just{ background:rgba(107,75,214,.08); color:var(--lila-deep); }
   .m-just .glifo{ text-transform:uppercase; }
-  .m-falta{ background:rgba(180,35,24,.06); color:var(--rojo); }
   .m-na{ color:rgba(34,30,51,.18); }
   td.res{ font-family:'Space Grotesk'; font-weight:700; font-size:1rem;
     background:rgba(90,62,166,.05); border-bottom:1px solid var(--line);
     border-left:1px solid var(--line); text-align:center; padding:6px 8px; }
   td.res.res-ok{ color:var(--verde); }
   td.res.res-falta{ color:var(--rojo); }
+  td.res.res-just{ color:var(--lila-deep); }
   td.res.res-cero{ color:rgba(34,30,51,.35); }
   tbody tr:hover .celda{ filter:brightness(.96); }
   tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
 
-  /* ============ Modal de justificaciones ============ */
+  /* ============ Modales ============ */
   .app-modal{ border:none; border-radius:24px; padding:26px 24px 22px; position:relative;
     box-shadow:0 30px 60px -20px rgba(34,30,51,.35); }
   .app-modal .m-close{
@@ -203,6 +201,21 @@
   .m-head h5{ font-family:'Space Grotesk'; font-weight:700; margin:0; font-size:1.15rem;
     word-break:break-word; }
   .m-head p{ margin:2px 0 0; font-size:.8rem; color:var(--ink-soft); }
+
+  .frm-label{ font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px; display:block; }
+  .frm-input{ width:100%; border:1.5px solid var(--line); border-radius:12px;
+    padding:10px 13px; font-size:.95rem; background:var(--bg); }
+  .frm-input:focus{ outline:none; border-color:var(--lila-deep); background:#fff;
+    box-shadow:0 0 0 4px rgba(107,75,214,.12); }
+  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
+  .frm-error.visible{ display:block; }
+  .btn-aceptar{ width:100%; margin-top:18px; border:none; border-radius:13px;
+    background:var(--morado); color:#fff; font-weight:600; padding:12px;
+    display:inline-flex; align-items:center; justify-content:center; gap:9px; }
+  .btn-aceptar:hover{ background:var(--morado-deep); color:#fff; }
+  .btn-aceptar:disabled{ opacity:.75; }
+
   .just-lista{ max-height:340px; overflow-y:auto; margin-top:10px;
     border-top:1px solid var(--line); }
   .just-item{ display:flex; align-items:center; gap:12px; padding:10px 2px;
@@ -224,11 +237,6 @@
     background:var(--turquesa); color:var(--turquesa-ink); }
   .empty-card h3{ font-family:'Space Grotesk'; font-weight:700; font-size:1.25rem; }
   .empty-card p{ color:var(--ink-soft); font-size:.92rem; max-width:46ch; margin:8px auto 20px; }
-  .btn-primario{ display:inline-flex; align-items:center; gap:8px;
-    background:var(--morado); color:#fff; border:none; padding:11px 20px;
-    border-radius:999px; font-weight:600; font-size:.92rem;
-    box-shadow:0 8px 18px -8px rgba(90,62,166,.55); transition:background .2s; }
-  .btn-primario:hover{ background:var(--morado-deep); color:#fff; }
 
   .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
     display:flex; flex-direction:column; gap:10px; }
@@ -255,11 +263,10 @@
     .asis-table{ font-size:1rem; }
     .dia{ width:72px; min-width:72px; font-size:.82rem; padding:8px 4px; }
     .celda{ width:72px; min-width:72px; padding:11px 6px; font-size:1.2rem; }
-    .celda small{ font-size:.68rem; }
     .glifo{ font-size:1.25rem; }
     .col-nombre{ min-width:280px; max-width:340px; font-size:1.02rem; padding:12px 18px; }
     thead .col-nombre{ font-size:.8rem; }
-    .col-res{ width:110px; min-width:110px; font-size:.82rem; }
+    .col-res{ width:104px; min-width:104px; font-size:.8rem; }
     td.res{ font-size:1.25rem; }
     .mes{ font-size:.85rem; padding:10px 14px; }
     .m-head h5{ font-size:1.25rem; }
@@ -277,8 +284,7 @@
     .col-nombre{ min-width:132px; max-width:180px; padding:8px 10px; font-size:.85rem; }
     .dia{ width:42px; min-width:42px; font-size:.64rem; padding:5px 2px; }
     .celda{ width:42px; min-width:42px; padding:5px 2px; font-size:.95rem; }
-    .celda small{ font-size:.5rem; }
-    .col-res{ width:62px; min-width:62px; padding:6px 6px; font-size:.66rem; }
+    .col-res{ width:58px; min-width:58px; padding:6px 4px; font-size:.62rem; }
     td.res{ font-size:.95rem; padding:5px 4px; }
     .btn-back{ width:38px; height:38px; }
     .app-toast{ max-width:calc(100vw - 44px); }
@@ -298,7 +304,7 @@
       <div class="brand-mark"><i class="bi bi-table"></i></div>
       <div>
         <h1 class="brand-title">Asistencia</h1>
-        <p class="brand-sub">Por grado y mes · lista completa con asistencias (+), faltas (−) y justificaciones (letra)</p>
+        <p class="brand-sub">Por grado y mes · asistencias (+), faltas (−) y justificaciones (letra)</p>
       </div>
       <div class="ms-auto">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -333,8 +339,8 @@
 
   <div class="leyenda">
     <span>Marca:</span>
-    <span class="mini-mark lm-ok">+</span> presente
-    <span class="mini-mark lm-tarde">+</span> tarde
+    <span class="mini-mark lm-ok">+</span> asistió
+    <span class="mini-mark lm-falta">−</span> falta
     <span class="mini-mark lm-just">A</span> justificada (letra del motivo)
     <span class="mini-mark lm-na">·</span> sin clase
     <span class="ms-auto" style="font-size:.76rem;">
@@ -364,6 +370,31 @@
   </div>
 </div>
 
+<!-- Modal: contraseña (primera carga en este dispositivo) -->
+<div class="modal fade" id="mdPass" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <button type="button" class="m-close" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <div class="m-head" style="justify-content:center;">
+        <div class="m-icon" style="background:#EFE9FF; color:var(--lila-deep);"><i class="bi bi-shield-lock-fill"></i></div>
+      </div>
+      <h5 class="text-center" style="font-family:'Space Grotesk'; font-weight:700;">Conectar con la hoja de cálculo</h5>
+      <p class="text-center mb-1" style="font-size:.87rem; color:var(--ink-soft);">
+        Ingresa la contraseña de administrador. Se pedirá una sola vez en este dispositivo.
+      </p>
+      <form id="frmPass" novalidate>
+        <label class="frm-label" for="inpPass" style="margin-top:10px;">Contraseña</label>
+        <input class="frm-input" type="password" id="inpPass" autocomplete="current-password">
+        <div class="frm-error text-center" id="passError"></div>
+        <button type="submit" class="btn-aceptar" id="btnPassSubmit">
+          <span>Conectar y descargar</span>
+          <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toastWrap" aria-live="polite"></div>
 
 <!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
@@ -385,7 +416,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v6';
+const VERSION = 'v7';
 
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -489,12 +520,10 @@ function mapaMotivos(){
 /* ============ DATOS ============ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
 
-/* Clave única de un estudiante para cruzar con la hoja Asistencia */
 function claveDe(id, nie){
   return id ? 'I' + id : (String(nie) !== '' ? 'N' + nie : '');
 }
 
-/* Asistencia indexada: clave -> {marcas:[...paralelo a fechas]} */
 function indexAsistencia(fechas){
   const d = leerData();
   const filasRaw = (d && d.sheets && d.sheets['Asistencia']) || [];
@@ -676,20 +705,22 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
     }));
 
   /* Filas: TODOS los estudiantes del grado.
-     + = asistió · − = falta · letra = justificada · · = sin clase */
+     + = asistió · − = falta · letra = justificada · · = sin clase.
+     SIN hora: el registro es binario (SI) y la hora ya no se muestra. */
   const conDatos = estudiantes
     .map(e => {
       const a = datos.asis[e.clave];
       const marcas = fv.map((f, i) => a ? (a.marcas[idxs[i]] || '') : '');
-      let asist = 0;
+      let asist = 0, just = 0;
       marcas.forEach((m, i) => {
         if(!diaActivo[i]) return;
         const v = m.trim();
-        if(!v || /^[a-o]$/i.test(v)) return;   // falta justificada no es asistencia
-        asist++;
+        if(!v) return;
+        if(/^[a-o]$/i.test(v)) just++;
+        else asist++;
       });
-      const faltas = Math.max(0, diaActivo.filter(Boolean).length - asist);
-      return { e, marcas, asist, faltas };
+      const faltas = Math.max(0, diaActivo.filter(Boolean).length - asist - just);
+      return { e, marcas, asist, faltas, just };
     })
     .sort((a,b) =>
       claveDeCampos(camposOrden(a.e)).localeCompare(claveDeCampos(camposOrden(b.e)), 'es'));
@@ -713,21 +744,18 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
              + `<span class="glifo">${esc(v)}</span></td>`;
         return;
       }
-      const tarde = /^TARDE/i.test(v);
-      const hora = (v.match(/(\d{1,2}:\d{2})/) || [,''])[1];
-      tds += `<td class="celda ${tarde ? 'm-tarde' : 'm-ok'}" title="${esc(v)}">`
-           + '<span class="glifo">+</span>'
-           + (hora ? `<small>${esc(hora)}</small>` : '')
-           + '</td>';
+      tds += '<td class="celda m-ok" title="Asistió"><span class="glifo">+</span></td>';
     });
     const clsA = c.asist === 0 ? 'res-cero' : 'res-ok';
     const clsF = c.faltas === 0 ? 'res-cero' : 'res-falta';
+    const clsJ = c.just  === 0 ? 'res-cero' : 'res-just';
     body += `<tr>
       <td class="col-nombre"><button type="button" class="nom-link" data-clave="${esc(c.e.clave)}"
         title="Ver justificaciones de ${esc(c.e.nombre || c.e.nie)}">${esc(c.e.nombre || ('NIE ' + c.e.nie))}</button></td>
       ${tds}
       <td class="res ${clsA}" title="Asistencias del periodo">${c.asist}</td>
       <td class="res ${clsF}" title="Faltas del periodo (sin contar justificadas)">${c.faltas}</td>
+      <td class="res ${clsJ}" title="Faltas justificadas del periodo">${c.just}</td>
     </tr>`;
   });
 
@@ -747,7 +775,8 @@ function tablaGrado(grado, estudiantes, datos, fv, k){
               <th class="col-nombre" rowspan="2">Nombre</th>
               ${mesesHtml}
               <th class="col-res" rowspan="2" title="Asistencias del periodo">ASIST</th>
-              <th class="col-res" rowspan="2" title="Faltas del periodo">FALTAS</th>
+              <th class="col-res" rowspan="2" title="Faltas del periodo (sin justificadas)">FALTAS</th>
+              <th class="col-res" rowspan="2" title="Faltas justificadas del periodo">JUST</th>
             </tr>
             <tr>${diasHtml}</tr>
           </thead>
