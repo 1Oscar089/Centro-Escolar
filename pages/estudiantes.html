@@ -258,6 +258,42 @@
   }
   .btn-cancelar:hover{ background:rgba(34,30,51,.05); }
 
+  /* ============ Selector de carnets ============ */
+  .seg{ display:flex; background:var(--bg); border-radius:999px; padding:4px; gap:4px; margin-top:14px; }
+  .seg button{
+    flex:1; border:none; background:transparent; border-radius:999px;
+    padding:9px 12px; font-weight:600; font-size:.88rem; color:var(--ink-soft);
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    transition:background .2s, color .2s; cursor:pointer;
+  }
+  .seg button.activo{ background:var(--morado); color:#fff; }
+  .picker{
+    max-height:320px; overflow-y:auto; border:1.5px solid var(--line);
+    border-radius:14px; padding:6px; margin-top:12px; background:var(--bg);
+  }
+  .pick-grupo{
+    font-family:'Space Grotesk'; font-weight:700; font-size:.76rem;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);
+    padding:9px 10px 4px; display:flex; align-items:center; gap:8px;
+  }
+  .pick-grupo .btn-mini-link{
+    margin-left:auto; border:none; background:transparent;
+    color:var(--morado); font-weight:600; font-size:.74rem; cursor:pointer;
+    padding:2px 8px; border-radius:8px;
+  }
+  .pick-grupo .btn-mini-link:hover{ background:rgba(90,62,166,.1); }
+  .pick-item{
+    display:flex; align-items:center; gap:10px; padding:7px 10px;
+    border-radius:10px; cursor:pointer; font-size:.9rem;
+  }
+  .pick-item:hover{ background:rgba(107,75,214,.07); }
+  .pick-item input{ width:17px; height:17px; accent-color:var(--morado); cursor:pointer; flex:none; }
+  .pick-nombre{ font-weight:600; }
+  .pick-nie{ margin-left:auto; font-size:.78rem; color:var(--ink-soft);
+    font-family:'Space Grotesk'; font-weight:600; }
+  .contador-carnets{ text-align:center; font-size:.85rem; color:var(--ink-soft); margin-top:12px; }
+  .contador-carnets b{ font-family:'Space Grotesk'; color:var(--morado-deep); font-size:1.05rem; }
+
   /* ============ Toasts ============ */
   .toast-container{ position:fixed; bottom:22px; right:22px; z-index:1080;
     display:flex; flex-direction:column; gap:10px; }
@@ -389,6 +425,47 @@
   </div>
 </div>
 
+<!-- Modal: carnets QR (elegir grado o estudiantes) -->
+<div class="modal fade" id="mdCarnets" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content app-modal">
+      <button type="button" class="m-close" data-bs-dismiss="modal" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <div class="m-head">
+        <div class="m-icon" style="background:var(--turquesa); color:var(--turquesa-ink);"><i class="bi bi-qr-code"></i></div>
+        <div>
+          <h5>Carnets QR en PDF</h5>
+          <p>Elige imprimir por grado o selecciona estudiantes</p>
+        </div>
+      </div>
+
+      <div class="seg">
+        <button type="button" id="segGrado" class="activo"><i class="bi bi-collection"></i> Por grado</button>
+        <button type="button" id="segEst"><i class="bi bi-ui-checks"></i> Por estudiantes</button>
+      </div>
+
+      <div id="panelGrado" style="margin-top:14px;">
+        <label class="frm-label" for="selCarGrado">Grado a imprimir</label>
+        <select class="frm-input" id="selCarGrado"></select>
+      </div>
+
+      <div id="panelEst" class="d-none">
+        <div class="buscador" style="margin-top:14px;">
+          <i class="bi bi-search"></i>
+          <input type="search" id="inpCarBuscar" placeholder="Filtrar por nombre o NIE…" autocomplete="off">
+        </div>
+        <div class="picker" id="pickerEst"></div>
+      </div>
+
+      <div class="contador-carnets" id="contadorCarnets"></div>
+
+      <button type="button" class="btn-aceptar" id="btnGenerarCar" style="margin-top:8px;" disabled>
+        <i class="bi bi-file-earmark-pdf"></i><span>Generar PDF</span>
+        <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: confirmar eliminación -->
 <div class="modal fade" id="mdEliminar" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -449,7 +526,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -469,7 +546,8 @@ const CAMPOS = ['id','nie','nombre1','nombre2','apellido1','apellido2',
 const S = {
   est: [], cola: [], token: null,
   q: '', grado: 'todos', verArch: false,
-  flushing: false, eliminando: null
+  flushing: false, eliminando: null,
+  car: { modo:'grado', grado:'todos', sel:new Set() }
 };
 
 const $  = s => document.querySelector(s);
@@ -480,11 +558,12 @@ function instanciaModal(id){
   if(!window.bootstrap) return null;
   return bootstrap.Modal.getOrCreateInstance(document.getElementById(id));
 }
-const mdEst  = () => instanciaModal('mdEstudiante');
-const mdDel  = () => instanciaModal('mdEliminar');
-const mdPass = () => instanciaModal('mdPass');
+const mdEst   = () => instanciaModal('mdEstudiante');
+const mdDel   = () => instanciaModal('mdEliminar');
+const mdPass  = () => instanciaModal('mdPass');
+const mdCar   = () => instanciaModal('mdCarnets');
 
-function modalONada(inst, alCerrar){
+function modalONada(inst){
   if(inst){ inst.show(); return true; }
   toast('Bootstrap JS no cargó. Verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'danger');
   return false;
@@ -1214,8 +1293,6 @@ function accionFila(ev){
     abrirFormulario(est);
 
   }else if(btn.dataset.acc === 'archivar'){
-    /* Solo cambia 'archivado': el .gs v5 hace MERGE y conserva
-       el resto de columnas (fix del borrado de nombre/grado) */
     const archivando = est.archivado !== 'SI';
     ejecutar({ action:'update', sheet:CONFIG.HOJA, id: est.id,
       row:{ id: est.id, archivado: archivando ? 'SI' : '',
@@ -1241,11 +1318,128 @@ function confirmarEliminar(){
 }
 
 /* ============================================================
-   CARNETS QR EN PDF
-   10 carnets por página A4. QR generado inline; solo jsPDF
-   se carga con respaldo multi-fuente.
+   CARNETS QR EN PDF — selector por grado o por estudiantes
    ============================================================ */
-async function generarCarnetsPDF(){
+function activosCarnets(){
+  return S.est.filter(e => e.archivado !== 'SI');
+}
+
+function gradosDisponibles(){
+  return [...new Set(activosCarnets().map(e => e.grado || 'Sin grado'))]
+    .sort((a,b) => a.localeCompare(b,'es'));
+}
+
+let carQ = '';
+
+function abrirCarnets(){
+  if(!activosCarnets().length){
+    toast('No hay estudiantes activos para generar carnets.', 'warning');
+    return;
+  }
+  const m = mdCar();
+  if(!modalONada(m)) return;
+
+  S.car.modo = 'grado';
+  S.car.grado = (S.grado !== 'todos') ? S.grado : 'todos';
+  S.car.sel = new Set();
+  carQ = '';
+  $('#inpCarBuscar').value = '';
+
+  llenarSelCarGrado();
+  cambiarModoCar('grado');
+  renderPicker();
+  actualizarContadorCar();
+}
+
+function cambiarModoCar(modo){
+  S.car.modo = modo;
+  $('#segGrado').classList.toggle('activo', modo === 'grado');
+  $('#segEst').classList.toggle('activo', modo === 'est');
+  $('#panelGrado').classList.toggle('d-none', modo !== 'grado');
+  $('#panelEst').classList.toggle('d-none', modo !== 'est');
+  actualizarContadorCar();
+}
+
+function llenarSelCarGrado(){
+  const sel = $('#selCarGrado');
+  const gs = gradosDisponibles();
+  sel.innerHTML = '<option value="todos">Todos los grados</option>'
+    + gs.map(g => `<option value="${g}" ${g === S.car.grado ? 'selected' : ''}>${g}</option>`).join('');
+}
+
+function renderPicker(){
+  const cont = $('#pickerEst');
+  const q = sinTildes(carQ.trim());
+  const porGrado = {};
+  activosCarnets().forEach(e => {
+    const g = e.grado || 'Sin grado';
+    (porGrado[g] = porGrado[g] || []).push(e);
+  });
+  const gs = Object.keys(porGrado).sort((a,b) => a.localeCompare(b,'es'));
+
+  let html = '';
+  gs.forEach(g => {
+    const lista = porGrado[g]
+      .filter(e => !q || sinTildes(nombreCompleto(e) + ' ' + e.nie).includes(q))
+      .sort((a,b) => claveOrden(a).localeCompare(claveOrden(b), 'es'));
+    if(!lista.length) return;
+
+    html += `<div class="pick-grupo"><span>${g}</span>
+      <button type="button" class="btn-mini-link" data-grupo="${g}">Marcar / quitar</button></div>`;
+    lista.forEach(e => {
+      const marcado = S.car.sel.has(e.id);
+      html += `<label class="pick-item">
+        <input type="checkbox" data-id="${e.id}" ${marcado ? 'checked' : ''}>
+        <span class="pick-nombre">${nombreCompleto(e)}</span>
+        <span class="pick-nie">${e.nie}</span></label>`;
+    });
+  });
+
+  cont.innerHTML = html || '<div class="empty-mini" style="padding:16px;">Sin coincidencias.</div>';
+}
+
+function actualizarContadorCar(){
+  const n = (S.car.modo === 'grado')
+    ? activosCarnets().filter(e => S.car.grado === 'todos' ? true : (e.grado || 'Sin grado') === S.car.grado).length
+    : S.car.sel.size;
+  $('#contadorCarnets').innerHTML = '<b>' + n + '</b> carné' + (n === 1 ? '' : 's') + ' a generar';
+  $('#btnGenerarCar').disabled = n === 0;
+}
+
+function onPickerChange(ev){
+  const chk = ev.target.closest('input[type="checkbox"]');
+  if(!chk) return;
+  if(chk.checked) S.car.sel.add(chk.dataset.id);
+  else S.car.sel.delete(chk.dataset.id);
+  actualizarContadorCar();
+}
+
+function onGrupoClick(ev){
+  const btn = ev.target.closest('[data-grupo]');
+  if(!btn) return;
+  const g = btn.dataset.grupo;
+  const delGrupo = activosCarnets().filter(e => (e.grado || 'Sin grado') === g);
+  const todosMarcados = delGrupo.every(e => S.car.sel.has(e.id));
+  delGrupo.forEach(e => { todosMarcados ? S.car.sel.delete(e.id) : S.car.sel.add(e.id); });
+  renderPicker();
+  actualizarContadorCar();
+}
+
+function confirmarCarnets(){
+  let lista;
+  if(S.car.modo === 'grado'){
+    lista = activosCarnets().filter(e => S.car.grado === 'todos' ? true : (e.grado || 'Sin grado') === S.car.grado);
+  }else{
+    lista = activosCarnets().filter(e => S.car.sel.has(e.id));
+  }
+  if(!lista.length){ toast('No hay carnets seleccionados.', 'warning'); return; }
+
+  const m = mdCar(); if(m) m.hide();
+  lista.sort((a,b) => claveOrden(a).localeCompare(claveOrden(b), 'es'));
+  generarCarnetsPDF(lista);
+}
+
+async function generarCarnetsPDF(lista){
   try{
     await asegurarJsPDF();
   }catch(falta){
@@ -1254,13 +1448,7 @@ async function generarCarnetsPDF(){
     return;
   }
 
-  const lista = S.est
-    .filter(e => e.archivado !== 'SI')
-    .filter(e => S.grado === 'todos' ? true : (e.grado || 'Sin grado') === S.grado)
-    .sort((a,b) => claveOrden(a).localeCompare(claveOrden(b), 'es'));
-  if(!lista.length){ toast('No hay estudiantes activos para generar carnets.', 'warning'); return; }
-
-  const btn = $('#btnCarnets');
+  const btn = $('#btnGenerarCar');
   btn.disabled = true;
   toast('Generando ' + lista.length + ' carnets…', 'success');
   try{
@@ -1338,7 +1526,7 @@ function init(){
 
   $('#btnNuevo').addEventListener('click', () => abrirFormulario(null));
   $('#btnSync').addEventListener('click', actualizar);
-  $('#btnCarnets').addEventListener('click', generarCarnetsPDF);
+  $('#btnCarnets').addEventListener('click', abrirCarnets);
   $('#frmEstudiante').addEventListener('submit', onSubmitEstudiante);
   $('#frmPass').addEventListener('submit', onSubmitPass);
   $('#listado').addEventListener('click', accionFila);
@@ -1347,6 +1535,15 @@ function init(){
   $('#inpBuscar').addEventListener('input', e => { S.q = e.target.value; renderListado(); });
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; renderListado(); });
   $('#chkArch').addEventListener('change', e => { S.verArch = e.target.checked; renderListado(); });
+
+  /* Selector de carnets */
+  $('#segGrado').addEventListener('click', () => cambiarModoCar('grado'));
+  $('#segEst').addEventListener('click', () => cambiarModoCar('est'));
+  $('#selCarGrado').addEventListener('change', e => { S.car.grado = e.target.value; actualizarContadorCar(); });
+  $('#inpCarBuscar').addEventListener('input', e => { carQ = e.target.value; renderPicker(); });
+  $('#pickerEst').addEventListener('change', onPickerChange);
+  $('#pickerEst').addEventListener('click', onGrupoClick);
+  $('#btnGenerarCar').addEventListener('click', confirmarCarnets);
 
   flushCola();   // reintenta operaciones pendientes de sesiones anteriores
 }
