@@ -50,11 +50,6 @@
     transition:border-color .2s; }
   .btn-secundario:hover{ border-color:var(--morado); color:var(--morado-deep); }
   .btn-secundario:disabled{ opacity:.7; }
-  .btn-primario{ display:inline-flex; align-items:center; gap:8px;
-    background:var(--morado); color:#fff; border:none; padding:11px 20px;
-    border-radius:999px; font-weight:600; font-size:.92rem;
-    box-shadow:0 8px 18px -8px rgba(90,62,166,.55); transition:background .2s; }
-  .btn-primario:hover{ background:var(--morado-deep); color:#fff; }
 
   .status-bar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:13px 18px; display:flex; align-items:center; gap:13px; flex-wrap:wrap; margin-bottom:16px; }
@@ -133,6 +128,14 @@
   thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600; font-size:.74rem;
     text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
     background:var(--paper); }
+  /* Columnas finales de conteo, destacadas */
+  .col-res{ text-align:center; padding:8px 12px; width:86px; min-width:86px;
+    background:rgba(90,62,166,.07); border-bottom:1px solid var(--line);
+    border-left:1px solid var(--line); }
+  thead .col-res{
+    font-family:'Space Grotesk'; font-weight:700; font-size:.72rem;
+    text-transform:uppercase; letter-spacing:.05em; color:var(--morado-deep);
+    vertical-align:middle; }
   .celda{ text-align:center; padding:6px 4px; width:58px; min-width:58px;
     border-bottom:1px solid var(--line); border-left:1px solid var(--line);
     font-family:'Space Grotesk'; font-weight:700; font-size:.85rem; }
@@ -142,39 +145,14 @@
   .m-ok{ background:rgba(23,143,114,.09); color:var(--verde); }
   .m-tarde{ background:rgba(217,119,14,.11); color:var(--naranja-deep); }
   .vacia{ color:rgba(34,30,51,.22); }
+  td.res{ font-family:'Space Grotesk'; font-weight:700; font-size:.95rem;
+    background:rgba(90,62,166,.05); border-bottom:1px solid var(--line);
+    border-left:1px solid var(--line); text-align:center; padding:6px 8px; }
+  td.res.res-ok{ color:var(--verde); }
+  td.res.res-falta{ color:var(--rojo); }
+  td.res.res-cero{ color:rgba(34,30,51,.35); }
   tbody tr:hover .celda{ filter:brightness(.96); }
   tbody tr:hover .col-nombre{ background:rgba(107,75,214,.05); }
-
-  /* ============ Consolidado mensual ============ */
-  .cons-wrap{ padding:14px 20px 18px; border-top:1px solid var(--line);
-    background:rgba(34,30,51,.015); }
-  .cons-title{ display:flex; align-items:center; gap:9px; flex-wrap:wrap;
-    font-family:'Space Grotesk'; font-weight:700; font-size:.9rem;
-    color:var(--ink-soft); margin-bottom:10px; }
-  .cons-title .cons-dias{
-    background:rgba(90,62,166,.1); color:var(--morado-deep);
-    border-radius:999px; padding:3px 11px; font-size:.74rem; }
-  .scroll-x-cons{ overflow-x:auto; }
-  .cons-table{ border-collapse:collapse; width:100%; min-width:520px; font-size:.86rem; }
-  .cons-table th{
-    font-family:'Space Grotesk'; font-weight:600; font-size:.7rem;
-    text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);
-    background:rgba(34,30,51,.03); padding:8px 12px; text-align:center;
-    border-bottom:1px solid var(--line); white-space:nowrap; }
-  .cons-table th:first-child{ text-align:left; }
-  .cons-table td{ padding:8px 12px; border-bottom:1px solid var(--line);
-    text-align:center; font-family:'Space Grotesk'; font-weight:600; }
-  .cons-table td:first-child{ text-align:left; font-family:'DM Sans';
-    font-weight:600; }
-  .cons-table tbody tr:hover td{ background:rgba(107,75,214,.05); }
-  .cons-table .c-num-ok{ color:var(--verde); }
-  .cons-table .c-num-tarde{ color:var(--naranja-deep); }
-  .cons-table .c-num-falta{ color:var(--rojo); }
-  .pct{ display:inline-block; min-width:52px; border-radius:999px;
-    padding:3px 10px; font-size:.78rem; font-weight:700; }
-  .pc-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .pc-med{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
-  .pc-bad{ background:rgba(180,35,24,.10); color:var(--rojo); }
 
   /* ============ Estado vacío / modales / toasts ============ */
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
@@ -229,7 +207,7 @@
       <div class="brand-mark"><i class="bi bi-table"></i></div>
       <div>
         <h1 class="brand-title">Asistencia</h1>
-        <p class="brand-sub">Consulta por grado y mes · con consolidado de asistencias y faltas</p>
+        <p class="brand-sub">Por grado y mes · lista completa de estudiantes con asistencias y faltas</p>
       </div>
       <div class="ms-auto">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -318,13 +296,13 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 
 const CONFIG = {
   API_URL:   'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
   DATA_KEY:  'RE_DATA_V1',
   TOKEN_KEY: 'RE_TOKEN_V1',
-  VIEW_KEY:  'RE_ASIS_VIEW_V1'   // recuerda grado y mes elegidos
+  VIEW_KEY:  'RE_ASIS_VIEW_V1'
 };
 
 const S = { q: '', grado: 'todos', mes: 'todos', token: '', busy: false };
@@ -377,7 +355,7 @@ function toast(msg, kind = 'success'){
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
 }
 
-/* Clave de orden igual que en Estudiantes: sin "de"/"del" */
+/* Orden por apellidos, sin "de"/"del" (igual que Estudiantes) */
 function claveDeCampos(campos){
   return campos.map(sinTildes)
     .map(t => t.split(/\s+/).filter(w => w && w !== 'de' && w !== 'del').join(' '))
@@ -390,60 +368,62 @@ function nombreMes(mm){
 /* ============ DATOS ============ */
 function leerData(){ try{ return JSON.parse(localStorage.getItem(CONFIG.DATA_KEY)); } catch(e){ return null; } }
 
-/* Índice de Estudiantes por id y por nie, para ordenar por apellidos */
-function indexEstudiantes(){
-  const d = leerData();
-  const filas = (d && d.sheets && d.sheets.Estudiantes) || [];
-  const porId = {}, porNie = {};
-  filas.forEach(e => {
-    if(e.id) porId[String(e.id)] = e;
-    if(e.nie !== undefined && String(e.nie) !== '') porNie[String(e.nie)] = e;
-  });
-  return { porId, porNie };
+/* Clave única de un estudiante para cruzar con la hoja Asistencia */
+function claveDe(id, nie){
+  return id ? 'I' + id : (String(nie) !== '' ? 'N' + nie : '');
 }
 
-/* Matriz desde la hoja Asistencia del caché:
-   fechas = encabezados dd/MM en orden de columna (cronológico) */
-function construirMatriz(){
+/* Asistencia indexada: clave -> {marcas:[...paralelo a fechas]} */
+function indexAsistencia(fechas){
   const d = leerData();
-  const idx = indexEstudiantes();
   const filasRaw = (d && d.sheets && d.sheets['Asistencia']) || [];
-  if(!filasRaw.length) return null;
+  const mapa = {};
+  filasRaw.forEach(r => {
+    const k = claveDe(String(r.id || ''), r.nie);
+    if(!k || mapa[k]) return;                 // dedupe: primera occurrence
+    mapa[k] = { marcas: fechas.map(f => String(r[f] || '')) };
+  });
+  return mapa;
+}
 
-  const headers = Object.keys(filasRaw[0]);
-  const fechas = headers.filter(h => /^\d{1,2}\/\d{1,2}$/.test(String(h)));
+/* Fuente de filas = hoja Estudiantes (completa, sin archivados).
+   La asistencia solo se CRUZA para pintar marcas. */
+function construirDatos(){
+  const d = leerData();
+  const filasEst = (d && d.sheets && d.sheets.Estudiantes) || [];
+  if(!filasEst.length) return null;
 
-  /* DEDUPLICACIÓN: una fila por estudiante (por id, nie o nombre) */
+  /* Fechas existentes en la hoja Asistencia (puede estar vacía) */
+  const asisRaw = (d.sheets && d.sheets['Asistencia']) || [];
+  const fechas = asisRaw.length
+    ? Object.keys(asisRaw[0]).filter(h => /^\d{1,2}\/\d{1,2}$/.test(String(h)))
+    : [];
+  const asis = indexAsistencia(fechas);
+
   const vistos = new Set();
-  const filas = filasRaw
-    .filter(r => String(r.nombre || '') || String(r.id || '') || String(r.nie || ''))
-    .map(r => {
-      const id = String(r.id || ''), nie = String(r.nie ?? '');
-      const est = idx.porId[id] || idx.porNie[nie] || null;
+  const estudiantes = filasEst
+    .filter(e => String(e.archivado || '') !== 'SI')
+    .map(e => {
+      const id = String(e.id || ''), nie = String(e.nie ?? '');
       return {
         id, nie,
-        nombre: String(r.nombre || '') ||
-                (est ? [est.nombre1, est.nombre2, est.apellido1, est.apellido2]
-                       .filter(Boolean).join(' ') : ''),
-        grado:  String(r.grado || '').trim() || (est ? String(est.grado || '').trim() : ''),
-        est,
-        marcas: fechas.map(f => String(r[f] || ''))
+        nombre: [e.nombre1, e.nombre2, e.apellido1, e.apellido2].filter(Boolean).join(' '),
+        grado:  String(e.grado || '').trim() || 'Sin grado',
+        clave:  claveDe(id, nie)
       };
     })
-    .filter(f => {
-      const k = f.id || ('N' + f.nie) || ('NM' + sinTildes(f.nombre));
+    .filter(e => {
+      const k = e.id || ('N' + e.nie) || ('NM' + sinTildes(e.nombre));
       if(!k || vistos.has(k)) return false;
       vistos.add(k);
       return true;
     });
-  return { fechas, filas };
+
+  return { fechas, asis, estudiantes };
 }
 
-function camposOrden(f){
-  if(f.est){
-    return [f.est.apellido1, f.est.apellido2, f.est.nombre1, f.est.nombre2];
-  }
-  return [f.nombre, '', '', ''];
+function camposOrden(e){
+  return [e.apellido1 || '', e.apellido2 || '', e.nombre1 || '', e.nombre2 || ''];
 }
 
 /* Meses presentes en las columnas, en orden cronológico */
@@ -455,52 +435,19 @@ function mesesDisponibles(fechas){
   });
   return out;
 }
-
-/* Fechas del mes elegido ('todos' = todas) */
 function fechasVisibles(fechas){
   if(S.mes === 'todos') return fechas;
   return fechas.filter(f => String(f).split('/')[1] === S.mes);
 }
-
-/* Agrupa fechas contiguas por mes (las columnas ya están en orden) */
 function gruposDeMes(fechas){
   const gs = [];
   fechas.forEach((f, i) => {
     const mm = String(f).split('/')[1];
     const u = gs[gs.length - 1];
-    if(!u || u.mm !== mm) gs.push({ mm, desde: i, n: 0 });
+    if(!u || u.mm !== mm) gs.push({ mm, n: 0 });
     gs[gs.length - 1].n++;
   });
   return gs;
-}
-
-/* ============ CONSOLIDADO MENSUAL ============
-   Días activos del grado = columnas con al menos una marca entre
-   sus estudiantes. Falta = día activo sin marca del estudiante. */
-function consolidadoGrado(filas, fechasVis){
-  const diasActivos = fechasVis.filter((f, i) =>
-    filas.some(fr => (fr.marcasVis[i] || '').trim())).length;
-
-  const filasCons = filas.map(fr => {
-    let pres = 0, tar = 0;
-    fr.marcasVis.forEach(m => {
-      const v = (m || '').trim();
-      if(!v) return;
-      if(/^TARDE/i.test(v)) tar++; else pres++;
-    });
-    const faltas = Math.max(0, diasActivos - pres - tar);
-    const pct = diasActivos ? Math.round((pres + tar) / diasActivos * 100) : 0;
-    return { fr, pres, tar, faltas, pct };
-  });
-
-  filasCons.sort((a,b) =>
-    claveDeCampos(camposOrden(a.fr)).localeCompare(claveDeCampos(camposOrden(b.fr)), 'es'));
-
-  return { diasActivos, filasCons };
-}
-
-function clasePct(p){
-  return p >= 85 ? 'pc-ok' : (p >= 70 ? 'pc-med' : 'pc-bad');
 }
 
 /* ============ RENDER ============ */
@@ -535,58 +482,32 @@ function renderListado(){
     return;
   }
 
-  const m = construirMatriz();
-
-  /* FIX del bug principal: antes decía !m.filas_len (siempre vacío) */
-  if(!m || !m.filas.length){
+  const datos = construirDatos();
+  if(!datos || !datos.estudiantes.length){
     cont.innerHTML = `
       <div class="empty-card">
-        <div class="empty-ico"><i class="bi bi-calendar2-week"></i></div>
-        <h3>Aún no hay asistencia registrada</h3>
-        <p>Cuando pases lista en «Pasar asistencia», cada estudiante escaneado
-           aparecerá aquí como una fila y cada día como una columna.</p>
-        <button class="btn-primario" id="btnIrActualizar"><i class="bi bi-arrow-repeat"></i> Actualizar datos</button>
-      </div>`;
-    $('#btnIrActualizar').addEventListener('click', () => refrescar(false));
-    return;
-  }
-  if(!m.fechas.length){
-    cont.innerHTML = `
-      <div class="empty-card">
-        <div class="empty-ico"><i class="bi bi-calendar-x"></i></div>
-        <h3>Todavía no hay días registrados</h3>
-        <p>Las columnas de fecha se crean automáticamente la primera vez que
-           escaneas un carné en «Pasar asistencia».</p>
+        <div class="empty-ico"><i class="bi bi-people"></i></div>
+        <h3>Aún no hay estudiantes</h3>
+        <p>Crea estudiantes en el módulo «Estudiantes»; aquí aparecerán
+           listados por grado con sus asistencias y faltas.</p>
       </div>`;
     return;
   }
 
-  /* Si el mes guardado ya no existe en los datos, vuelve a "todo el año" */
-  const meses = mesesDisponibles(m.fechas);
-  if(S.mes !== 'todos' && !meses.includes(S.mes)){
+  /* Si el mes guardado ya no existe, vuelve a "todo el año" */
+  const meses = mesesDisponibles(datos.fechas);
+  if(S.mes !== 'todos' && meses.length && !meses.includes(S.mes)){
     S.mes = 'todos';
     renderMesesSelect();
     guardarVista();
   }
 
-  const fv = fechasVisibles(m.fechas);
-  if(!fv.length){
-    cont.innerHTML = `
-      <div class="empty-card">
-        <div class="empty-ico"><i class="bi bi-calendar-x"></i></div>
-        <h3>Sin registros en ${esc(nombreMes(S.mes))}</h3>
-        <p>Elige otro mes o vuelve a «Todo el año» en el selector.</p>
-      </div>`;
-    return;
-  }
-
-  /* Marcas recortadas a las fechas visibles */
-  const idxs = fv.map(f => m.fechas.indexOf(f));
+  const fv = fechasVisibles(datos.fechas);
 
   const q = sinTildes(S.q.trim());
-  const visibles = m.filas.filter(f => {
-    if(S.grado !== 'todos' && (f.grado || 'Sin grado') !== S.grado) return false;
-    if(q && !sinTildes(f.nombre + ' ' + f.nie).includes(q)) return false;
+  const visibles = datos.estudiantes.filter(e => {
+    if(S.grado !== 'todos' && e.grado !== S.grado) return false;
+    if(q && !sinTildes(e.nombre + ' ' + e.nie).includes(q)) return false;
     return true;
   });
 
@@ -600,41 +521,61 @@ function renderListado(){
     return;
   }
 
-  visibles.forEach(f => { f.marcasVis = idxs.map(i => f.marcas[i] || ''); });
-
   const porGrado = {};
-  visibles.forEach(f => {
-    const g = f.grado || 'Sin grado';
-    (porGrado[g] = porGrado[g] || []).push(f);
-  });
+  visibles.forEach(e => (porGrado[e.grado] = porGrado[e.grado] || []).push(e));
   const grados = Object.keys(porGrado).sort(compararTexto);
 
   let html = '', k = 0;
   grados.forEach(g => {
-    html += tablaGrado(g, porGrado[g], fv, k);
+    html += tablaGrado(g, porGrado[g], datos, fv, k);
     k++;
   });
   cont.innerHTML = html;
 }
 
-function tablaGrado(grado, filas, fechasVis, k){
-  const gs = gruposDeMes(fechasVis);
+function tablaGrado(grado, estudiantes, datos, fv, k){
+  const gs = gruposDeMes(fv);
 
+  /* Banda de meses (sobre las columnas de días) */
   let mesesHtml = '';
   gs.forEach((g, i) => {
     mesesHtml += `<th class="mes ${MC[(k + i) % MC.length]}" colspan="${g.n}">`
       + esc(nombreMes(g.mm)) + '</th>';
   });
 
+  /* Encabezados de días */
   let diasHtml = '';
-  fechasVis.forEach(f => {
+  fv.forEach(f => {
     diasHtml += `<th class="dia" title="${esc(f)}">${esc(String(f).split('/')[0])}</th>`;
   });
 
+  /* Días activos del grado: columnas con al menos una marca entre
+     los estudiantes de este grado */
+  const idxs = fv.map(f => datos.fechas.indexOf(f));
+  const diaActivo = fv.map((f, i) =>
+    estudiantes.some(e => {
+      const a = datos.asis[e.clave];
+      return a && (a.marcas[idxs[i]] || '').trim();
+    }));
+  const diasActivos = diaActivo.filter(Boolean).length;
+
+  /* Filas: TODOS los estudiantes del grado, con o sin registro */
+  const conDatos = estudiantes
+    .map(e => {
+      const a = datos.asis[e.clave];
+      const marcas = fv.map((f, i) => a ? (a.marcas[idxs[i]] || '') : '');
+      let asist = 0;
+      marcas.forEach(m => { if(m.trim()) asist++; });
+      const faltas = Math.max(0, diasActivos - asist);
+      return { e, marcas, asist, faltas };
+    })
+    .sort((a,b) =>
+      claveDeCampos(camposOrden(a.e)).localeCompare(claveDeCampos(camposOrden(b.e)), 'es'));
+
   let body = '';
-  filas.forEach(f => {
+  conDatos.forEach(c => {
     let tds = '';
-    f.marcasVis.forEach(m => {
+    c.marcas.forEach(m => {
       if(!m){ tds += '<td class="celda vacia"><i class="bi bi-dot"></i></td>'; return; }
       const tarde = /^TARDE/i.test(m);
       const hora = (m.match(/(\d{1,2}:\d{2})/) || [,''])[1];
@@ -643,24 +584,13 @@ function tablaGrado(grado, filas, fechasVis, k){
            + (hora ? `<small>${esc(hora)}</small>` : '')
            + '</td>';
     });
-    body += `<tr><td class="col-nombre">${esc(f.nombre || ('NIE ' + f.nie))}</td>${tds}</tr>`;
-  });
-
-  /* Consolidado del periodo visible para este grado */
-  const cons = consolidadoGrado(filas, fechasVis);
-  const tituloCons = (S.mes === 'todos')
-    ? 'Consolidado del año'
-    : 'Consolidado de ' + nombreMes(S.mes);
-
-  let consBody = '';
-  cons.filasCons.forEach(c => {
-    consBody += `<tr>
-      <td>${esc(c.fr.nombre || ('NIE ' + c.fr.nie))}</td>
-      <td class="c-num-ok">${c.pres}</td>
-      <td class="c-num-tarde">${c.tar}</td>
-      <td class="c-num-falta">${c.faltas}</td>
-      <td>${cons.diasActivos}</td>
-      <td><span class="pct ${clasePct(c.pct)}">${c.pct}%</span></td>
+    const clsA = c.asist === 0 ? 'res-cero' : 'res-ok';
+    const clsF = c.faltas === 0 ? 'res-cero' : 'res-falta';
+    body += `<tr>
+      <td class="col-nombre">${esc(c.e.nombre || ('NIE ' + c.e.nie))}</td>
+      ${tds}
+      <td class="res ${clsA}">${c.asist}</td>
+      <td class="res ${clsF}">${c.faltas}</td>
     </tr>`;
   });
 
@@ -669,7 +599,7 @@ function tablaGrado(grado, filas, fechasVis, k){
       <div class="grade-head ${GC[k % GC.length]}">
         <span class="g-ico"><i class="bi ${GI[k % GI.length]}"></i></span>
         <h2>${esc(grado)}</h2>
-        <span class="grade-count">${filas.length} est · ${fechasVis.length} días</span>
+        <span class="grade-count">${estudiantes.length} est · ${diasActivos} días con registro</span>
       </div>
       <div class="scroll-x">
         <table class="table asis-table">
@@ -677,42 +607,30 @@ function tablaGrado(grado, filas, fechasVis, k){
             <tr>
               <th class="col-nombre" rowspan="2">Nombre</th>
               ${mesesHtml}
+              <th class="col-res" rowspan="2" title="Asistencias del periodo">ASIST</th>
+              <th class="col-res" rowspan="2" title="Faltas del periodo">FALTAS</th>
             </tr>
             <tr>${diasHtml}</tr>
           </thead>
           <tbody>${body}</tbody>
         </table>
       </div>
-      <div class="cons-wrap">
-        <div class="cons-title">
-          <i class="bi bi-clipboard-data"></i> ${esc(tituloCons)}
-          <span class="cons-dias">${cons.diasActivos} día${cons.diasActivos === 1 ? '' : 's'} con registro</span>
-        </div>
-        <div class="scroll-x-cons">
-          <table class="cons-table">
-            <thead><tr>
-              <th>Estudiante</th><th>Presentes</th><th>Tarde</th>
-              <th>Faltas</th><th>Días</th><th>% Asistencia</th>
-            </tr></thead>
-            <tbody>${consBody}</tbody>
-          </table>
-        </div>
-      </div>
     </article>`;
 }
 
 function renderGradosSelect(){
-  const m = construirMatriz();
-  const grados = m ? [...new Set(m.filas.map(f => f.grado || 'Sin grado'))]
-                     .sort(compararTexto) : [];
+  const datos = construirDatos();
+  const grados = datos
+    ? [...new Set(datos.estudiantes.map(e => e.grado))].sort(compararTexto)
+    : [];
   const sel = $('#selGrado');
   sel.innerHTML = '<option value="todos">Todos los grados</option>'
     + grados.map(g => `<option value="${esc(g)}" ${g === S.grado ? 'selected' : ''}>${esc(g)}</option>`).join('');
 }
 
 function renderMesesSelect(){
-  const m = construirMatriz();
-  const meses = m ? mesesDisponibles(m.fechas) : [];
+  const datos = construirDatos();
+  const meses = datos ? mesesDisponibles(datos.fechas) : [];
   const sel = $('#selMes');
   sel.innerHTML = '<option value="todos">Todo el año</option>'
     + meses.map(mm => `<option value="${esc(mm)}" ${mm === S.mes ? 'selected' : ''}>${esc(nombreMes(mm))}</option>`).join('');
@@ -730,13 +648,13 @@ function renderStatus(){
     return;
   }
 
-  const m = construirMatriz();
-  const nEst = m ? m.filas.length : 0;
-  const fv = m ? fechasVisibles(m.fechas) : [];
+  const datos = construirDatos();
+  const nEst = datos ? datos.estudiantes.length : 0;
+  const fv = datos ? fechasVisibles(datos.fechas) : [];
 
   dot.className = 'status-dot ' + (S.busy ? 'warn' : 'ok');
   tit.textContent = S.busy ? 'Actualizando desde la hoja…'
-    : (nEst ? 'Datos cargados — lectura local instantánea' : 'Sin registros de asistencia aún');
+    : (nEst ? 'Lista completa de estudiantes — las marcas vienen de la hoja Asistencia' : 'Sin estudiantes aún');
   const f = new Date(data.syncedAt);
   met.textContent = 'Última descarga del libro: '
     + f.toLocaleDateString('es',{ day:'numeric', month:'short' }) + ', '
@@ -849,7 +767,7 @@ function init(){
   $('#selGrado').addEventListener('change', e => { S.grado = e.target.value; guardarVista(); renderListado(); renderStatus(); });
   $('#selMes').addEventListener('change', e => { S.mes = e.target.value; guardarVista(); renderListado(); renderStatus(); });
 
-  refrescar(true);   // sincroniza en silencio si ya hay sesión en el dispositivo
+  refrescar(true);
 }
 
 if(document.readyState === 'loading'){
