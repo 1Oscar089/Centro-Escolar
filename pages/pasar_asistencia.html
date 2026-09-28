@@ -22,9 +22,26 @@
     --naranja:#FFB459;  --naranja-ink:#59300A;  --naranja-deep:#D9770E;
     --lila:#DED6FF;     --lila-deep:#6B4BD6;
     --turquesa:#A8E8D6; --turquesa-ink:#0B4B3D; --turquesa-deep:#178F72;
-    --morado:#5A3EA6;   --morado-deep:#443077;
+    --morado:#5A3EA6;   --morado-ink:#F4EFFF;   --morado-deep:#443077;
     --rojo:#B42318;     --verde:#178F72;
   }
+
+  /* ============================================================
+     LAYOUT GENERAL (reutilizable en todas las páginas)
+     Pantalla completa con márgenes fluidos + tipografía escalable.
+     ============================================================ */
+  .wrap-fluid{
+    width:100%; max-width:1920px; margin:0 auto;
+    padding-left:clamp(12px, 3vw, 44px);
+    padding-right:clamp(12px, 3vw, 44px);
+  }
+  .site-header{ padding:clamp(18px, 2.6vw, 30px) 0 12px; }
+  .brand-title{ font-size:clamp(1.2rem, 1rem + 0.9vw, 1.75rem); }
+  .brand-sub{ font-size:clamp(.76rem, .72rem + .2vw, .86rem); }
+
+  /* ============================================================
+     FIN LAYOUT GENERAL
+     ============================================================ */
 
   .modal:not(.show){ display:none; }
 
@@ -34,11 +51,12 @@
     background-image:radial-gradient(rgba(34,30,51,.055) 1px, transparent 1.5px);
     background-size:26px 26px; min-height:100vh;
   }
-  .site-header{ padding:22px 0 12px; }
-  .brand-mark{ width:46px; height:46px; border-radius:14px; flex:none;
-    background:var(--morado); color:#fff; display:grid; place-items:center; font-size:1.3rem; }
-  .brand-title{ font-family:'Space Grotesk'; font-weight:700; font-size:1.35rem; margin:0; }
-  .brand-sub{ margin:0; font-size:.78rem; color:var(--ink-soft); }
+  .brand-mark{ width:clamp(44px, 3vw, 54px); height:clamp(44px, 3vw, 54px);
+    border-radius:14px; flex:none;
+    background:var(--morado); color:#fff; display:grid; place-items:center;
+    font-size:clamp(1.2rem, 1rem + .4vw, 1.5rem); }
+  .brand-title{ font-family:'Space Grotesk'; font-weight:700; margin:0; }
+  .brand-sub{ margin:0; color:var(--ink-soft); }
   .btn-back{ width:42px; height:42px; border-radius:13px; flex:none;
     border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
     display:grid; place-items:center; transition:background .2s, transform .2s; }
@@ -61,8 +79,8 @@
   .status-dot{ width:10px; height:10px; border-radius:50%; flex:none; }
   .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
   .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
-  .status-title{ font-weight:700; font-size:.95rem; }
-  .status-meta{ font-size:.78rem; color:var(--ink-soft); }
+  .status-title{ font-weight:700; font-size:.95rem; word-break:break-word; }
+  .status-meta{ font-size:.78rem; color:var(--ink-soft); word-break:break-word; }
   .chip{ background:rgba(34,30,51,.05); border-radius:999px; padding:6px 13px;
     font-size:.82rem; font-weight:500; white-space:nowrap; }
   .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
@@ -93,7 +111,8 @@
       repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 12px, transparent 12px 24px), #221E33;
   }
   .cam-off i{ font-size:2.4rem; margin-bottom:10px; color:var(--lila); }
-  .reloj{ font-family:'Space Grotesk'; font-weight:700; font-size:1.5rem; font-variant-numeric:tabular-nums; }
+  .reloj{ font-family:'Space Grotesk'; font-weight:700;
+    font-size:clamp(1.3rem, 1rem + .8vw, 1.9rem); font-variant-numeric:tabular-nums; }
 
   .manual{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
   .manual input{ flex:1 1 160px; border:1.5px solid var(--line); border-radius:12px;
@@ -105,43 +124,40 @@
     display:flex; align-items:center; gap:8px; }
   .mini b{ font-family:'Space Grotesk'; font-size:1.25rem; }
   .mini-ok{ background:rgba(23,143,114,.12); color:var(--turquesa-ink); }
-  .mini-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-ink); }
   .mini-total{ background:rgba(90,62,166,.12); color:var(--morado-deep); }
 
-  .reg-lista{ list-style:none; margin:0; padding:0; max-height:420px; overflow-y:auto; }
+  .reg-lista{ list-style:none; margin:0; padding:0; max-height:460px; overflow-y:auto; }
   .reg-item{ display:flex; align-items:center; gap:12px; padding:10px 4px;
     border-bottom:1px solid var(--line); }
   .reg-item:last-child{ border-bottom:none; }
   .reg-ico{ width:38px; height:38px; border-radius:12px; flex:none;
-    display:grid; place-items:center; font-size:1rem; }
-  .ri-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .ri-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+    display:grid; place-items:center; font-size:1rem;
+    background:rgba(23,143,114,.12); color:var(--verde);
+    font-family:'Space Grotesk'; font-weight:700; font-size:1.15rem; }
   .reg-nombre{ font-weight:600; font-size:.93rem; line-height:1.25; }
   .reg-meta{ font-size:.76rem; color:var(--ink-soft); }
   .reg-hora{ margin-left:auto; font-family:'Space Grotesk'; font-weight:700;
     font-size:.95rem; white-space:nowrap; }
   .badge-est{ font-size:.66rem; font-weight:700; letter-spacing:.05em;
-    border-radius:999px; padding:2px 9px; }
-  .be-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .be-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
+    border-radius:999px; padding:2px 9px;
+    background:rgba(23,143,114,.12); color:var(--verde); }
 
   #flash{ position:fixed; inset:0; z-index:1070; display:none; place-items:center;
     background:rgba(34,30,51,.45); backdrop-filter:blur(3px); padding:20px; }
   #flash.visible{ display:grid; }
   .flash-card{ background:#fff; border-radius:24px; padding:34px 44px; text-align:center;
-    max-width:380px; width:100%; box-shadow:0 30px 70px -20px rgba(0,0,0,.5);
+    max-width:400px; width:100%; box-shadow:0 30px 70px -20px rgba(0,0,0,.5);
     animation:pop .3s cubic-bezier(.2,.9,.3,1.3); }
   @keyframes pop{ from{ transform:scale(.85); opacity:0; } to{ transform:scale(1); opacity:1; } }
   .flash-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 14px;
-    display:grid; place-items:center; font-size:1.8rem; }
+    display:grid; place-items:center; font-size:1.8rem;
+    font-family:'Space Grotesk'; font-weight:700; font-size:2.2rem; }
   .fi-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .fi-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
   .fi-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
   .flash-nombre{ font-family:'Space Grotesk'; font-weight:700; font-size:1.3rem; line-height:1.25; }
   .flash-estado{ display:inline-block; margin-top:10px; border-radius:999px;
     padding:6px 18px; font-weight:700; font-size:.9rem; letter-spacing:.03em; }
   .fe-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
-  .fe-tarde{ background:rgba(217,119,14,.14); color:var(--naranja-deep); }
   .fe-cerrado{ background:rgba(180,35,24,.10); color:var(--rojo); }
   .flash-meta{ margin-top:8px; font-size:.82rem; color:var(--ink-soft); }
 
@@ -158,6 +174,46 @@
   .toast-warning i{ color:#D9770E; }
   .toast-danger i{ color:#B42318; }
 
+  /* ============ Escritorio: todo más grande ============ */
+  @media (min-width:992px){
+    .btn-primario{ padding:13px 24px; font-size:1rem; }
+    .btn-secundario{ padding:12px 22px; font-size:.98rem; }
+    .status-title{ font-size:1.05rem; }
+    .status-meta{ font-size:.84rem; }
+    .chip{ font-size:.88rem; padding:7px 15px; }
+    .panel-head{ padding:16px 24px; }
+    .panel-head h2{ font-size:1.2rem; }
+    .panel-body{ padding:22px 24px; }
+    .banner-horario{ font-size:.95rem; padding:13px 18px; }
+    .cam-off{ padding:80px 24px; }
+    .cam-off i{ font-size:3rem; }
+    .manual input{ font-size:1.02rem; padding:12px 15px; }
+    .mini{ font-size:.9rem; padding:12px 20px; }
+    .mini b{ font-size:1.5rem; }
+    .reg-nombre{ font-size:1.02rem; }
+    .reg-meta{ font-size:.82rem; }
+    .reg-hora{ font-size:1.05rem; }
+    .reg-ico{ width:44px; height:44px; font-size:1.3rem; }
+    .flash-card{ padding:44px 54px; max-width:460px; }
+    .flash-nombre{ font-size:1.55rem; }
+    .flash-estado{ font-size:1rem; }
+    .app-toast{ font-size:.96rem; }
+  }
+
+  /* ============ Móvil: compacto y limpio ============ */
+  @media (max-width:575.98px){
+    .brand-title{ font-size:1.15rem; }
+    .status-bar{ padding:11px 12px; gap:10px; }
+    .panel-body{ padding:14px; }
+    .panel-head{ padding:12px 14px; }
+    .cam-off{ padding:36px 16px; }
+    .manual input{ flex-basis:100%; }
+    .flash-card{ padding:28px 24px; }
+    .flash-nombre{ font-size:1.15rem; }
+    .app-toast{ max-width:calc(100vw - 44px); }
+    .btn-back{ width:38px; height:38px; }
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{ animation:none !important; transition:none !important; }
   }
@@ -166,13 +222,13 @@
 <body>
 
 <header class="site-header">
-  <div class="container">
+  <div class="wrap-fluid">
     <div class="d-flex align-items-center gap-3 flex-wrap">
       <a class="btn-back" href="../index.html" aria-label="Volver al panel"><i class="bi bi-arrow-left"></i></a>
       <div class="brand-mark"><i class="bi bi-qr-code-scan"></i></div>
       <div>
         <h1 class="brand-title">Pasar asistencia</h1>
-        <p class="brand-sub">Escanea el carné de cada estudiante · hoja «Asistencia»</p>
+        <p class="brand-sub">Escanea el carné · se registra solo SI asistió, en el horario permitido</p>
       </div>
       <div class="ms-auto text-end">
         <div class="reloj" id="reloj">--:--:--</div>
@@ -182,7 +238,7 @@
   </div>
 </header>
 
-<main class="container pb-5">
+<main class="wrap-fluid pb-5">
 
   <section class="status-bar" aria-live="polite">
     <span class="status-dot warn" id="statusDot"></span>
@@ -239,9 +295,8 @@
         </div>
         <div class="panel-body">
           <div class="resumen">
-            <span class="mini mini-ok"><i class="bi bi-check-circle"></i> <b id="nOk">0</b> presentes</span>
-            <span class="mini mini-tarde"><i class="bi bi-alarm"></i> <b id="nTarde">0</b> tarde</span>
-            <span class="mini mini-total"><i class="bi bi-people"></i> <b id="nTotal">0</b> total</span>
+            <span class="mini mini-ok"><i class="bi bi-check-circle"></i> <b id="nOk">0</b> con asistencia</span>
+            <span class="mini mini-total"><i class="bi bi-clock"></i> <span id="rangoHoy">--</span></span>
           </div>
           <ul class="reg-lista" id="listaHoy"></ul>
         </div>
@@ -253,9 +308,9 @@
 <!-- Tarjeta flash al escanear -->
 <div id="flash">
   <div class="flash-card">
-    <div class="flash-ico" id="flIco"><i class="bi bi-check-lg" id="flIcoI"></i></div>
+    <div class="flash-ico fi-ok" id="flIco">+</div>
     <div class="flash-nombre" id="flNombre">—</div>
-    <span class="flash-estado fe-ok" id="flEstado">PRESENTE</span>
+    <span class="flash-estado fe-ok" id="flEstado">ASISTENCIA REGISTRADA</span>
     <div class="flash-meta" id="flMeta"></div>
   </div>
 </div>
@@ -265,22 +320,42 @@
 <!-- Bootstrap JS: primero local (libs/); si falta, CDN -->
 <script src="../libs/bootstrap.bundle.min.js"
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';document.head.appendChild(s);"></script>
-<!-- Lector QR: primero local (libs/); si falta, CDN -->
+<!-- Lector QR: primero local (libs/); si falta, CDN. Si ninguno
+     carga, la página usa la detección nativa BarcodeDetector -->
 <script src="../libs/html5-qrcode.min.js"
         onerror="this.onerror=null;var s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';document.head.appendChild(s);"></script>
 
 <script>
+/* ============================================================
+   DIAGNÓSTICO VISIBLE — cualquier error se pinta en la barra.
+   ============================================================ */
+window.addEventListener('error', function(ev){
+  try{
+    var t = document.getElementById('statusTitle');
+    var m = document.getElementById('statusMeta');
+    var d = document.getElementById('statusDot');
+    if(t) t.textContent = 'Error en la página: ' + (ev.message || 'desconocido');
+    if(m) m.textContent = 'Línea ' + (ev.lineno || '?') + ' — copia este texto y avísame.';
+    if(d) d.className = 'status-dot off';
+  }catch(e){}
+});
+
+const VERSION = 'v4';
+
 const CONFIG = {
   API_URL:     'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
   DATA_KEY:    'RE_DATA_V1',
   TOKEN_KEY:   'RE_TOKEN_V1',
   QUEUE_KEY:   'RE_QUEUE_V1',
-  ASIST_KEY:   'RE_ASIST_V1',
+  ASIST_KEY:   'RE_ASIST_V1',   // registro local del día (pantalla y duplicados)
   TZ:          'America/El_Salvador', // zona horaria oficial del registro
-  HORA_INICIO: '07:00',               // ventana permitida para registrar
-  HORA_FIN:    '12:00',               // fuera de este rango NO se registra
-  HORA_TARDE:  '08:00'                // TARDE después de esto ('' = nunca TARDE)
+  HORA_INICIO: '07:00',         // <-- MODIFICABLE: inicio de la ventana
+  HORA_FIN:    '12:00'          // <-- MODIFICABLE: fin; después ya no se puede pasar
 };
+
+/* Al sheet SOLO se envía estado:'SI' (sin hora, sin TARDE).
+   No registrar = no escaneó = falta (celda vacía en la hoja). */
+const MARCA = 'SI';
 
 const S = {
   cola: [], token: '', flushing: false,
@@ -310,9 +385,6 @@ function horaAhora(){
 function enVentana(h){
   if(!CONFIG.HORA_INICIO || !CONFIG.HORA_FIN) return true;
   return h >= CONFIG.HORA_INICIO && h <= CONFIG.HORA_FIN;
-}
-function estadoPorHora(h){
-  return (CONFIG.HORA_TARDE && h > CONFIG.HORA_TARDE) ? 'TARDE' : 'PRESENTE';
 }
 
 function sinTildes(s){
@@ -393,7 +465,7 @@ function registrarDesdeTexto(texto){
   if(!enVentana(hora)){
     beep(false); vibrar(false);
     mostrarFlashCerrado(hora);
-    toast('Fuera del horario de asistencia (' + CONFIG.HORA_INICIO + '–' + CONFIG.HORA_FIN + '). No se registró.', 'warning');
+    toast('Fuera del horario (' + CONFIG.HORA_INICIO + '–' + CONFIG.HORA_FIN + '). No se registró.', 'warning');
     return;
   }
 
@@ -415,30 +487,32 @@ function registrarDesdeTexto(texto){
   if(est){ id = est.id; nie = est.nie; }
   if(!id && !nie){ beep(false); toast('Código no reconocido.', 'danger'); return; }
 
-  const estado = estadoPorHora(hora);
+  /* ¿Ya estaba registrado hoy? Solo avisa; no envía nada de nuevo */
+  const previo = S.hoy.items.find(it => (id && it.id === id) || (!id && nie && it.nie === nie));
+  if(previo){
+    mostrarFlashYa(previo);
+    beep(true); vibrar(true);
+    toast('Ya estaba registrado hoy.', 'warning');
+    return;
+  }
+
+  /* hora solo para la lista local; al sheet NO se envía */
   const item = {
     id, nie,
     nombre: est ? nombreCompleto(est) : '',
     grado:  est ? est.grado : '',
-    hora, estado, ts: Date.now()
+    hora, ts: Date.now()
   };
-
-  const previo = S.hoy.items.find(it => (id && it.id === id) || (!id && nie && it.nie === nie));
-  if(previo){
-    Object.assign(previo, item);
-    toast('Ya estaba registrado a las ' + previo.hora + '. Se actualizó la marca.', 'warning');
-  }else{
-    S.hoy.items.unshift(item);
-  }
+  S.hoy.items.unshift(item);
   guardarAsist();
   renderHoy();
-  mostrarFlash(item, !!previo);
-  beep(estado === 'PRESENTE'); vibrar(true);
+  mostrarFlashOk(item);
+  beep(true); vibrar(true);
 
   S.cola.push({
     action:'asistencia', sheet:'Asistencia',
     id, nie, nombre:item.nombre, grado:item.grado,
-    estado, fecha:hoy, hora
+    estado: MARCA, fecha: hoy, hora: ''
   });
   persistirCola();
   renderStatus();
@@ -456,7 +530,6 @@ async function flushCola(){
     catch(e){ break; }
     if(r && r.ok){
       S.cola.shift(); persistirCola();
-      if(r.previo) toast('La hoja ya tenía: "' + r.previo + '" — se actualizó.', 'warning');
       if(r.nombre){
         const it = S.hoy.items.find(x => (op.id && x.id === op.id) || (!op.id && x.nie === op.nie));
         if(it && !it.nombre){ it.nombre = r.nombre; guardarAsist(); renderHoy(); }
@@ -575,22 +648,31 @@ function onScan(texto){
 
 /* ============ FLASH ============ */
 let flashTimer = null;
-function mostrarFlash(item, yaEstaba){
-  const tarde = item.estado === 'TARDE';
-  $('#flIco').className = 'flash-ico ' + (tarde ? 'fi-tarde' : 'fi-ok');
-  $('#flIcoI').className = 'bi ' + (tarde ? 'bi-alarm' : 'bi-check-lg');
+function mostrarFlashOk(item){
+  $('#flIco').className = 'flash-ico fi-ok';
+  $('#flIco').textContent = '+';
   $('#flNombre').textContent = item.nombre || ('NIE ' + item.nie);
-  $('#flEstado').textContent = item.estado + (yaEstaba ? ' · ACTUALIZADO' : '');
-  $('#flEstado').className = 'flash-estado ' + (tarde ? 'fe-tarde' : 'fe-ok');
+  $('#flEstado').textContent = 'ASISTENCIA REGISTRADA';
+  $('#flEstado').className = 'flash-estado fe-ok';
   $('#flMeta').textContent = (item.grado ? item.grado + ' · ' : '') + 'a las ' + item.hora;
   $('#flash').classList.add('visible');
   clearTimeout(flashTimer);
   flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 2600);
 }
-
+function mostrarFlashYa(item){
+  $('#flIco').className = 'flash-ico fi-ok';
+  $('#flIco').textContent = '+';
+  $('#flNombre').textContent = item.nombre || ('NIE ' + item.nie);
+  $('#flEstado').textContent = 'YA REGISTRADO';
+  $('#flEstado').className = 'flash-estado fe-ok';
+  $('#flMeta').textContent = 'Registrado a las ' + item.hora;
+  $('#flash').classList.add('visible');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => $('#flash').classList.remove('visible'), 2400);
+}
 function mostrarFlashCerrado(hora){
   $('#flIco').className = 'flash-ico fi-cerrado';
-  $('#flIcoI').className = 'bi bi-slash-circle';
+  $('#flIco').textContent = '−';
   $('#flNombre').textContent = 'Fuera de horario';
   $('#flEstado').textContent = 'ASISTENCIA CERRADA';
   $('#flEstado').className = 'flash-estado fe-cerrado';
@@ -604,27 +686,21 @@ function mostrarFlashCerrado(hora){
 /* ============ RENDER ============ */
 function renderHoy(){
   const items = S.hoy.items;
-  const ok = items.filter(i => i.estado === 'PRESENTE').length;
-  $('#nOk').textContent = ok;
-  $('#nTarde').textContent = items.length - ok;
-  $('#nTotal').textContent = items.length;
+  $('#nOk').textContent = items.length;
 
   $('#listaHoy').innerHTML = items.length
-    ? items.map(i => {
-        const tarde = i.estado === 'TARDE';
-        return `<li class="reg-item">
-          <span class="reg-ico ${tarde ? 'ri-tarde' : 'ri-ok'}">
-            <i class="bi ${tarde ? 'bi-alarm' : 'bi-check-lg'}"></i></span>
+    ? items.map(i => `
+        <li class="reg-item">
+          <span class="reg-ico">+</span>
           <span>
             <span class="reg-nombre">${i.nombre || ('NIE ' + i.nie)}</span><br>
             <span class="reg-meta">${i.grado ? i.grado + ' · ' : ''}${i.nie}</span>
           </span>
           <span class="ms-auto text-end">
             <span class="reg-hora d-block">${i.hora}</span>
-            <span class="badge-est ${tarde ? 'be-tarde' : 'be-ok'}">${i.estado}</span>
+            <span class="badge-est">ASISTIÓ</span>
           </span>
-        </li>`;
-      }).join('')
+        </li>`).join('')
     : '<li class="empty-mini">Aún no hay escaneos hoy. Inicia el escáner o registra un NIE a mano.</li>';
 
   $('#fechaLista').textContent = ahoraSV().toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
@@ -641,9 +717,9 @@ function renderStatus(){
   }
   dot.className = 'status-dot ' + (S.cola.length ? 'warn' : 'ok');
   tit.textContent = S.cola.length ? 'Enviando registros…' : 'En línea — escritura directa a la hoja';
-  met.textContent = 'Hoja «Asistencia»: nombre por fila, un día por columna.';
+  met.textContent = 'Hoja «Asistencia»: se guarda únicamente «' + MARCA + '» (sin hora).';
   chips.innerHTML =
-    '<span class="chip">Marca: <strong>ESTADO hh:mm</strong></span>' +
+    '<span class="chip">Marca: <strong>' + MARCA + '</strong></span>' +
     (S.cola.length ? '<span class="chip chip-pend"><strong>' + S.cola.length + '</strong> pendiente(s)</span>' : '');
 }
 
@@ -657,20 +733,20 @@ function tick(){
   const b = $('#bannerHorario');
   b.className = 'banner-horario ' + (abierta ? 'abierta' : 'cerrada');
   $('#bannerTexto').textContent = abierta
-    ? 'Asistencia abierta — cierra a las ' + CONFIG.HORA_FIN
-      + (CONFIG.HORA_TARDE ? ' · TARDE después de las ' + CONFIG.HORA_TARDE : '')
-      + ' · hora ' + h
+    ? 'Asistencia abierta — cierra a las ' + CONFIG.HORA_FIN + ' · hora ' + h
     : 'Asistencia cerrada — se registra de ' + CONFIG.HORA_INICIO
       + ' a ' + CONFIG.HORA_FIN + ' · hora actual ' + h;
 }
 
-/* ============ INICIO ============ */
-document.addEventListener('DOMContentLoaded', () => {
-  if(!window.bootstrap){
-    toast('Bootstrap no cargó: verifica que libs/bootstrap.bundle.min.js esté en el repo.', 'warning');
-  }
+/* ============ INICIO — blindado ============ */
+function init(){
+  const hayDatos = !!leerData();
+  $('#statusTitle').textContent = hayDatos ? 'Listo para escanear' : 'Sin caché local (los nombres se completarán desde el servidor)';
+  $('#statusDot').className = 'status-dot ' + (hayDatos ? 'ok' : 'warn');
+
   cargarAsist();
   $('#badgeHorario').textContent = CONFIG.HORA_INICIO + ' – ' + CONFIG.HORA_FIN;
+  $('#rangoHoy').textContent = 'Horario ' + CONFIG.HORA_INICIO + '–' + CONFIG.HORA_FIN;
   tick(); setInterval(tick, 1000);
   renderHoy();
   renderStatus();
@@ -690,7 +766,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   flushCola();
   window.addEventListener('beforeunload', () => { if(S.camOn) detenerCam(); });
-});
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
 </script>
 </body>
 </html>
