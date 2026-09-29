@@ -80,7 +80,6 @@
     font-size:.82rem; font-weight:500; white-space:nowrap; }
   .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
 
-  /* ============ Pestañas ============ */
   .tabs{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
   .tab-btn{ flex:1 1 220px; border:1.5px solid var(--line); background:var(--paper);
     border-radius:16px; padding:13px 18px; font-weight:600; font-size:.95rem;
@@ -89,7 +88,6 @@
   .tab-btn.activo{ background:var(--morado); border-color:var(--morado); color:#fff;
     box-shadow:0 8px 18px -8px rgba(90,62,166,.5); }
 
-  /* ============ Generalidades ============ */
   .gen-bar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:14px 18px; display:grid; gap:12px;
     grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
@@ -100,8 +98,9 @@
     padding:10px 12px; font-size:.95rem; background:var(--bg); }
   .gen-input:focus{ outline:none; border-color:var(--morado); background:#fff;
     box-shadow:0 0 0 4px rgba(107,75,214,.12); }
+  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
+  .frm-error.visible{ display:block; }
 
-  /* ============ Tabla de notas ============ */
   .grade-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px;
     overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px -10px rgba(34,30,51,.18); }
   .grade-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap;
@@ -160,7 +159,6 @@
   .media-media{ color:var(--naranja-deep); }
   .media-baja{ color:var(--rojo); }
 
-  /* ============ Matriz: ponderaciones y orden ============ */
   .pon-box{ display:flex; flex-direction:column; gap:3px; align-items:center; }
   .pon-box .orden{ display:flex; gap:2px; }
   .pon-box .ord-btn{ border:none; background:transparent; color:var(--ink-soft);
@@ -184,7 +182,6 @@
   .calc-sub{ font-size:.7rem; opacity:.65; display:block; font-weight:600;
     font-family:'Space Grotesk'; font-variant-numeric:tabular-nums; }
 
-  /* ============ Estado vacío / modales / toasts ============ */
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
     border-radius:22px; padding:52px 24px; text-align:center; }
   .empty-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
@@ -211,8 +208,6 @@
     padding:10px 13px; font-size:.95rem; background:var(--bg); }
   .frm-input:focus{ outline:none; border-color:var(--lila-deep); background:#fff;
     box-shadow:0 0 0 4px rgba(107,75,214,.12); }
-  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
-  .frm-error.visible{ display:block; }
   .btn-aceptar{ width:100%; margin-top:18px; border:none; border-radius:13px;
     background:var(--morado); color:#fff; font-weight:600; padding:12px;
     display:inline-flex; align-items:center; justify-content:center; gap:9px; }
@@ -307,7 +302,7 @@
 
   <!-- ==================== PESTAÑA CAPTURA ==================== -->
   <section id="secCap">
-    <section class="gen-bar ancho">
+    <section class="gen-bar">
       <div class="gen-field">
         <label for="capAnio">Año</label>
         <input class="gen-input" id="capAnio" type="number" min="2020" max="2100">
@@ -332,7 +327,6 @@
         <input class="gen-input" id="capAct" list="dlActividades" autocomplete="off"
                placeholder="Nombre de la actividad">
         <datalist id="dlActividades"></datalist>
-        <div class="frm-error" id="eCapAct"></div>
       </div>
       <div class="gen-field">
         <button class="btn-secundario" id="btnCargarCap" style="width:100%;">
@@ -435,7 +429,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 
 const CONFIG = {
   API_URL:  'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -447,7 +441,7 @@ const MATERIAS = ['Matemática y Datos', 'Ciencia y Tecnología', 'English'];
 
 const S = {
   token: '', busy: false, tab: 'cap',
-  est: [], todasNotas: [],
+  est: [], estPorNie: {}, todasNotas: [],
   cap: { anio:'', grado:'', tri:'1', materia:MATERIAS[0], act:null, columnas:[], celdas:{} },
   mat: { anio:'', grado:'', tri:'1', materia:MATERIAS[0], filas:[], acts:[] },
   delCol: null
@@ -489,18 +483,14 @@ function toast(msg, kind='success'){
   requestAnimationFrame(() => el.classList.add('show'));
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
 }
-function uid(){
-  return (crypto.randomUUID)
-    ? crypto.randomUUID()
-    : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
-}
 function claveOrden(e){
   return [e.apellido1,e.apellido2,e.nombre1,e.nombre2]
     .map(sinTildes)
     .map(t => t.split(/\s+/).filter(w => w && w!=='de' && w!=='del').join(' '))
     .join(' ');
 }
-/* Notas de 0 a 10, coma o punto decimal */
+
+/* Notas 0-10: parsea coma o punto; '' si no es válida */
 function parseNota(v){
   if(v === null || v === undefined) return '';
   const s = String(v).trim().replace(',', '.');
@@ -509,6 +499,19 @@ function parseNota(v){
   if(isNaN(n) || n < 0 || n > 10) return '';
   return n;
 }
+
+/* Sanitiza lo que el usuario teclea: solo dígitos y UN separador,
+   máximo 2 decimales. Devuelve el texto limpio (puede ser ''). */
+function sanitizarNotaInput(v){
+  let s = String(v).replace(/,/g, '.').replace(/[^0-9.]/g, '');
+  const partes = s.split('.');
+  if(partes.length > 2) s = partes[0] + '.' + partes.slice(1).join('');
+  const idx = s.indexOf('.');
+  if(idx >= 0) s = s.slice(0, idx + 1 + 2);   // máx 2 decimales
+  if(s === '.') s = '';
+  return s;
+}
+
 function fmtNota(n){
   if(n === null || n === undefined || isNaN(n)) return '—';
   return (Math.round(n*100)/100).toLocaleString('es');
@@ -536,8 +539,16 @@ function cargarDeLocal(){
     }))
     .filter(e => e.id)
     .sort((a,b) => claveOrden(a).localeCompare(claveOrden(b),'es'));
+  S.estPorNie = {};
+  S.est.forEach(e => { if(e.nie !== '') S.estPorNie[e.nie] = e; });
   S.todasNotas = (d && d.sheets && d.sheets['Notas']) || [];
   return d;
+}
+
+/* Las notas se cruzan por NIE (compatible con filas viejas cuyo
+   'id' era un uid) y por id del estudiante si el NIE no matchea */
+function estDeNotaFila(n){
+  return S.estPorNie[String(n.nie ?? '')] || S.est.find(e => e.id === String(n.id || '')) || null;
 }
 
 function notasDe(anio, grado, tri, materia){
@@ -546,7 +557,6 @@ function notasDe(anio, grado, tri, materia){
     String(n.trimestre) === String(tri) && String(n.materia) === String(materia));
 }
 
-/* Actividades de una combinación: {actividad, orden, ponderacion} */
 function actividadesDe(anio, grado, tri, materia){
   const mapa = {};
   notasDe(anio, grado, tri, materia).forEach(n => {
@@ -641,13 +651,17 @@ function cargarCaptura(){
   const existentes = nombresActividades(anio, grado, tri, materia);
 
   if(actNombre && existentes.includes(actNombre)){
-    /* Editar una actividad ya guardada */
+    /* Cargar actividad guardada: notas cruzadas por NIE (o id) */
     S.cap.act = actNombre;
     S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: true }];
+    let cargadas = 0;
     notasDe(anio, grado, tri, materia)
       .filter(n => String(n.actividad) === actNombre)
-      .forEach(n => { S.cap.celdas[String(n.id) + '|0'] = String(n.nota ?? ''); });
-    toast('Actividad «' + actNombre + '» cargada para edición.', 'success');
+      .forEach(n => {
+        const e = estDeNotaFila(n);
+        if(e){ S.cap.celdas[e.id + '|0'] = String(n.nota ?? ''); cargadas++; }
+      });
+    toast('Actividad «' + actNombre + '» cargada (' + cargadas + ' notas).', 'success');
   }else if(actNombre){
     S.cap.act = actNombre;
     S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: false }];
@@ -656,7 +670,6 @@ function cargarCaptura(){
     toast('Tabla nueva: agrega columnas con + y renómbralas.', 'success');
   }
 
-  $('#eCapAct').classList.remove('visible');
   renderCapTabla();
 }
 
@@ -679,6 +692,7 @@ function addColumna(){
   renderCapTabla();
 }
 
+/* Media aritmética de las columnas con nota para un estudiante */
 function mediaDe(estId){
   const vals = S.cap.columnas
     .map((c,i) => parseNota(S.cap.celdas[estId + '|' + i] ?? ''))
@@ -695,8 +709,8 @@ function renderCapTabla(){
         <h3>Tabla lista para construir</h3>
         <p>Agrega columnas con el botón (+), renómbralas haciendo clic en el
            encabezado y escribe las notas de 0 a 10. La columna MEDIA calcula
-           el promedio de cada estudiante. Al guardar, cada columna se registra
-           como una actividad de este año, grado, trimestre y materia.</p>
+           el promedio en tiempo real y se guarda en la hoja junto a cada nota.
+           Al guardar, cada columna se registra como una actividad.</p>
         <button class="btn-primario" id="btnAddCol0"><i class="bi bi-plus-lg"></i> Agregar primera columna</button>
       </div>`;
     const b = $('#btnAddCol0'); if(b) b.addEventListener('click', addColumna);
@@ -735,7 +749,7 @@ function renderCapTabla(){
       </div>
       <div class="suma-bar">
         <button class="btn-secundario" id="btnAddCol"><i class="bi bi-plus-lg"></i> Agregar columna</button>
-        <span style="font-size:.8rem; color:var(--ink-soft);">Notas de 0 a 10 · cada columna se guarda como una actividad</span>
+        <span style="font-size:.8rem; color:var(--ink-soft);">Notas de 0 a 10 · la MEDIA se calcula en vivo y se guarda en la hoja</span>
       </div>
       <div class="scroll-x">
         <table class="table nota-table">
@@ -754,15 +768,20 @@ function renderCapTabla(){
 
 function onNotaInput(ev){
   const inp = ev.target;
+
+  /* Sanitizar en vivo: sin texto, un separador, 2 decimales */
+  const limpio = sanitizarNotaInput(inp.value);
+  if(limpio !== inp.value) inp.value = limpio;
+
   const estId = inp.dataset.est, colIdx = inp.dataset.col;
   S.cap.celdas[estId + '|' + colIdx] = inp.value;
 
-  /* Marcar valores fuera de rango o no numéricos */
-  const tieneTexto = inp.value.trim() !== '';
+  /* Semáforo de validez: vacío ok; fuera de 0-10 rojo */
+  const vacio = inp.value.trim() === '';
   const valido = parseNota(inp.value) !== '';
-  inp.classList.toggle('mal', tieneTexto && !valido);
+  inp.classList.toggle('mal', !vacio && !valido);
 
-  /* Media de la fila, en vivo */
+  /* Media de la fila, en tiempo real */
   const m = mediaDe(estId);
   const span = document.querySelector('[data-media="' + estId + '"]');
   if(span){
@@ -777,9 +796,6 @@ function onRenombrarCol(ev){
   ev.target.classList.toggle('choca', nombreChoca(idx));
 }
 
-/* Un nombre "choca" si: está vacío, duplica otra columna de la tabla,
-   o coincide con una actividad ya guardada de esta combinación que no
-   sea esta misma columna cargada para edición */
 function nombreChoca(idx){
   const col = S.cap.columnas[idx];
   if(!col) return true;
@@ -788,8 +804,7 @@ function nombreChoca(idx){
   if(S.cap.columnas.some((c,i) => i !== idx && c.nombre === n)) return true;
   const existentes = nombresActividades(S.cap.anio, S.cap.grado, S.cap.tri, S.cap.materia);
   const esEdicionMisma = col.existente && (col.origNombre || col.nombre) === n;
-  if(!esEdicionMisma && existentes.includes(n)) return true;
-  return false;
+  return !esEdicionMisma && existentes.includes(n);
 }
 
 function onEliminarCol(ev){
@@ -806,8 +821,6 @@ function confirmarDelCol(){
   const idx = S.delCol;
   S.delCol = null;
   S.cap.columnas.splice(idx, 1);
-
-  /* Reindexar las celdas: claves "id|N" con N > idx bajan uno */
   const nuevo = {};
   Object.keys(S.cap.celdas).forEach(k => {
     const sep = k.lastIndexOf('|');
@@ -816,25 +829,18 @@ function confirmarDelCol(){
     nuevo[id + '|' + (i > idx ? i - 1 : i)] = S.cap.celdas[k];
   });
   S.cap.celdas = nuevo;
-
   const m = instanciaModal('mdDelCol'); if(m) m.hide();
   renderCapTabla();
 }
 
 function validarCaptura(){
-  if(!S.cap.columnas.length){
-    toast('Agrega al menos una columna con notas.', 'warning');
-    return false;
-  }
+  if(!S.cap.columnas.length){ toast('Agrega al menos una columna con notas.', 'warning'); return false; }
   const nombres = [];
   for(let i = 0; i < S.cap.columnas.length; i++){
     const c = S.cap.columnas[i];
     const n = (c.nombre || '').trim();
     if(!n){ toast('Hay columnas sin nombre.', 'warning'); return false; }
-    if(nombres.includes(n)){
-      toast('Hay columnas con nombre duplicado: «' + n + '».', 'danger');
-      return false;
-    }
+    if(nombres.includes(n)){ toast('Columnas con nombre duplicado: «' + n + '».', 'danger'); return false; }
     if(nombreChoca(i)){
       toast('La actividad «' + n + '» ya existe para este año, grado, trimestre y materia. Cárgala para editarla.', 'danger');
       return false;
@@ -848,23 +854,25 @@ function guardarCaptura(){
   if(!validarCaptura()) return;
   if(!S.token){ abrirPass(); return; }
 
+  const estudiantes = S.est.filter(e => e.grado === S.cap.grado);
   const filas = [];
-  S.cap.columnas.forEach((c, i) => {
-    S.est.filter(e => e.grado === S.cap.grado).forEach(e => {
+  estudiantes.forEach(e => {
+    const media = mediaDe(e.id);
+    const mediaTxt = media === null ? '' : String(Math.round(media*100)/100);
+    S.cap.columnas.forEach((c, i) => {
       const v = parseNota(S.cap.celdas[e.id + '|' + i] ?? '');
       if(v === '') return;   // sin nota: no se guarda fila
       filas.push({
-        id: uid(),
+        id: e.id,               // id del ESTUDIANTE (cruce estable)
         anio: S.cap.anio, grado: S.cap.grado,
         trimestre: S.cap.tri, materia: S.cap.materia,
         actividad: c.nombre, orden: i + 1, ponderacion: '',
-        nie: e.nie, nombre: e.nombre, nota: v
+        nie: e.nie, nombre: e.nombre, nota: v,
+        media: mediaTxt         // promedio persistido en la hoja
       });
     });
   });
 
-  /* Actividades que el servidor reemplazará: las de la tabla + las
-     originales renombradas (para no dejar huérfanas) */
   const actividades = S.cap.columnas.map(c => c.nombre.trim());
   S.cap.columnas.forEach(c => {
     if(c.existente && (c.origNombre || c.nombre) !== c.nombre.trim()){
@@ -912,7 +920,8 @@ function cargarMatriz(){
   S.mat.filas = S.est.filter(e => e.grado === grado).map(e => {
     const notas = {};
     notasAct.forEach(n => {
-      if(String(n.id) === e.id) notas[String(n.actividad)] = String(n.nota ?? '');
+      const due = estDeNotaFila(n);
+      if(due && due.id === e.id) notas[String(n.actividad)] = String(n.nota ?? '');
     });
     return { est: e, notas };
   });
@@ -925,14 +934,12 @@ function sumaPonderaciones(){
     s + (a.ponderacion !== null && a.ponderacion !== undefined && !isNaN(a.ponderacion) ? a.ponderacion : 0), 0);
 }
 
-/* Nota ponderada de una celda: nota × % ÷ 100 */
 function calcInd(nota, pon){
   const v = parseNota(nota);
   if(v === '' || pon === null || pon === undefined || isNaN(pon)) return null;
   return Math.round(v * pon) / 100;
 }
 
-/* Nota trimestre: suma de las celdas ya ponderadas */
 function calcFila(f){
   let total = 0, hay = false;
   S.mat.acts.forEach(a => {
@@ -940,6 +947,14 @@ function calcFila(f){
     if(c !== null){ total += c; hay = true; }
   });
   return hay ? Math.round(total * 100) / 100 : null;
+}
+
+/* Media aritmética del estudiante sobre las actividades de la matriz */
+function mediaMatDe(f){
+  const vals = S.mat.acts
+    .map(a => parseNota(f.notas[a.nombre] ?? ''))
+    .filter(v => v !== '');
+  return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
 }
 
 function renderMatTabla(){
@@ -991,7 +1006,7 @@ function renderMatTabla(){
       <div class="suma-bar">
         <span>Suma de ponderaciones:</span>
         <span class="suma-pill ${Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal'}">${fmtNota(suma)}%</span>
-        <span style="font-size:.8rem; color:var(--ink-soft);">Cada celda muestra tu nota y, debajo, la nota × % ÷ 100.</span>
+        <span style="font-size:.8rem; color:var(--ink-soft);">Cada celda muestra tu nota y, debajo, nota × % ÷ 100.</span>
         <button class="btn-secundario ms-auto" id="btnCopiarMat"><i class="bi bi-clipboard"></i> Copiar matriz</button>
       </div>
       <div class="scroll-x">
@@ -1017,9 +1032,16 @@ function renderMatTabla(){
 
 function onNotaMat(ev){
   const inp = ev.target;
+
+  /* Sanitizar en vivo */
+  const limpio = sanitizarNotaInput(inp.value);
+  if(limpio !== inp.value) inp.value = limpio;
+
   const f = S.mat.filas.find(x => x.est.id === inp.dataset.est);
   if(!f) return;
   f.notas[inp.dataset.act] = inp.value;
+
+  inp.classList.toggle('mal', inp.value.trim() !== '' && parseNota(inp.value) === '');
 
   const act = S.mat.acts.find(a => a.nombre === inp.dataset.act);
   const c = calcInd(inp.value, act ? act.ponderacion : null);
@@ -1072,17 +1094,20 @@ function guardarMatriz(){
   }
 
   const filas = [];
-  S.mat.acts.forEach((a, i) => {
-    S.mat.filas.forEach(f => {
+  S.mat.filas.forEach(f => {
+    const media = mediaMatDe(f);
+    const mediaTxt = media === null ? '' : String(Math.round(media*100)/100);
+    S.mat.acts.forEach((a, i) => {
       const v = parseNota(f.notas[a.nombre] ?? '');
       if(v === '') return;
       filas.push({
-        id: uid(),
+        id: f.est.id,           // id del ESTUDIANTE
         anio: S.mat.anio, grado: S.mat.grado,
         trimestre: S.mat.tri, materia: S.mat.materia,
         actividad: a.nombre, orden: i + 1,
         ponderacion: a.ponderacion,
-        nie: f.est.nie, nombre: f.est.nombre, nota: v
+        nie: f.est.nie, nombre: f.est.nombre, nota: v,
+        media: mediaTxt
       });
     });
   });
@@ -1209,7 +1234,6 @@ async function refrescar(silencioso){
   S.busy = false; renderStatus();
 }
 
-/* ============ TABS ============ */
 function cambiarTab(tab){
   S.tab = tab;
   renderTabs();
@@ -1239,7 +1263,6 @@ function init(){
     S.tab === 'cap' ? guardarCaptura() : guardarMatriz();
   });
 
-  /* Datalist de actividades en vivo según las generalidades */
   ['capAnio','capGrado'].forEach(id =>
     $('#'+id).addEventListener('input', renderDatalistActividades));
   ['capTri','capMat'].forEach(id =>
@@ -1248,7 +1271,7 @@ function init(){
   $('#btnConfirmarDelCol').addEventListener('click', confirmarDelCol);
   $('#frmPass').addEventListener('submit', onSubmitPass);
 
-  refrescar(true);   // sincroniza en silencio si ya hay sesión
+  refrescar(true);
 }
 
 if(document.readyState === 'loading'){
