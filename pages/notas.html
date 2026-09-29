@@ -180,6 +180,15 @@
   .calc-sub{ font-size:.7rem; opacity:.65; display:block; font-weight:600;
     font-family:'Space Grotesk'; font-variant-numeric:tabular-nums; }
 
+  /* Fila de media por actividad (promedio de la clase) */
+  .media-clase td{
+    background:rgba(107,75,214,.07); font-family:'Space Grotesk';
+    font-weight:700; text-align:center; padding:7px 6px;
+    border-top:2px solid rgba(90,62,166,.3); }
+  .media-clase .col-nombre{ font-style:italic; font-weight:700;
+    color:var(--morado-deep); font-size:.85rem; }
+  .media-clase .col-res{ color:var(--morado-deep); }
+
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
     border-radius:22px; padding:52px 24px; text-align:center; }
   .empty-ico{ width:64px; height:64px; border-radius:20px; margin:0 auto 16px;
@@ -427,7 +436,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 
 const CONFIG = {
   API_URL:  'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -488,7 +497,6 @@ function claveOrden(e){
     .join(' ');
 }
 
-/* Notas 0-10: parsea coma o punto; '' si no es válida */
 function parseNota(v){
   if(v === null || v === undefined) return '';
   const s = String(v).trim().replace(',', '.');
@@ -542,8 +550,7 @@ function cargarDeLocal(){
   return d;
 }
 
-/* Cruce de una fila de Notas con el estudiante: primero por NIE,
-   luego por id (compatible con filas viejas) */
+/* Cruce de una fila de Notas con el estudiante: por NIE, luego id */
 function estDeNotaFila(n){
   return S.estPorNie[String(n.nie ?? '')]
       || S.est.find(e => e.id === String(n.id || ''))
@@ -635,9 +642,9 @@ function renderDatalistActividades(){
   $('#dlActividades').innerHTML = act.map(a => `<option value="${esc(a)}">`).join('');
 }
 
-/* Cargar / crear: si la combinación tiene actividades guardadas,
-   trae TODAS como columnas editables (en su orden, con sus notas);
-   si no hay nada, crea una tabla nueva con el nombre tecleado. */
+/* Cargar / crear: trae TODAS las actividades guardadas de la
+   combinación como columnas editables (en su orden, con notas);
+   si no hay nada, crea tabla nueva con el nombre tecleado. */
 function cargarCaptura(){
   const anio = $('#capAnio').value.trim();
   const grado = $('#capGrado').value.trim();
@@ -653,7 +660,6 @@ function cargarCaptura(){
   const acts = actividadesDe(anio, grado, tri, materia);
 
   if(acts.length){
-    /* Todas las actividades guardadas -> columnas editables */
     S.cap.columnas = acts.map(a => ({
       nombre: a.actividad, origNombre: a.actividad, existente: true
     }));
@@ -788,13 +794,11 @@ function onNotaInput(ev){
   const estId = inp.dataset.est, colIdx = inp.dataset.col;
   S.cap.celdas[estId + '|' + colIdx] = inp.value;
 
-  /* Semáforo de validez */
   const vacio = inp.value.trim() === '';
   const valido = parseNota(inp.value) !== '';
   inp.classList.toggle('mal', !vacio && !valido);
 
-  /* FIX: media de la fila en tiempo real (el span ahora tiene
-     data-media; antes no existía y querySelector devolvía null) */
+  /* Media de la fila en tiempo real */
   const m = mediaDe(estId);
   const span = document.querySelector('[data-media="' + estId + '"]');
   if(span){
@@ -809,9 +813,6 @@ function onRenombrarCol(ev){
   ev.target.classList.toggle('choca', nombreChoca(idx));
 }
 
-/* Un nombre "choca" si: está vacío, duplica otra columna de la
-   tabla, o coincide con una actividad guardada que NO está cargada
-   en la tabla (defensa; al cargar todo no debería pasar) */
 function nombreChoca(idx){
   const col = S.cap.columnas[idx];
   if(!col) return true;
@@ -877,20 +878,18 @@ function guardarCaptura(){
     const mediaTxt = media === null ? '' : String(Math.round(media*100)/100);
     S.cap.columnas.forEach((c, i) => {
       const v = parseNota(S.cap.celdas[e.id + '|' + i] ?? '');
-      if(v === '') return;   // sin nota: no se guarda fila
+      if(v === '') return;
       filas.push({
         id: e.id,               // id del ESTUDIANTE (cruce estable)
         anio: S.cap.anio, grado: S.cap.grado,
         trimestre: S.cap.tri, materia: S.cap.materia,
         actividad: c.nombre, orden: i + 1, ponderacion: '',
         nie: e.nie, nombre: e.nombre, nota: v,
-        media: mediaTxt         // promedio persistido en la hoja
+        media: mediaTxt
       });
     });
   });
 
-  /* Actividades a reemplazar en el servidor: las de la tabla + las
-     originales renombradas (para que no queden huérfanas) */
   const actividades = S.cap.columnas.map(c => c.nombre.trim());
   S.cap.columnas.forEach(c => {
     if(c.existente && (c.origNombre || c.nombre) !== c.nombre.trim()){
@@ -952,12 +951,14 @@ function sumaPonderaciones(){
     s + (a.ponderacion !== null && a.ponderacion !== undefined && !isNaN(a.ponderacion) ? a.ponderacion : 0), 0);
 }
 
+/* Nota × % ÷ 100; null si falta nota o ponderación */
 function calcInd(nota, pon){
   const v = parseNota(nota);
   if(v === '' || pon === null || pon === undefined || isNaN(pon)) return null;
   return Math.round(v * pon) / 100;
 }
 
+/* Nota trimestre: suma de las celdas ya ponderadas */
 function calcFila(f){
   let total = 0, hay = false;
   S.mat.acts.forEach(a => {
@@ -1004,7 +1005,7 @@ function renderMatTabla(){
       const v = f.notas[a.nombre] ?? '';
       const c = calcInd(v, a.ponderacion);
       tds += `<td class="col-calc">
-        <input class="c-nota" data-est="${f.est.id}" data-act="${esc(a.nombre)}"
+        <input class="c-nota" data-est="${esc(f.est.id)}" data-act="${esc(a.nombre)}"
           value="${esc(v)}" inputmode="decimal" placeholder="—">
         <small class="calc-sub">${c !== null ? fmtNota(c) : '—'}</small></td>`;
     });
@@ -1023,8 +1024,8 @@ function renderMatTabla(){
       </div>
       <div class="suma-bar">
         <span>Suma de ponderaciones:</span>
-        <span class="suma-pill ${Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal'}">${fmtNota(suma)}%</span>
-        <span style="font-size:.8rem; color:var(--ink-soft);">Cada celda muestra tu nota y, debajo, nota × % ÷ 100.</span>
+        <span class="suma-pill ${Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal'}" id="sumaPill">${fmtNota(suma)}%</span>
+        <span style="font-size:.8rem; color:var(--ink-soft);" id="sumaHint"></span>
         <button class="btn-secundario ms-auto" id="btnCopiarMat"><i class="bi bi-clipboard"></i> Copiar matriz</button>
       </div>
       <div class="scroll-x">
@@ -1032,26 +1033,101 @@ function renderMatTabla(){
           <thead><tr><th class="col-nombre">Estudiante</th>${head}
             <th class="col-res">Nota trimestre</th></tr></thead>
           <tbody>${body}</tbody>
+          <tfoot><tr class="media-clase">
+            <td class="col-nombre">Media de la clase</td>
+            ${S.mat.acts.map((a, i) => `<td class="col-calc" data-mact="${i}">—</td>`).join('')}
+            <td class="col-res" data-mfinal>—</td>
+          </tr></tfoot>
         </table>
       </div>
     </article>`;
 
   cont.querySelectorAll('.c-nota').forEach(i => i.addEventListener('input', onNotaMat));
-  cont.querySelectorAll('[data-pon]').forEach(i => {
-    i.addEventListener('input', onPonInput);
-    i.addEventListener('change', () => renderMatTabla());
-  });
+  cont.querySelectorAll('[data-pon]').forEach(i => i.addEventListener('input', onPonInput));
   cont.querySelectorAll('[data-mv]').forEach(b => b.addEventListener('click', ev => {
     const btn = ev.currentTarget;
     moverAct(parseInt(btn.dataset.mv,10), parseInt(btn.dataset.dir,10));
   }));
   $('#btnCopiarMat').addEventListener('click', copiarMatriz);
+
+  recalcPill();
+  recalcMatriz();   // pinta los cálculos ya cargados al generar
+}
+
+/* RECALCULADOR GLOBAL EN VIVO — sin re-render: recorre todas las
+   celdas y actualiza subcálculos, nota trimestre, fila de medias
+   y pill. Se llama con cada tecla (nota o ponderación). */
+function recalcMatriz(){
+  const tabla = $('#matTabla');
+  if(!tabla || !S.mat.acts.length) return;
+
+  /* Celdas: nota × % ÷ 100, por cada estudiante */
+  tabla.querySelectorAll('.c-nota').forEach(inp => {
+    const f = S.mat.filas.find(x => x.est.id === inp.dataset.est);
+    if(!f) return;
+    inp.classList.toggle('mal', inp.value.trim() !== '' && parseNota(inp.value) === '');
+    if(!(inp.dataset.act in f.notas)) return;
+    const act = S.mat.acts.find(a => a.nombre === inp.dataset.act);
+    const c = calcInd(f.notas[inp.dataset.act] ?? '', act ? act.ponderacion : null);
+    const sm = inp.closest('td').querySelector('.calc-sub');
+    if(sm) sm.textContent = c !== null ? fmtNota(c) : '—';
+  });
+
+  /* Nota trimestre por estudiante */
+  tabla.querySelectorAll('.nota-tri-val').forEach(span => {
+    const tr = span.closest('tr');
+    const primerInput = tr && tr.querySelector('.c-nota');
+    if(!primerInput) return;
+    const f = S.mat.filas.find(x => x.est.id === primerInput.dataset.est);
+    if(!f) return;
+    const tri = calcFila(f);
+    span.textContent = fmtNota(tri);
+    span.className = 'nota-tri-val ' + claseMedia(tri);
+  });
+
+  /* Fila de media por actividad + media de notas finales */
+  S.mat.acts.forEach((a, i) => {
+    const vals = S.mat.filas
+      .map(f => parseNota(f.notas[a.nombre] ?? ''))
+      .filter(v => v !== '');
+    const m = vals.length ? vals.reduce((x,y) => x+y, 0) / vals.length : null;
+    const el = tabla.querySelector('[data-mact="' + i + '"]');
+    if(el){
+      el.textContent = fmtNota(m);
+      el.className = 'col-calc ' + claseMedia(m);
+    }
+  });
+  const finales = S.mat.filas.map(f => calcFila(f)).filter(v => v !== null);
+  const mfEl = tabla.querySelector('[data-mfinal]');
+  if(mfEl){
+    const mf = finales.length ? finales.reduce((x,y) => x+y, 0) / finales.length : null;
+    mfEl.textContent = fmtNota(mf);
+    mfEl.className = 'col-res ' + claseMedia(mf);
+  }
+}
+
+function recalcPill(){
+  const suma = Math.round(sumaPonderaciones() * 100) / 100;
+  const pill = $('#sumaPill');
+  const hint = $('#sumaHint');
+  if(pill){
+    pill.textContent = fmtNota(suma) + '%';
+    pill.className = 'suma-pill ' + (Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal');
+  }
+  if(hint){
+    const faltan = S.mat.acts.filter(a => a.ponderacion === null || a.ponderacion === undefined || isNaN(a.ponderacion)).length;
+    hint.textContent = faltan
+      ? 'Faltan ' + faltan + ' ponderación(es) por asignar.'
+      : (Math.abs(suma - 100) < 0.01
+        ? 'Ponderaciones completas: los cálculos son definitivos.'
+        : 'La suma debe ser 100% para el cálculo definitivo.');
+  }
 }
 
 function onNotaMat(ev){
   const inp = ev.target;
 
-  /* Sanitizar en vivo */
+  /* Sanitizar en vivo: sin texto, un separador, 2 decimales */
   const limpio = sanitizarNotaInput(inp.value);
   if(limpio !== inp.value) inp.value = limpio;
 
@@ -1059,31 +1135,15 @@ function onNotaMat(ev){
   if(!f) return;
   f.notas[inp.dataset.act] = inp.value;
 
-  inp.classList.toggle('mal', inp.value.trim() !== '' && parseNota(inp.value) === '');
-
-  const act = S.mat.acts.find(a => a.nombre === inp.dataset.act);
-  const c = calcInd(inp.value, act ? act.ponderacion : null);
-  const sm = inp.closest('td').querySelector('.calc-sub');
-  if(sm) sm.textContent = c !== null ? fmtNota(c) : '—';
-
-  const tri = calcFila(f);
-  const span = inp.closest('tr').querySelector('.nota-tri-val');
-  if(span){
-    span.textContent = fmtNota(tri);
-    span.className = 'nota-tri-val ' + claseMedia(tri);
-  }
+  recalcMatriz();
 }
 
 function onPonInput(ev){
   const a = S.mat.acts[parseInt(ev.target.dataset.pon, 10)];
   if(!a) return;
   a.ponderacion = ev.target.value === '' ? null : parseFloat(ev.target.value);
-  const suma = Math.round(sumaPonderaciones() * 100) / 100;
-  const pill = document.querySelector('.suma-pill');
-  if(pill){
-    pill.textContent = fmtNota(suma) + '%';
-    pill.className = 'suma-pill ' + (Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal');
-  }
+  recalcPill();
+  recalcMatriz();   // recálculo inmediato de TODAS las celdas, sin re-render
 }
 
 function moverAct(i, dir){
