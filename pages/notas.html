@@ -98,8 +98,6 @@
     padding:10px 12px; font-size:.95rem; background:var(--bg); }
   .gen-input:focus{ outline:none; border-color:var(--morado); background:#fff;
     box-shadow:0 0 0 4px rgba(107,75,214,.12); }
-  .frm-error{ font-size:.76rem; color:var(--rojo); margin-top:4px; display:none; }
-  .frm-error.visible{ display:block; }
 
   .grade-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px;
     overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px -10px rgba(34,30,51,.18); }
@@ -274,7 +272,7 @@
       <div class="brand-mark"><i class="bi bi-journal-bookmark"></i></div>
       <div>
         <h1 class="brand-title">Notas</h1>
-        <p class="brand-sub">Captura por actividad y matriz de nota final con ponderaciones</p>
+        <p class="brand-sub">Captura por evaluación y matriz de nota final con ponderaciones</p>
       </div>
       <div class="ms-auto d-flex gap-2 flex-wrap">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
@@ -429,7 +427,7 @@ window.addEventListener('error', function(ev){
   }catch(e){}
 });
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 
 const CONFIG = {
   API_URL:  'https://script.google.com/macros/s/AKfycbz9HoGI3jRz7agpXPgj_5EC-dRHY494kpEfepnemYGQg-N0pqFNYvru5mXRcJEtY-v7/exec',
@@ -500,14 +498,13 @@ function parseNota(v){
   return n;
 }
 
-/* Sanitiza lo que el usuario teclea: solo dígitos y UN separador,
-   máximo 2 decimales. Devuelve el texto limpio (puede ser ''). */
+/* Sanitiza lo que se teclea: solo dígitos y un punto, máx 2 decimales */
 function sanitizarNotaInput(v){
   let s = String(v).replace(/,/g, '.').replace(/[^0-9.]/g, '');
   const partes = s.split('.');
   if(partes.length > 2) s = partes[0] + '.' + partes.slice(1).join('');
   const idx = s.indexOf('.');
-  if(idx >= 0) s = s.slice(0, idx + 1 + 2);   // máx 2 decimales
+  if(idx >= 0) s = s.slice(0, idx + 1 + 2);
   if(s === '.') s = '';
   return s;
 }
@@ -545,10 +542,12 @@ function cargarDeLocal(){
   return d;
 }
 
-/* Las notas se cruzan por NIE (compatible con filas viejas cuyo
-   'id' era un uid) y por id del estudiante si el NIE no matchea */
+/* Cruce de una fila de Notas con el estudiante: primero por NIE,
+   luego por id (compatible con filas viejas) */
 function estDeNotaFila(n){
-  return S.estPorNie[String(n.nie ?? '')] || S.est.find(e => e.id === String(n.id || '')) || null;
+  return S.estPorNie[String(n.nie ?? '')]
+      || S.est.find(e => e.id === String(n.id || ''))
+      || null;
 }
 
 function notasDe(anio, grado, tri, materia){
@@ -636,6 +635,9 @@ function renderDatalistActividades(){
   $('#dlActividades').innerHTML = act.map(a => `<option value="${esc(a)}">`).join('');
 }
 
+/* Cargar / crear: si la combinación tiene actividades guardadas,
+   trae TODAS como columnas editables (en su orden, con sus notas);
+   si no hay nada, crea una tabla nueva con el nombre tecleado. */
 function cargarCaptura(){
   const anio = $('#capAnio').value.trim();
   const grado = $('#capGrado').value.trim();
@@ -648,23 +650,33 @@ function cargarCaptura(){
 
   S.cap = { anio, grado, tri, materia, act:null, columnas:[], celdas:{} };
   const actNombre = $('#capAct').value.trim();
-  const existentes = nombresActividades(anio, grado, tri, materia);
+  const acts = actividadesDe(anio, grado, tri, materia);
 
-  if(actNombre && existentes.includes(actNombre)){
-    /* Cargar actividad guardada: notas cruzadas por NIE (o id) */
-    S.cap.act = actNombre;
-    S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: true }];
+  if(acts.length){
+    /* Todas las actividades guardadas -> columnas editables */
+    S.cap.columnas = acts.map(a => ({
+      nombre: a.actividad, origNombre: a.actividad, existente: true
+    }));
     let cargadas = 0;
-    notasDe(anio, grado, tri, materia)
-      .filter(n => String(n.actividad) === actNombre)
-      .forEach(n => {
-        const e = estDeNotaFila(n);
-        if(e){ S.cap.celdas[e.id + '|0'] = String(n.nota ?? ''); cargadas++; }
-      });
-    toast('Actividad «' + actNombre + '» cargada (' + cargadas + ' notas).', 'success');
+    notasDe(anio, grado, tri, materia).forEach(n => {
+      const e = estDeNotaFila(n);
+      if(!e) return;
+      const idx = S.cap.columnas.findIndex(c => c.nombre === String(n.actividad || ''));
+      if(idx >= 0){
+        S.cap.celdas[e.id + '|' + idx] = String(n.nota ?? '');
+        cargadas++;
+      }
+    });
+    if(actNombre && acts.some(a => a.actividad === actNombre)) S.cap.act = actNombre;
+
+    let msg = S.cap.columnas.length + ' columna(s) cargadas (' + cargadas + ' notas).';
+    if(actNombre && !acts.some(a => a.actividad === actNombre)){
+      msg += ' «' + actNombre + '» no existe aún: agrega una columna nueva con ese nombre.';
+    }
+    toast(msg, 'success');
   }else if(actNombre){
     S.cap.act = actNombre;
-    S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: false }];
+    S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente:false }];
     toast('Nueva actividad «' + actNombre + '».', 'success');
   }else{
     toast('Tabla nueva: agrega columnas con + y renómbralas.', 'success');
@@ -737,14 +749,14 @@ function renderCapTabla(){
     });
     const m = mediaDe(e.id);
     body += `<tr><td class="col-nombre">${esc(e.nombre)}</td>${tds}
-      <td class="col-res"><span class="media-val ${claseMedia(m)}">${fmtNota(m)}</span></td></tr>`;
+      <td class="col-res"><span class="media-val ${claseMedia(m)}" data-media="${esc(e.id)}">${fmtNota(m)}</span></td></tr>`;
   });
 
   cont.innerHTML = `
     <article class="grade-card">
       <div class="grade-head gc-naranja">
         <span class="g-ico"><i class="bi bi-pencil-square"></i></span>
-        <h2>${esc(S.cap.act || 'Nueva evaluación')}</h2>
+        <h2>${esc(S.cap.act || 'Evaluación')}</h2>
         <span class="grade-count">${esc(S.cap.anio)} · ${esc(S.cap.grado)} · Trim ${esc(S.cap.tri)} · ${esc(S.cap.materia)}</span>
       </div>
       <div class="suma-bar">
@@ -776,12 +788,13 @@ function onNotaInput(ev){
   const estId = inp.dataset.est, colIdx = inp.dataset.col;
   S.cap.celdas[estId + '|' + colIdx] = inp.value;
 
-  /* Semáforo de validez: vacío ok; fuera de 0-10 rojo */
+  /* Semáforo de validez */
   const vacio = inp.value.trim() === '';
   const valido = parseNota(inp.value) !== '';
   inp.classList.toggle('mal', !vacio && !valido);
 
-  /* Media de la fila, en tiempo real */
+  /* FIX: media de la fila en tiempo real (el span ahora tiene
+     data-media; antes no existía y querySelector devolvía null) */
   const m = mediaDe(estId);
   const span = document.querySelector('[data-media="' + estId + '"]');
   if(span){
@@ -796,15 +809,18 @@ function onRenombrarCol(ev){
   ev.target.classList.toggle('choca', nombreChoca(idx));
 }
 
+/* Un nombre "choca" si: está vacío, duplica otra columna de la
+   tabla, o coincide con una actividad guardada que NO está cargada
+   en la tabla (defensa; al cargar todo no debería pasar) */
 function nombreChoca(idx){
   const col = S.cap.columnas[idx];
   if(!col) return true;
   const n = col.nombre;
   if(!n) return true;
   if(S.cap.columnas.some((c,i) => i !== idx && c.nombre === n)) return true;
+  const enTabla = new Set(S.cap.columnas.map(c => c.nombre));
   const existentes = nombresActividades(S.cap.anio, S.cap.grado, S.cap.tri, S.cap.materia);
-  const esEdicionMisma = col.existente && (col.origNombre || col.nombre) === n;
-  return !esEdicionMisma && existentes.includes(n);
+  return existentes.some(a => a === n && !enTabla.has(a) && a !== (col.origNombre || col.nombre));
 }
 
 function onEliminarCol(ev){
@@ -812,7 +828,7 @@ function onEliminarCol(ev){
   const col = S.cap.columnas[idx];
   if(!col) return;
   S.delCol = idx;
-  $('#delColTexto').innerHTML = 'Se quitará <strong>' + esc(col.nombre) + '</strong> de la tabla. Las notas ya guardadas de esa actividad permanecen en la hoja.';
+  $('#delColTexto').innerHTML = 'Se quitará <strong>' + esc(col.nombre) + '</strong> de la tabla. Al guardar, sus notas dejarán de aparecer en la hoja.';
   modalONada(instanciaModal('mdDelCol'));
 }
 
@@ -842,7 +858,7 @@ function validarCaptura(){
     if(!n){ toast('Hay columnas sin nombre.', 'warning'); return false; }
     if(nombres.includes(n)){ toast('Columnas con nombre duplicado: «' + n + '».', 'danger'); return false; }
     if(nombreChoca(i)){
-      toast('La actividad «' + n + '» ya existe para este año, grado, trimestre y materia. Cárgala para editarla.', 'danger');
+      toast('El nombre «' + n + '» entra en conflicto con otra actividad guardada.', 'danger');
       return false;
     }
     nombres.push(n);
@@ -873,6 +889,8 @@ function guardarCaptura(){
     });
   });
 
+  /* Actividades a reemplazar en el servidor: las de la tabla + las
+     originales renombradas (para que no queden huérfanas) */
   const actividades = S.cap.columnas.map(c => c.nombre.trim());
   S.cap.columnas.forEach(c => {
     if(c.existente && (c.origNombre || c.nombre) !== c.nombre.trim()){
