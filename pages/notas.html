@@ -9,7 +9,9 @@
 <!-- Bootstrap + iconos: primero desde libs/ (tu repo); si falta, CDN -->
 <link rel="stylesheet" href="../libs/bootstrap.min.css"
       onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';">
-<link rel="stylesheet" href="../libs/bootstrap-icons.min.css">
+<link rel="stylesheet" href="../libs/bootstrap-icons.min.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';">
+<!-- Tipografías -->
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -24,7 +26,7 @@
     --rojo:#B42318;     --verde:#178F72;
   }
 
-  /* ============ LAYOUT GENERAL ============ */
+  /* ============ LAYOUT GENERAL (reutilizable) ============ */
   .wrap-fluid{
     width:100%; max-width:1920px; margin:0 auto;
     padding-left:clamp(12px, 3vw, 44px);
@@ -71,14 +73,14 @@
   .status-dot{ width:10px; height:10px; border-radius:50%; flex:none; }
   .status-dot.ok{ background:#22A06B; box-shadow:0 0 0 4px rgba(34,160,107,.15); }
   .status-dot.warn{ background:#E8A13A; box-shadow:0 0 0 4px rgba(232,161,58,.18); }
-  .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.35); }
+  .status-dot.off{ background:var(--rojo); box-shadow:0 0 0 4px rgba(180,35,24,.15); }
   .status-title{ font-weight:700; font-size:.95rem; word-break:break-word; }
   .status-meta{ font-size:.78rem; color:var(--ink-soft); word-break:break-word; }
   .chip{ background:rgba(34,30,51,.05); border-radius:999px; padding:6px 13px;
     font-size:.82rem; font-weight:500; white-space:nowrap; }
   .chip strong{ font-family:'Space Grotesk'; font-weight:700; }
 
-  /* ============ Pestañas grandes ============ */
+  /* ============ Pestañas ============ */
   .tabs{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
   .tab-btn{ flex:1 1 220px; border:1.5px solid var(--line); background:var(--paper);
     border-radius:16px; padding:13px 18px; font-weight:600; font-size:.95rem;
@@ -90,9 +92,8 @@
   /* ============ Generalidades ============ */
   .gen-bar{ background:var(--paper); border:1px solid var(--line); border-radius:18px;
     padding:14px 18px; display:grid; gap:12px;
-    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
     margin-bottom:18px; align-items:end; }
-  .gen-bar.ancho{ grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)) auto; }
   .gen-field label{ font-size:.7rem; font-weight:700; text-transform:uppercase;
     letter-spacing:.05em; color:var(--ink-soft); display:block; margin-bottom:5px; }
   .gen-input{ width:100%; border:1.5px solid var(--line); border-radius:12px;
@@ -100,19 +101,19 @@
   .gen-input:focus{ outline:none; border-color:var(--morado); background:#fff;
     box-shadow:0 0 0 4px rgba(107,75,214,.12); }
 
-  .btn-icono{ border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
-    width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-    transition:background .2s, color .2s; }
-  .btn-icono:hover{ background:var(--celeste); color:var(--celeste-ink); }
-
   /* ============ Tabla de notas ============ */
   .grade-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px;
     overflow:hidden; margin-bottom:20px; box-shadow:0 4px 14px -10px rgba(34,30,51,.18); }
   .grade-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap;
     padding:14px 20px; border-bottom:1px solid var(--line); }
+  .grade-head .g-ico{ width:36px; height:36px; border-radius:11px; flex:none;
+    display:grid; place-items:center; font-size:1rem; background:rgba(255,255,255,.7); }
   .grade-head h2{ font-family:'Space Grotesk'; font-weight:700; font-size:1.12rem; margin:0; }
   .gc-naranja{ background:var(--naranja); color:var(--naranja-ink); }
   .gc-morado{ background:var(--morado); color:var(--morado-ink); }
+  .gc-morado .g-ico, .gc-morado .grade-count{ background:rgba(255,255,255,.18); color:#fff; }
+  .grade-count{ margin-left:auto; background:rgba(255,255,255,.75); border-radius:999px;
+    padding:5px 13px; font-size:.82rem; font-weight:600; font-family:'Space Grotesk'; }
 
   .scroll-x{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .scroll-x::-webkit-scrollbar{ height:8px; }
@@ -124,14 +125,14 @@
   .col-nombre{ position:sticky; left:0; z-index:2; min-width:200px; max-width:280px;
     background:var(--paper); font-weight:600; padding:8px 14px;
     border-right:1px solid var(--line); }
-  thead .col-nombre{ z-index:4; }
-  .col-res{ position:sticky; right:0; z-index:2; min-width:76px; background:rgba(90,62,166,.06);
+  thead .col-nombre{ z-index:4; font-family:'Space Grotesk'; font-weight:600;
+    font-size:.74rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); }
+  .col-res{ position:sticky; right:0; z-index:2; min-width:80px; background:rgba(90,62,166,.06);
     font-family:'Space Grotesk'; font-weight:700; text-align:center; padding:8px 10px;
     border-left:2px solid rgba(90,62,166,.25); }
-  thead .col-res{ z-index:4; color:var(--morado-deep); font-size:.76rem;
+  thead .col-res{ z-index:4; color:var(--morado-deep); font-size:.74rem;
     text-transform:uppercase; letter-spacing:.05em; }
-  .col-calc{ background:rgba(107,75,214,.05); text-align:center;
-    font-family:'Space Grotesk'; font-weight:600; min-width:76px; }
+  .col-calc{ background:rgba(107,75,214,.04); text-align:center; }
   .head-col{ min-width:170px; }
   .head-col .hc-row{ display:flex; align-items:center; gap:6px; }
   .head-col input{ flex:1; min-width:0; border:1.5px solid transparent; background:transparent;
@@ -139,46 +140,49 @@
     font-size:.88rem; color:var(--ink); transition:border .2s, background .2s; }
   .head-col input:hover{ border-color:var(--line); }
   .head-col input:focus{ outline:none; border-color:var(--morado); background:#fff; }
+  .head-col input.choca{ border-color:var(--rojo); background:#FDF6F5; }
   .head-col .hc-del{ border:none; background:transparent; color:var(--ink-soft);
     width:24px; height:24px; border-radius:7px; display:grid; place-items:center;
     font-size:.8rem; opacity:.4; transition:all .15s; flex:none; }
   .head-col .hc-del:hover{ opacity:1; background:#FDECEA; color:var(--rojo); }
+  .badge-col{ font-size:.6rem; font-weight:700; letter-spacing:.04em;
+    background:rgba(34,30,51,.06); color:var(--ink-soft);
+    border-radius:999px; padding:2px 8px; flex:none; }
   .c-nota{ width:100%; min-width:60px; border:1.5px solid transparent; background:transparent;
-    border-radius:8px; padding:6px 6px; text-align:center; font-family:'Space Grotesk';
+    border-radius:8px; padding:6px; text-align:center; font-family:'Space Grotesk';
     font-weight:600; font-size:.95rem; color:var(--ink); transition:border .2s, background .2s; }
   .c-nota:hover{ border-color:var(--line); }
   .c-nota:focus{ outline:none; border-color:var(--morado); background:#fff;
     box-shadow:0 0 0 3px rgba(107,75,214,.1); }
-  .c-nota.baja{ color:var(--rojo); }
+  .c-nota.mal{ color:var(--rojo); }
   .media-val{ font-size:1.05rem; }
   .media-alta{ color:var(--verde); }
   .media-media{ color:var(--naranja-deep); }
   .media-baja{ color:var(--rojo); }
-  .badge-col{ font-size:.62rem; font-weight:700; letter-spacing:.04em;
-    background:rgba(34,30,51,.06); color:var(--ink-soft);
-    border-radius:999px; padding:2px 8px; margin-left:6px; vertical-align:middle; }
 
-  /* ============ Matriz: ponderaciones y reordenar ============ */
+  /* ============ Matriz: ponderaciones y orden ============ */
   .pon-box{ display:flex; flex-direction:column; gap:3px; align-items:center; }
   .pon-box .orden{ display:flex; gap:2px; }
   .pon-box .ord-btn{ border:none; background:transparent; color:var(--ink-soft);
-    width:22px; height:18px; border-radius:5px; display:grid; place-items:center;
-    font-size:.65rem; cursor:pointer; }
+    width:24px; height:20px; border-radius:5px; display:grid; place-items:center;
+    font-size:.7rem; cursor:pointer; }
   .pon-box .ord-btn:hover:not(:disabled){ background:rgba(90,62,166,.12); color:var(--morado-deep); }
   .pon-box .ord-btn:disabled{ opacity:.25; cursor:default; }
-  .pon-box input{ width:58px; border:1.5px solid var(--line); border-radius:8px;
-    padding:4px 4px; text-align:center; font-family:'Space Grotesk'; font-weight:700;
+  .pon-box input{ width:60px; border:1.5px solid var(--line); border-radius:8px;
+    padding:4px; text-align:center; font-family:'Space Grotesk'; font-weight:700;
     font-size:.9rem; background:var(--bg); }
   .pon-box input:focus{ outline:none; border-color:var(--morado); background:#fff; }
+  .pon-box .pon-lbl{ font-size:.62rem; font-weight:700; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.04em; }
   .suma-bar{ display:flex; align-items:center; gap:10px; padding:11px 20px;
     border-bottom:1px solid var(--line); background:rgba(34,30,51,.02);
     font-size:.88rem; font-weight:600; flex-wrap:wrap; }
-  .suma-pill{ border-radius:999px; padding:4px 14px; font-family:'Space Grotesk';
-    font-weight:700; }
+  .suma-pill{ border-radius:999px; padding:4px 14px; font-family:'Space Grotesk'; font-weight:700; }
   .suma-ok{ background:rgba(23,143,114,.12); color:var(--verde); }
   .suma-mal{ background:rgba(180,35,24,.1); color:var(--rojo); }
   .nota-tri-val{ font-size:1.1rem; }
-  .calc-sub{ font-size:.72rem; opacity:.6; display:block; font-weight:600; }
+  .calc-sub{ font-size:.7rem; opacity:.65; display:block; font-weight:600;
+    font-family:'Space Grotesk'; font-variant-numeric:tabular-nums; }
 
   /* ============ Estado vacío / modales / toasts ============ */
   .empty-card{ background:var(--paper); border:1.5px dashed rgba(34,30,51,.2);
@@ -247,12 +251,13 @@
     .c-nota{ font-size:1.05rem; }
     .media-val{ font-size:1.2rem; }
     .nota-tri-val{ font-size:1.3rem; }
+    .calc-sub{ font-size:.78rem; }
   }
   @media (max-width:575.98px){
     .brand-title{ font-size:1.15rem; }
     .status-bar{ padding:11px 12px; }
     .col-nombre{ min-width:140px; font-size:.85rem; padding:7px 10px; }
-    .head-col{ min-width:130px; }
+    .head-col{ min-width:132px; }
     .head-col input{ font-size:.82rem; padding:4px 6px; }
     .c-nota{ min-width:48px; font-size:.9rem; }
     .col-res{ min-width:64px; }
@@ -278,7 +283,7 @@
       </div>
       <div class="ms-auto d-flex gap-2 flex-wrap">
         <button class="btn-secundario" id="btnSync"><i class="bi bi-arrow-repeat"></i> Actualizar</button>
-        <button class="btn-primario d-none" id="btnGuardar"><i class="bi bi-cloud-arrow-up"></i> Guardar</button>
+        <button class="btn-primario" id="btnGuardar"><i class="bi bi-cloud-arrow-up"></i> Guardar</button>
       </div>
     </div>
   </div>
@@ -327,7 +332,7 @@
         <input class="gen-input" id="capAct" list="dlActividades" autocomplete="off"
                placeholder="Nombre de la actividad">
         <datalist id="dlActividades"></datalist>
-        <div class="frm-error" id="eCapAct">Ya existe una actividad con ese nombre para este año, grado, trimestre y materia.</div>
+        <div class="frm-error" id="eCapAct"></div>
       </div>
       <div class="gen-field">
         <button class="btn-secundario" id="btnCargarCap" style="width:100%;">
@@ -375,7 +380,7 @@
     <div class="modal-content app-modal">
       <div class="m-head">
         <div class="m-icon" style="background:#FDECEA; color:var(--rojo);"><i class="bi bi-trash3-fill"></i></div>
-        <div><h5>Eliminar columna</h5><p>Quita la actividad y todas sus notas</p></div>
+        <div><h5>Eliminar columna</h5><p>Quita la actividad y sus notas de la tabla</p></div>
       </div>
       <p class="mb-0" style="font-size:.92rem;" id="delColTexto"></p>
       <button class="btn-peligro" id="btnConfirmarDelCol"><i class="bi bi-trash3"></i> Sí, eliminar</button>
@@ -439,13 +444,12 @@ const CONFIG = {
 };
 
 const MATERIAS = ['Matemática y Datos', 'Ciencia y Tecnología', 'English'];
-const TRIS = ['1','2','3'];
 
 const S = {
   token: '', busy: false, tab: 'cap',
   est: [], todasNotas: [],
-  cap: { anio:'', grado:'', tri:'1', materia:'', act:null, columnas:[], celdas:{} },
-  mat: { anio:'', grado:'', tri:'1', materia:'', filas:[], acts:[] },
+  cap: { anio:'', grado:'', tri:'1', materia:MATERIAS[0], act:null, columnas:[], celdas:{} },
+  mat: { anio:'', grado:'', tri:'1', materia:MATERIAS[0], filas:[], acts:[] },
   delCol: null
 };
 
@@ -485,16 +489,18 @@ function toast(msg, kind='success'){
   requestAnimationFrame(() => el.classList.add('show'));
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 4200);
 }
+function uid(){
+  return (crypto.randomUUID)
+    ? crypto.randomUUID()
+    : 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+}
 function claveOrden(e){
   return [e.apellido1,e.apellido2,e.nombre1,e.nombre2]
     .map(sinTildes)
     .map(t => t.split(/\s+/).filter(w => w && w!=='de' && w!=='del').join(' '))
     .join(' ');
 }
-function fmtNota(n){
-  if(n === '' || n === null || n === undefined || isNaN(n)) return '—';
-  return (Math.round(n*100)/100).toLocaleString('es');
-}
+/* Notas de 0 a 10, coma o punto decimal */
 function parseNota(v){
   if(v === null || v === undefined) return '';
   const s = String(v).trim().replace(',', '.');
@@ -502,6 +508,14 @@ function parseNota(v){
   const n = parseFloat(s);
   if(isNaN(n) || n < 0 || n > 10) return '';
   return n;
+}
+function fmtNota(n){
+  if(n === null || n === undefined || isNaN(n)) return '—';
+  return (Math.round(n*100)/100).toLocaleString('es');
+}
+function claseMedia(m){
+  if(m === null || m === undefined || isNaN(m)) return '';
+  return m >= 7 ? 'media-alta' : (m >= 6 ? 'media-media' : 'media-baja');
 }
 
 /* ============ DATOS ============ */
@@ -532,11 +546,10 @@ function notasDe(anio, grado, tri, materia){
     String(n.trimestre) === String(tri) && String(n.materia) === String(materia));
 }
 
-/* Actividades de una combinación, con orden y ponderación */
+/* Actividades de una combinación: {actividad, orden, ponderacion} */
 function actividadesDe(anio, grado, tri, materia){
-  const filas = notasDe(anio, grado, tri, materia);
   const mapa = {};
-  filas.forEach(n => {
+  notasDe(anio, grado, tri, materia).forEach(n => {
     const k = String(n.actividad || '');
     if(!k) return;
     if(!mapa[k]) mapa[k] = {
@@ -546,17 +559,17 @@ function actividadesDe(anio, grado, tri, materia){
         ? null : parseFloat(n.ponderacion)
     };
   });
-  return Object.values(mapa).sort((a,b) => a.orden - b.orden || compararTexto(a.actividad,b.actividad));
+  return Object.values(mapa)
+    .sort((a,b) => a.orden - b.orden || compararTexto(a.actividad, b.actividad));
 }
-
 function nombresActividades(anio, grado, tri, materia){
   return actividadesDe(anio, grado, tri, materia).map(a => a.actividad);
 }
 
-/* ============ VISTA ============ */
+/* ============ VISTA GENERAL ============ */
 function render(){
   try{ renderTabs(); }catch(e){ reportarFalla('tabs', e); }
-  try{ renderCapSelects(); }catch(e){ reportarFalla('selects', e); }
+  try{ renderSelects(); }catch(e){ reportarFalla('selects', e); }
   try{ renderStatus(); }catch(e){ reportarFalla('estado', e); }
 }
 function reportarFalla(sec, e){
@@ -571,17 +584,17 @@ function renderTabs(){
   $('#tabMat').classList.toggle('activo', S.tab === 'mat');
   $('#secCap').classList.toggle('d-none', S.tab !== 'cap');
   $('#secMat').classList.toggle('d-none', S.tab !== 'mat');
-  $('#btnGuardar').classList.toggle('d-none', false);
 }
 
-function renderCapSelects(){
+function renderSelects(){
   const grados = [...new Set(S.est.map(e => e.grado))].sort(compararTexto);
   $('#dlGrados').innerHTML = grados.map(g => `<option value="${esc(g)}">`).join('');
   $('#capMat').innerHTML = MATERIAS.map(m => `<option>${esc(m)}</option>`).join('');
   $('#matMat').innerHTML = MATERIAS.map(m => `<option>${esc(m)}</option>`).join('');
-  const anioSugerido = new Date().getFullYear();
+  const anioSugerido = String(new Date().getFullYear());
   if(!$('#capAnio').value) $('#capAnio').value = anioSugerido;
   if(!$('#matAnio').value) $('#matAnio').value = anioSugerido;
+  renderDatalistActividades();
 }
 
 function renderStatus(){
@@ -605,9 +618,11 @@ function renderStatus(){
     `<span class="chip"><strong>${S.todasNotas.length}</strong> notas guardadas</span>`;
 }
 
-/* ============ TAB CAPTURA ============ */
+/* ============ CAPTURA ============ */
 function renderDatalistActividades(){
-  const act = nombresActividades(S.cap.anio, S.cap.grado, S.cap.tri, S.cap.materia);
+  const act = nombresActividades(
+    $('#capAnio').value.trim(), $('#capGrado').value.trim(),
+    $('#capTri').value, $('#capMat').value);
   $('#dlActividades').innerHTML = act.map(a => `<option value="${esc(a)}">`).join('');
 }
 
@@ -618,7 +633,7 @@ function cargarCaptura(){
   const materia = $('#capMat').value;
   if(!anio || !grado){ toast('Completa año y grado.', 'warning'); return; }
   if(!S.est.some(e => e.grado === grado)){
-    toast('No hay estudiantes en ese grado.', 'warning'); return;
+    toast('No hay estudiantes activos en ese grado.', 'warning'); return;
   }
 
   S.cap = { anio, grado, tri, materia, act:null, columnas:[], celdas:{} };
@@ -626,46 +641,68 @@ function cargarCaptura(){
   const existentes = nombresActividades(anio, grado, tri, materia);
 
   if(actNombre && existentes.includes(actNombre)){
-    /* Cargar existente para edición: esa actividad + sus notas */
+    /* Editar una actividad ya guardada */
     S.cap.act = actNombre;
-    S.cap.columnas = [{ nombre: actNombre, existente: true }];
-    const filas = notasDe(anio, grado, tri, materia).filter(n => String(n.actividad) === actNombre);
-    filas.forEach(n => {
-      S.cap.celdas[String(n.id)] = String(n.nota ?? '');
-    });
+    S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: true }];
+    notasDe(anio, grado, tri, materia)
+      .filter(n => String(n.actividad) === actNombre)
+      .forEach(n => { S.cap.celdas[String(n.id) + '|0'] = String(n.nota ?? ''); });
     toast('Actividad «' + actNombre + '» cargada para edición.', 'success');
   }else if(actNombre){
     S.cap.act = actNombre;
-    S.cap.columnas = [{ nombre: actNombre, existente: false }];
+    S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente: false }];
     toast('Nueva actividad «' + actNombre + '».', 'success');
   }else{
-    /* Sin nombre: tabla en blanco para construir libremente */
-    toast('Tabla nueva: agrega columnas y renómbralas a gusto.', 'success');
+    toast('Tabla nueva: agrega columnas con + y renómbralas.', 'success');
   }
 
   $('#eCapAct').classList.remove('visible');
   renderCapTabla();
-  $('#btnGuardar').classList.remove('d-none');
+}
+
+function addColumna(){
+  if(!S.cap.columnas.length){
+    const actNombre = $('#capAct').value.trim();
+    if(actNombre){
+      S.cap.act = actNombre;
+      S.cap.columnas = [{ nombre: actNombre, origNombre: actNombre, existente:false }];
+    }else{
+      S.cap.columnas = [{ nombre:'Actividad 1', origNombre:'Actividad 1', existente:false }];
+    }
+    renderCapTabla();
+    return;
+  }
+  let n = S.cap.columnas.length + 1;
+  let nombre = 'Actividad ' + n;
+  while(S.cap.columnas.some(c => c.nombre === nombre)) nombre = 'Actividad ' + (++n);
+  S.cap.columnas.push({ nombre, origNombre: nombre, existente:false });
+  renderCapTabla();
+}
+
+function mediaDe(estId){
+  const vals = S.cap.columnas
+    .map((c,i) => parseNota(S.cap.celdas[estId + '|' + i] ?? ''))
+    .filter(v => v !== '');
+  return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
 }
 
 function renderCapTabla(){
   const cont = $('#capTabla');
-  if(!S.cap.columnas.length && !Object.keys(S.cap.celdas).length){
+  if(!S.cap.columnas.length){
     cont.innerHTML = `
       <div class="empty-card">
         <div class="empty-ico"><i class="bi bi-plus-square"></i></div>
         <h3>Tabla lista para construir</h3>
         <p>Agrega columnas con el botón (+), renómbralas haciendo clic en el
-           encabezado y escribe las notas. La columna MEDIA calcula el promedio
-           automáticamente. Al guardar, cada columna se registra como una actividad
-           con las notas de cada estudiante.</p>
+           encabezado y escribe las notas de 0 a 10. La columna MEDIA calcula
+           el promedio de cada estudiante. Al guardar, cada columna se registra
+           como una actividad de este año, grado, trimestre y materia.</p>
         <button class="btn-primario" id="btnAddCol0"><i class="bi bi-plus-lg"></i> Agregar primera columna</button>
       </div>`;
     const b = $('#btnAddCol0'); if(b) b.addEventListener('click', addColumna);
     return;
   }
 
-  const filtro = S.est.filter(e => e.grado === S.cap.grado);
   let head = '';
   S.cap.columnas.forEach((c, i) => {
     head += `<th class="head-col">
@@ -677,29 +714,28 @@ function renderCapTabla(){
   });
 
   let body = '';
-  filtro.forEach(e => {
+  S.est.filter(e => e.grado === S.cap.grado).forEach(e => {
     let tds = '';
     S.cap.columnas.forEach((c, i) => {
-      const v = S.cap.celdas[e.id + '|' + i] ?? S.cap.celdas[e.id + '|' + c.nombre] ?? '';
+      const v = S.cap.celdas[e.id + '|' + i] ?? '';
       tds += `<td><input class="c-nota" data-est="${e.id}" data-col="${i}"
         value="${esc(v)}" inputmode="decimal" placeholder="—"></td>`;
     });
+    const m = mediaDe(e.id);
     body += `<tr><td class="col-nombre">${esc(e.nombre)}</td>${tds}
-      <td class="col-res"><span class="media-val" data-media="${e.id}">—</span></td></tr>`;
+      <td class="col-res"><span class="media-val ${claseMedia(m)}">${fmtNota(m)}</span></td></tr>`;
   });
 
   cont.innerHTML = `
     <article class="grade-card">
       <div class="grade-head gc-naranja">
-        <span class="g-ico" style="background:rgba(255,255,255,.7); border-radius:11px; width:36px; height:36px; display:grid; place-items:center;"><i class="bi bi-pencil-square"></i></span>
+        <span class="g-ico"><i class="bi bi-pencil-square"></i></span>
         <h2>${esc(S.cap.act || 'Nueva evaluación')}</h2>
-        <span class="chip" style="margin-left:auto; background:rgba(255,255,255,.75);">
-          ${esc(S.cap.anio)} · ${esc(S.cap.grado)} · Trim ${esc(S.cap.tri)} · ${esc(S.cap.materia)}
-        </span>
+        <span class="grade-count">${esc(S.cap.anio)} · ${esc(S.cap.grado)} · Trim ${esc(S.cap.tri)} · ${esc(S.cap.materia)}</span>
       </div>
       <div class="suma-bar">
         <button class="btn-secundario" id="btnAddCol"><i class="bi bi-plus-lg"></i> Agregar columna</button>
-        <span style="font-size:.8rem; color:var(--ink-soft);">Las notas van de 0 a 10 (se acepta coma decimal).</span>
+        <span style="font-size:.8rem; color:var(--ink-soft);">Notas de 0 a 10 · cada columna se guarda como una actividad</span>
       </div>
       <div class="scroll-x">
         <table class="table nota-table">
@@ -710,72 +746,50 @@ function renderCapTabla(){
       </div>
     </article>`;
 
-  const add = $('#btnAddCol'); if(add) add.addEventListener('click', addColumna);
-  cont.querySelectorAll('.c-nota').forEach(inp => inp.addEventListener('input', onNotaInput));
-  cont.querySelectorAll('.head-col input').forEach(inp => inp.addEventListener('input', onRenombrarCol));
+  $('#btnAddCol').addEventListener('click', addColumna);
+  cont.querySelectorAll('.c-nota').forEach(i => i.addEventListener('input', onNotaInput));
+  cont.querySelectorAll('.head-col input').forEach(i => i.addEventListener('input', onRenombrarCol));
   cont.querySelectorAll('.hc-del').forEach(b => b.addEventListener('click', onEliminarCol));
-}
-
-function addColumna(){
-  if(!S.cap.columnas.length && !S.cap.act){
-    contBlancoAColumna();
-    return;
-  }
-  if(!S.cap.columnas.length && S.cap.act){
-    S.cap.columnas = [{ nombre: S.cap.act, existente: true }];
-  }else{
-    let n = S.cap.columnas.length + 1;
-    let nombre = 'Actividad ' + n;
-    while(S.cap.columnas.some(c => c.nombre === nombre)) nombre = 'Actividad ' + (++n);
-    S.cap.columnas.push({ nombre, existente: false });
-  }
-  renderCapTabla();
-}
-
-/* Si el usuario empezó con tabla en blanco y luego agrega columna,
-   usa el nombre del campo Actividad si lo escribió */
-function contBlancoAColumna(){
-  const actNombre = $('#capAct').value.trim();
-  if(actNombre){
-    S.cap.act = actNombre;
-    S.cap.columnas = [{ nombre: actNombre, existente: false }];
-  }else{
-    S.cap.columnas = [{ nombre: 'Actividad 1', existente: false }];
-  }
-  renderCapTabla();
 }
 
 function onNotaInput(ev){
   const inp = ev.target;
   const estId = inp.dataset.est, colIdx = inp.dataset.col;
   S.cap.celdas[estId + '|' + colIdx] = inp.value;
-  const col = S.cap.columnas[colIdx];
-  if(col) S.cap.celdas[estId + '|' + col.nombre] = inp.value;
-  if(col) delete S.cap.celdas[estId + '|' + col.nombre];
 
-  /* Media por fila (solo columnas con valor) */
-  const fila = S.cap.columnas.map((c, i) => parseNota(S.cap.celdas[estId + '|' + i] ?? ''));
-  const vals = fila.filter(v => v !== '');
-  const media = vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
-  const span = cont.querySelector('[data-media="' + estId + '"]') || document.querySelector('[data-media="' + estId + '"]');
+  /* Marcar valores fuera de rango o no numéricos */
+  const tieneTexto = inp.value.trim() !== '';
+  const valido = parseNota(inp.value) !== '';
+  inp.classList.toggle('mal', tieneTexto && !valido);
+
+  /* Media de la fila, en vivo */
+  const m = mediaDe(estId);
+  const span = document.querySelector('[data-media="' + estId + '"]');
   if(span){
-    if(media === null){
-      span.textContent = '—';
-      span.className = 'media-val';
-    }else{
-      span.textContent = fmtNota(media);
-      span.className = 'media-val ' + (media >= 7 ? 'media-alta' : media >= 6 ? 'media-media' : 'media-baja');
-    }
+    span.textContent = fmtNota(m);
+    span.className = 'media-val ' + claseMedia(m);
   }
-  if(parseFloat(inp.value) < 0 || parseFloat(inp.value) > 10) inp.classList.add('baja');
-  else inp.classList.remove('baja');
 }
 
 function onRenombrarCol(ev){
-  const idx = ev.target.dataset.col;
-  const nuevo = ev.target.value.trim();
-  const viejo = S.cap.columnas[idx].nombre;
-  S.cap.columnas[idx].nombre = nuevo || viejo;
+  const idx = parseInt(ev.target.dataset.col, 10);
+  if(S.cap.columnas[idx]) S.cap.columnas[idx].nombre = ev.target.value.trim();
+  ev.target.classList.toggle('choca', nombreChoca(idx));
+}
+
+/* Un nombre "choca" si: está vacío, duplica otra columna de la tabla,
+   o coincide con una actividad ya guardada de esta combinación que no
+   sea esta misma columna cargada para edición */
+function nombreChoca(idx){
+  const col = S.cap.columnas[idx];
+  if(!col) return true;
+  const n = col.nombre;
+  if(!n) return true;
+  if(S.cap.columnas.some((c,i) => i !== idx && c.nombre === n)) return true;
+  const existentes = nombresActividades(S.cap.anio, S.cap.grado, S.cap.tri, S.cap.materia);
+  const esEdicionMisma = col.existente && (col.origNombre || col.nombre) === n;
+  if(!esEdicionMisma && existentes.includes(n)) return true;
+  return false;
 }
 
 function onEliminarCol(ev){
@@ -783,7 +797,465 @@ function onEliminarCol(ev){
   const col = S.cap.columnas[idx];
   if(!col) return;
   S.delCol = idx;
-  $('#delColTexto').innerHTML = 'Se quitará <strong>' + esc(col.nombre) + '</strong> de la tabla
-    (las notas guardadas de esa actividad permanecen en la hoja hasta que guardes).';
+  $('#delColTexto').innerHTML = 'Se quitará <strong>' + esc(col.nombre) + '</strong> de la tabla. Las notas ya guardadas de esa actividad permanecen en la hoja.';
   modalONada(instanciaModal('mdDelCol'));
 }
+
+function confirmarDelCol(){
+  if(S.delCol === null) return;
+  const idx = S.delCol;
+  S.delCol = null;
+  S.cap.columnas.splice(idx, 1);
+
+  /* Reindexar las celdas: claves "id|N" con N > idx bajan uno */
+  const nuevo = {};
+  Object.keys(S.cap.celdas).forEach(k => {
+    const sep = k.lastIndexOf('|');
+    const id = k.slice(0, sep), i = parseInt(k.slice(sep+1), 10);
+    if(i === idx) return;
+    nuevo[id + '|' + (i > idx ? i - 1 : i)] = S.cap.celdas[k];
+  });
+  S.cap.celdas = nuevo;
+
+  const m = instanciaModal('mdDelCol'); if(m) m.hide();
+  renderCapTabla();
+}
+
+function validarCaptura(){
+  if(!S.cap.columnas.length){
+    toast('Agrega al menos una columna con notas.', 'warning');
+    return false;
+  }
+  const nombres = [];
+  for(let i = 0; i < S.cap.columnas.length; i++){
+    const c = S.cap.columnas[i];
+    const n = (c.nombre || '').trim();
+    if(!n){ toast('Hay columnas sin nombre.', 'warning'); return false; }
+    if(nombres.includes(n)){
+      toast('Hay columnas con nombre duplicado: «' + n + '».', 'danger');
+      return false;
+    }
+    if(nombreChoca(i)){
+      toast('La actividad «' + n + '» ya existe para este año, grado, trimestre y materia. Cárgala para editarla.', 'danger');
+      return false;
+    }
+    nombres.push(n);
+  }
+  return true;
+}
+
+function guardarCaptura(){
+  if(!validarCaptura()) return;
+  if(!S.token){ abrirPass(); return; }
+
+  const filas = [];
+  S.cap.columnas.forEach((c, i) => {
+    S.est.filter(e => e.grado === S.cap.grado).forEach(e => {
+      const v = parseNota(S.cap.celdas[e.id + '|' + i] ?? '');
+      if(v === '') return;   // sin nota: no se guarda fila
+      filas.push({
+        id: uid(),
+        anio: S.cap.anio, grado: S.cap.grado,
+        trimestre: S.cap.tri, materia: S.cap.materia,
+        actividad: c.nombre, orden: i + 1, ponderacion: '',
+        nie: e.nie, nombre: e.nombre, nota: v
+      });
+    });
+  });
+
+  /* Actividades que el servidor reemplazará: las de la tabla + las
+     originales renombradas (para no dejar huérfanas) */
+  const actividades = S.cap.columnas.map(c => c.nombre.trim());
+  S.cap.columnas.forEach(c => {
+    if(c.existente && (c.origNombre || c.nombre) !== c.nombre.trim()){
+      actividades.push(c.origNombre || c.nombre);
+    }
+  });
+
+  enviarNotas(filas, actividades, {
+    anio:S.cap.anio, grado:S.cap.grado, trimestre:S.cap.tri, materia:S.cap.materia
+  }, 'Captura guardada');
+}
+
+/* ============ MATRIZ ============ */
+function cargarMatriz(){
+  const anio = $('#matAnio').value.trim();
+  const grado = $('#matGrado').value.trim();
+  const tri = $('#matTri').value;
+  const materia = $('#matMat').value;
+  if(!anio || !grado){ toast('Completa año y grado.', 'warning'); return; }
+  if(!S.est.some(e => e.grado === grado)){
+    toast('No hay estudiantes activos en ese grado.', 'warning'); return;
+  }
+
+  S.mat = {
+    anio, grado, tri, materia,
+    acts: actividadesDe(anio, grado, tri, materia).map(a => ({ ...a })),
+    filas: []
+  };
+
+  if(!S.mat.acts.length){
+    $('#matTabla').innerHTML = `
+      <div class="empty-card">
+        <div class="empty-ico"><i class="bi bi-inboxes"></i></div>
+        <h3>Sin actividades guardadas</h3>
+        <p>No hay actividades con notas para <strong>${esc(anio)} · ${esc(grado)} ·
+           trimestre ${esc(tri)} · ${esc(materia)}</strong>. Créalas en la pestaña
+           «Captura de evaluación» y vuelve aquí.</p>
+        <button class="btn-primario" id="btnIrCap"><i class="bi bi-pencil-square"></i> Ir a captura</button>
+      </div>`;
+    $('#btnIrCap').addEventListener('click', () => cambiarTab('cap'));
+    return;
+  }
+
+  const notasAct = notasDe(anio, grado, tri, materia);
+  S.mat.filas = S.est.filter(e => e.grado === grado).map(e => {
+    const notas = {};
+    notasAct.forEach(n => {
+      if(String(n.id) === e.id) notas[String(n.actividad)] = String(n.nota ?? '');
+    });
+    return { est: e, notas };
+  });
+
+  renderMatTabla();
+}
+
+function sumaPonderaciones(){
+  return S.mat.acts.reduce((s,a) =>
+    s + (a.ponderacion !== null && a.ponderacion !== undefined && !isNaN(a.ponderacion) ? a.ponderacion : 0), 0);
+}
+
+/* Nota ponderada de una celda: nota × % ÷ 100 */
+function calcInd(nota, pon){
+  const v = parseNota(nota);
+  if(v === '' || pon === null || pon === undefined || isNaN(pon)) return null;
+  return Math.round(v * pon) / 100;
+}
+
+/* Nota trimestre: suma de las celdas ya ponderadas */
+function calcFila(f){
+  let total = 0, hay = false;
+  S.mat.acts.forEach(a => {
+    const c = calcInd(f.notas[a.nombre] ?? '', a.ponderacion);
+    if(c !== null){ total += c; hay = true; }
+  });
+  return hay ? Math.round(total * 100) / 100 : null;
+}
+
+function renderMatTabla(){
+  const cont = $('#matTabla');
+  if(!S.mat.acts.length) return;
+
+  let head = '';
+  S.mat.acts.forEach((a, i) => {
+    head += `<th class="head-col">
+      <div style="display:flex; flex-direction:column; gap:6px; align-items:stretch;">
+        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:.9rem; text-align:center;">${esc(a.nombre)}</div>
+        <div class="pon-box">
+          <div class="orden">
+            <button class="ord-btn" data-mv="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Mover izquierda"><i class="bi bi-arrow-left"></i></button>
+            <button class="ord-btn" data-mv="${i}" data-dir="1" ${i === S.mat.acts.length - 1 ? 'disabled' : ''} title="Mover derecha"><i class="bi bi-arrow-right"></i></button>
+          </div>
+          <input type="number" min="0" max="100" step="0.5"
+            value="${a.ponderacion === null ? '' : a.ponderacion}"
+            data-pon="${i}" placeholder="%" title="Ponderación en %">
+          <span class="pon-lbl">%</span>
+        </div>
+      </div></th>`;
+  });
+
+  let body = '';
+  S.mat.filas.forEach(f => {
+    let tds = '';
+    S.mat.acts.forEach(a => {
+      const v = f.notas[a.nombre] ?? '';
+      const c = calcInd(v, a.ponderacion);
+      tds += `<td class="col-calc">
+        <input class="c-nota" data-est="${f.est.id}" data-act="${esc(a.nombre)}"
+          value="${esc(v)}" inputmode="decimal" placeholder="—">
+        <small class="calc-sub">${c !== null ? fmtNota(c) : '—'}</small></td>`;
+    });
+    const tri = calcFila(f);
+    body += `<tr><td class="col-nombre">${esc(f.est.nombre)}</td>${tds}
+      <td class="col-res"><span class="nota-tri-val ${claseMedia(tri)}">${fmtNota(tri)}</span></td></tr>`;
+  });
+
+  const suma = Math.round(sumaPonderaciones() * 100) / 100;
+  cont.innerHTML = `
+    <article class="grade-card">
+      <div class="grade-head gc-morado">
+        <span class="g-ico"><i class="bi bi-calculator"></i></span>
+        <h2>Nota final · ${esc(S.mat.materia)}</h2>
+        <span class="grade-count">${esc(S.mat.anio)} · ${esc(S.mat.grado)} · Trim ${esc(S.mat.tri)} · ${S.mat.acts.length} act.</span>
+      </div>
+      <div class="suma-bar">
+        <span>Suma de ponderaciones:</span>
+        <span class="suma-pill ${Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal'}">${fmtNota(suma)}%</span>
+        <span style="font-size:.8rem; color:var(--ink-soft);">Cada celda muestra tu nota y, debajo, la nota × % ÷ 100.</span>
+        <button class="btn-secundario ms-auto" id="btnCopiarMat"><i class="bi bi-clipboard"></i> Copiar matriz</button>
+      </div>
+      <div class="scroll-x">
+        <table class="table nota-table">
+          <thead><tr><th class="col-nombre">Estudiante</th>${head}
+            <th class="col-res">Nota trimestre</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </article>`;
+
+  cont.querySelectorAll('.c-nota').forEach(i => i.addEventListener('input', onNotaMat));
+  cont.querySelectorAll('[data-pon]').forEach(i => {
+    i.addEventListener('input', onPonInput);
+    i.addEventListener('change', () => renderMatTabla());
+  });
+  cont.querySelectorAll('[data-mv]').forEach(b => b.addEventListener('click', ev => {
+    const btn = ev.currentTarget;
+    moverAct(parseInt(btn.dataset.mv,10), parseInt(btn.dataset.dir,10));
+  }));
+  $('#btnCopiarMat').addEventListener('click', copiarMatriz);
+}
+
+function onNotaMat(ev){
+  const inp = ev.target;
+  const f = S.mat.filas.find(x => x.est.id === inp.dataset.est);
+  if(!f) return;
+  f.notas[inp.dataset.act] = inp.value;
+
+  const act = S.mat.acts.find(a => a.nombre === inp.dataset.act);
+  const c = calcInd(inp.value, act ? act.ponderacion : null);
+  const sm = inp.closest('td').querySelector('.calc-sub');
+  if(sm) sm.textContent = c !== null ? fmtNota(c) : '—';
+
+  const tri = calcFila(f);
+  const span = inp.closest('tr').querySelector('.nota-tri-val');
+  if(span){
+    span.textContent = fmtNota(tri);
+    span.className = 'nota-tri-val ' + claseMedia(tri);
+  }
+}
+
+function onPonInput(ev){
+  const a = S.mat.acts[parseInt(ev.target.dataset.pon, 10)];
+  if(!a) return;
+  a.ponderacion = ev.target.value === '' ? null : parseFloat(ev.target.value);
+  const suma = Math.round(sumaPonderaciones() * 100) / 100;
+  const pill = document.querySelector('.suma-pill');
+  if(pill){
+    pill.textContent = fmtNota(suma) + '%';
+    pill.className = 'suma-pill ' + (Math.abs(suma - 100) < 0.01 ? 'suma-ok' : 'suma-mal');
+  }
+}
+
+function moverAct(i, dir){
+  const j = i + dir;
+  if(j < 0 || j >= S.mat.acts.length) return;
+  const t = S.mat.acts[i];
+  S.mat.acts[i] = S.mat.acts[j];
+  S.mat.acts[j] = t;
+  S.mat.acts.forEach((a, k) => a.orden = k + 1);
+  renderMatTabla();
+}
+
+function guardarMatriz(){
+  if(!S.mat.acts.length){ toast('Genera la matriz primero.', 'warning'); return; }
+  if(!S.token){ abrirPass(); return; }
+
+  let faltaPon = false;
+  const suma = sumaPonderaciones();
+  S.mat.acts.forEach(a => {
+    if(a.ponderacion === null || a.ponderacion === undefined || isNaN(a.ponderacion)) faltaPon = true;
+  });
+  if(faltaPon){ toast('Asigna la ponderación (%) de todas las actividades.', 'warning'); return; }
+  if(suma > 100.01){ toast('La suma de ponderaciones (' + fmtNota(suma) + '%) excede el 100%.', 'danger'); return; }
+  if(Math.abs(suma - 100) > 0.01){
+    toast('La suma de ponderaciones es ' + fmtNota(suma) + '% (ideal: 100%). Se guardará así.', 'warning');
+  }
+
+  const filas = [];
+  S.mat.acts.forEach((a, i) => {
+    S.mat.filas.forEach(f => {
+      const v = parseNota(f.notas[a.nombre] ?? '');
+      if(v === '') return;
+      filas.push({
+        id: uid(),
+        anio: S.mat.anio, grado: S.mat.grado,
+        trimestre: S.mat.tri, materia: S.mat.materia,
+        actividad: a.nombre, orden: i + 1,
+        ponderacion: a.ponderacion,
+        nie: f.est.nie, nombre: f.est.nombre, nota: v
+      });
+    });
+  });
+
+  enviarNotas(filas, S.mat.acts.map(a => a.nombre), {
+    anio:S.mat.anio, grado:S.mat.grado, trimestre:S.mat.tri, materia:S.mat.materia
+  }, 'Matriz guardada');
+}
+
+async function copiarMatriz(){
+  const lineas = [];
+  lineas.push(['Estudiante',
+    ...S.mat.acts.map(a => a.nombre), 'Nota trimestre'].join('\t'));
+  lineas.push(['Ponderación',
+    ...S.mat.acts.map(a => (a.ponderacion === null ? '' : a.ponderacion + '%')), ''].join('\t'));
+  S.mat.filas.forEach(f => {
+    const tri = calcFila(f);
+    lineas.push([
+      f.est.nombre,
+      ...S.mat.acts.map(a => (f.notas[a.nombre] ?? '')),
+      ...S.mat.acts.map(a => {
+        const c = calcInd(f.notas[a.nombre] ?? '', a.ponderacion);
+        return c !== null ? fmtNota(c) : '';
+      }),
+      tri !== null ? fmtNota(tri) : ''
+    ].join('\t'));
+  });
+  const texto = lineas.join('\n');
+  try{
+    await navigator.clipboard.writeText(texto);
+    toast('Matriz copiada: pégala en Word, Sheets o donde quieras.', 'success');
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand('copy'); toast('Matriz copiada.', 'success'); }
+    catch(e2){ toast('No pude copiar al portapapeles.', 'danger'); }
+    ta.remove();
+  }
+}
+
+/* ============ GUARDADO COMÚN ============ */
+async function enviarNotas(filas, actividades, clave, msgOk){
+  const btn = $('#btnGuardar');
+  btn.disabled = true;
+  try{
+    const r = await api({ action:'notas_set', token:S.token, clave, filas, actividades });
+    if(r && r.ok){
+      toast(msgOk + ' (' + r.escritas + ' notas).', 'success');
+      await refrescar(true);   // refresca el caché con lo recién guardado
+      return true;
+    }
+    toast('El servidor rechazó el guardado: ' + ((r && r.error) || 'error'), 'danger');
+  }catch(e){
+    toast('Sin conexión al guardar. Revisa tu internet.', 'danger');
+  }
+  btn.disabled = false;
+  return false;
+}
+
+/* ============ LOGIN / SINCRONIZACIÓN ============ */
+function abrirPass(){
+  const m = instanciaModal('mdPass');
+  if(!modalONada(m)) return;
+  $('#passError').classList.remove('visible');
+  $('#inpPass').value = '';
+  setTimeout(() => $('#inpPass').focus(), 400);
+}
+
+async function onSubmitPass(e){
+  e.preventDefault();
+  const pw = $('#inpPass').value;
+  if(!pw){ $('#passError').textContent = 'Escribe la contraseña.'; $('#passError').classList.add('visible'); return; }
+
+  $('#btnPassSubmit').disabled = true;
+  $('#btnPassSubmit .spinner-border').classList.remove('d-none');
+  try{
+    const r = await api({ action:'login', password: pw });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.TOKEN_KEY, r.token);
+      localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
+      S.token = r.token;
+      cargarDeLocal();
+      render();
+      const mp = instanciaModal('mdPass'); if(mp) mp.hide();
+      toast('Conectado: datos descargados en este dispositivo.', 'success');
+    }else{
+      $('#passError').textContent = (r && r.error === 'CONTRASENA_INCORRECTA')
+        ? 'Contraseña incorrecta.' : ((r && r.error) || 'Respuesta inesperada.');
+      $('#passError').classList.add('visible');
+    }
+  }catch(e2){
+    $('#passError').textContent = 'No pude conectar con el servidor.';
+    $('#passError').classList.add('visible');
+  }
+  $('#btnPassSubmit').disabled = false;
+  $('#btnPassSubmit .spinner-border').classList.add('d-none');
+}
+
+async function refrescar(silencioso){
+  if(!hayUrl()){
+    if(!silencioso) toast('Primero pega la URL del Web App en CONFIG.API_URL.', 'warning');
+    return;
+  }
+  if(!S.token){
+    if(!silencioso) abrirPass();
+    return;
+  }
+  S.busy = true; renderStatus();
+  try{
+    const r = await api({ action:'sync', token: S.token });
+    if(r && r.ok){
+      localStorage.setItem(CONFIG.DATA_KEY, JSON.stringify(r.data));
+      cargarDeLocal();
+      if(!silencioso) toast('Datos actualizados desde la hoja de cálculo.', 'success');
+    }else{
+      localStorage.removeItem(CONFIG.TOKEN_KEY); S.token = '';
+      if(!silencioso) abrirPass();
+    }
+  }catch(e){
+    if(!silencioso) toast('No pude conectar con el servidor; muestro la última copia local.', 'warning');
+  }
+  S.busy = false; renderStatus();
+}
+
+/* ============ TABS ============ */
+function cambiarTab(tab){
+  S.tab = tab;
+  renderTabs();
+}
+
+/* ============ INICIO — blindado ============ */
+function init(){
+  const data0 = leerData();
+  if(data0){
+    $('#statusTitle').textContent = 'Datos cargados — preparando vista…';
+    $('#statusDot').className = 'status-dot ok';
+  }else{
+    $('#statusTitle').textContent = 'Sin datos todavía';
+    $('#statusDot').className = 'status-dot off';
+  }
+
+  cargarDeLocal();
+  render();
+
+  $('#tabCap').addEventListener('click', () => cambiarTab('cap'));
+  $('#tabMat').addEventListener('click', () => cambiarTab('mat'));
+
+  $('#btnCargarCap').addEventListener('click', cargarCaptura);
+  $('#btnCargarMat').addEventListener('click', cargarMatriz);
+  $('#btnSync').addEventListener('click', () => refrescar(false));
+  $('#btnGuardar').addEventListener('click', () => {
+    S.tab === 'cap' ? guardarCaptura() : guardarMatriz();
+  });
+
+  /* Datalist de actividades en vivo según las generalidades */
+  ['capAnio','capGrado'].forEach(id =>
+    $('#'+id).addEventListener('input', renderDatalistActividades));
+  ['capTri','capMat'].forEach(id =>
+    $('#'+id).addEventListener('change', renderDatalistActividades));
+
+  $('#btnConfirmarDelCol').addEventListener('click', confirmarDelCol);
+  $('#frmPass').addEventListener('submit', onSubmitPass);
+
+  refrescar(true);   // sincroniza en silencio si ya hay sesión
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
+</script>
+</body>
+</html>
